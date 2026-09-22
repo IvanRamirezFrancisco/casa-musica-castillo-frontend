@@ -8,30 +8,31 @@
 
 /* Estilos Globales - Casa de Mï¿½sica Castillo */
 :root {
-  /* Colores Principales */
-  --primary-color: #722f37;    /* Vino Tinto/Bordï¿½ - Navegaciï¿½n, botones principales */
-  --secondary-color: #C5A059;  /* Dorado Antiguo - Detalles, iconos activos */
-  --dark-color: #1A1A1A;       /* Negro Noche - Texto principal, footer */
-  --bg-color: #f5f0eb;         /* Crema cï¿½lida - Fondo general */
-  --card-bg: #FDFCFB;          /* Hueso cï¿½lido - Tarjetas, contenedores */
-  --card-alt: #FAF8F6;         /* Crema suave - Filas alternas, fondos secundarios */
-  --card-hover: #f5f0eb;       /* Hover suave sobre filas/cards */
-  --success-color: #27AE60;    /* Verde Bosque - Stock disponible */
-  --error-color: #C0392B;      /* Rojo Ladrillo - Alertas, errores */
-  --text-light: #ffffff;       /* Texto blanco para botones */
+  /* Colores Principales (Mapeados a nuevos tokens de Fase 1A) */
+  --primary-color: #722F37;    /* Conservado para legacy/admin. Nuevo predominante es primary-500 (#A64D5B) */
+  --secondary-color: #C5A059;  /* Dorado Antiguo */
+  --dark-color: #292524;       /* Negro Noche -> Carbón cálido */
+  --bg-color: #FCFAF7;         /* Crema cálida -> Fondo principal cálido */
+  --card-bg: #FFFFFF;          /* Hueso cálido -> Tarjetas Blancas */
+  --card-alt: #F5EFE8;         /* Crema suave -> Superficie crema */
+  --card-hover: #F8E9EC;       /* Hover suave sobre filas/cards -> primary-100 */
+  --success-color: #27AE60;    /* Verde Bosque */
+  --error-color: #C0392B;      /* Rojo Ladrillo */
+  --text-light: #ffffff;       /* Texto blanco */
   
   /* Tipografï¿½a */
   --font-title: 'Montserrat', sans-serif;  /* Tï¿½tulos y nombres de instrumentos */
   --font-body: 'Roboto', sans-serif;       /* Cuerpo, tablas, formularios */
   
   /* Variaciones de colores para estados */
-  --primary-hover: #66001a;    /* Vino mï¿½s oscuro para hover */
-  --primary-light: #99002b;    /* Vino mï¿½s claro */
-  --secondary-hover: #b8934f;  /* Dorado mï¿½s oscuro */
-  --secondary-light: #d4b066;  /* Dorado mï¿½s claro */
-  --text-main: #2D2A26;        /* Gris carbï¿½n cï¿½lido - Texto principal */
-  --text-muted: #6B6560;       /* Gris cï¿½lido - Texto secundario */
-  --border-color: #E8E2DC;     /* Beige medio - Bordes y separadores */
+  --primary-hover: #913F4D;    /* primary-600 */
+  --primary-light: #A64D5B;    /* primary-500 */
+  --secondary-hover: #B8934F;  /* secondary-700 */
+  --secondary-light: #D4B066;  /* secondary-500 */
+  --text-main: #292524;        /* texto-main */
+  --text-muted: #6B6560;       /* texto-muted */
+  --border-color: #E7DED5;     /* surface-border */  /* Beige medio - Bordes y separadores */
+  --surface-dark: #3B1F24;     /* Dark warm surface (burdeos muy oscuro) */
   
   /* Sombras profesionales */
   --shadow-light: rgba(128, 0, 32, 0.08);

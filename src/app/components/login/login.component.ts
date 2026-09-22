@@ -37,6 +37,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   showPassword = false;
   searchQuery = ''; // Para la barra de búsqueda del header
   rememberMe = false;
+  returnUrl: string | null = null;
   
   // Estados para 2FA
   selectedMethod: string = '';
@@ -85,6 +86,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       if (params['email']) {
         this.loginForm.patchValue({ email: params['email'] });
+      }
+      if (params['returnUrl']) {
+        this.returnUrl = params['returnUrl'];
       }
     });
   }
@@ -142,8 +146,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         
         if (token && user) {
           this.authService.completeLogin(token, user);
-          // Enrutamiento inteligente post-login basado en permisos granulares
-          this.authService.redirectAfterLogin();
+          // Enrutamiento inteligente post-login validando el returnUrl seguro
+          this.authService.redirectAfterLogin(this.returnUrl);
         } else {
           this.errorMessage = 'Error al procesar la respuesta del servidor';
         }
@@ -340,7 +344,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         if (token && user) {
           this.authService.completeLogin(token, user);
           // Enrutamiento inteligente post-login con 2FA
-          this.authService.redirectAfterLogin();
+          this.authService.redirectAfterLogin(this.returnUrl);
         } else {
           this.errorMessage = 'Código inválido o expirado';
         }
@@ -405,7 +409,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
           if (token && user) {
             this.authService.completeLogin(token, user);
             // Enrutamiento inteligente post-login con código de respaldo
-            this.authService.redirectAfterLogin();
+            this.authService.redirectAfterLogin(this.returnUrl);
           } else {
             this.errorMessage = 'Respuesta de login inválida';
           }

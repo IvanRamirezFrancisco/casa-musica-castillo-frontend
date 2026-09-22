@@ -4,15 +4,24 @@
 <section class="relative h-[88vh] min-h-[580px] overflow-hidden bg-[#0a0a0f]">
 
   @for (slide of heroSlides; track $index) {
-    <div
-      class="absolute inset-0 transition-all duration-1000 ease-in-out"
+    @if ($index === 0 || hasInteractedOrAutoplayed) {
+      <div
+      class="absolute inset-0 ease-in-out"
+      [class.transition-opacity]="hasInteractedOrAutoplayed"
+      [class.duration-1000]="hasInteractedOrAutoplayed"
       [ngClass]="$index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'">
 
       <!-- Imagen de fondo dividida: visible solo en la mitad derecha -->
       <div class="absolute inset-y-0 right-0 w-full md:w-[58%]">
         <img
           [src]="slide.imageUrl"
+          [srcset]="slide.srcset"
+          sizes="(max-width: 768px) 100vw, 58vw"
+          [attr.fetchpriority]="$index === 0 ? 'high' : null"
+          [attr.loading]="$index === 0 ? 'eager' : 'lazy'"
           [alt]="slide.title"
+          width="1600"
+          height="1000"
           class="w-full h-full object-cover object-center" />
         <!-- Gradiente que fusiona la imagen hacia la izquierda -->
         <div class="absolute inset-0 bg-gradient-to-r from-[#0a0a0f] via-[#0a0a0f]/80 to-transparent"></div>
@@ -59,7 +68,7 @@
                 [queryParams]="slide.ctaParams"
                 class="group inline-flex items-center gap-3 bg-amber-500 hover:bg-amber-400
                        text-slate-900 font-bold px-7 py-3.5 rounded-full
-                       transition-all duration-300 text-sm tracking-wide
+                       transition-[transform,background-color,box-shadow] duration-300 text-sm tracking-wide
                        shadow-xl shadow-amber-500/20 hover:shadow-amber-400/40 hover:scale-105">
                 {{ slide.cta }}
                 <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform duration-300">
@@ -72,8 +81,7 @@
                        text-sm font-semibold transition-colors duration-200 group">
                 <span class="material-symbols-outlined text-[18px]">play_circle</span>
                 Ver colección
-                <span class="w-0 group-hover:w-4 overflow-hidden transition-all duration-300
-                             h-0.5 bg-white/50 rounded-full mt-px"></span>
+                <span class="w-4 h-0.5 bg-white/50 rounded-full mt-px origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
               </a>
             </div>
 
@@ -81,7 +89,8 @@
         </div>
       </div>
 
-    </div>
+      </div>
+    }
   }
 
   <!-- Indicadores / Dots – abajo a la izquierda -->
@@ -89,15 +98,16 @@
     <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex items-center gap-6">
 
       <!-- Dots -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 -ml-2">
         @for (slide of heroSlides; track $index) {
           <button
             (click)="goToSlide($index)"
             [attr.aria-label]="'Ir al slide ' + ($index + 1)"
-            class="transition-all duration-500 rounded-full"
-            [ngClass]="$index === currentSlide
-              ? 'w-10 h-2 bg-amber-400'
-              : 'w-2 h-2 bg-white/25 hover:bg-white/50'">
+            class="flex items-center justify-center w-12 h-12 group"
+            title="Ir al slide {{ $index + 1 }}">
+            <span class="block w-2 h-2 rounded-full transition-[transform,background-color] duration-300"
+                  [ngClass]="$index === currentSlide ? 'scale-[2.5] bg-amber-400' : 'scale-100 bg-white/50 group-hover:bg-white'">
+            </span>
           </button>
         }
       </div>
@@ -113,18 +123,18 @@
   <button
     (click)="goToSlide((currentSlide - 1 + heroSlides.length) % heroSlides.length)"
     aria-label="Slide anterior"
-    class="absolute right-16 bottom-6 z-20 w-11 h-11 rounded-full border border-white/15
+    class="absolute right-16 bottom-6 z-20 w-12 h-12 rounded-full border border-white/15
            hover:border-amber-400/50 bg-white/5 hover:bg-amber-500/10 backdrop-blur-sm
-           flex items-center justify-center transition-all duration-200 text-white/60 hover:text-amber-400">
+           flex items-center justify-center transition-colors duration-200 text-white/60 hover:text-amber-400">
     <span class="material-symbols-outlined text-[20px]">chevron_left</span>
   </button>
 
   <button
     (click)="goToSlide((currentSlide + 1) % heroSlides.length)"
     aria-label="Slide siguiente"
-    class="absolute right-4 bottom-6 z-20 w-11 h-11 rounded-full border border-white/15
+    class="absolute right-4 bottom-6 z-20 w-12 h-12 rounded-full border border-white/15
            hover:border-amber-400/50 bg-white/5 hover:bg-amber-500/10 backdrop-blur-sm
-           flex items-center justify-center transition-all duration-200 text-white/60 hover:text-amber-400">
+           flex items-center justify-center transition-colors duration-200 text-white/60 hover:text-amber-400">
     <span class="material-symbols-outlined text-[20px]">chevron_right</span>
   </button>
 
@@ -138,6 +148,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      CATEGORÍAS
      ═══════════════════════════════════════════════════════════════════════ -->
+@defer (on viewport) {
 <section class="py-16 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -152,32 +163,68 @@
       </a>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-      @for (cat of allCategories; track cat.id) {
-        <button
-          (click)="navigateToCategory(cat.id)"
-          class="group flex flex-col items-center text-center rounded-2xl bg-white border border-gray-100
-                 p-6 shadow-sm hover:shadow-md hover:border-amber-200 hover:scale-105
-                 transition-all duration-200 cursor-pointer w-full">
-          <div class="w-14 h-14 rounded-full bg-amber-50 group-hover:bg-amber-100
-                      flex items-center justify-center mb-3 transition-colors duration-200">
-            <span class="material-symbols-outlined text-2xl text-amber-600">{{ cat.icon }}</span>
+    @if (loadingCategories) {
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="animate-pulse flex flex-col items-center bg-white border border-gray-100 p-6 rounded-2xl w-full">
+            <div class="w-14 h-14 bg-gray-200 rounded-full mb-3"></div>
+            <div class="h-3 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div class="h-2 bg-gray-200 rounded w-1/2"></div>
           </div>
-          <span class="font-bold text-sm text-slate-800 leading-tight mb-1">{{ cat.name }}</span>
-          <span class="text-xs text-gray-500 leading-tight">{{ cat.description }}</span>
+        }
+      </div>
+    } @else if (categoriesError) {
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center w-full max-w-2xl mx-auto">
+        <span class="material-symbols-outlined text-4xl text-red-400 mb-2">error</span>
+        <h3 class="text-lg font-bold text-red-800 mb-1">No fue posible cargar las categorías</h3>
+        <p class="text-sm text-red-600 mb-4">Ocurrió un error al conectar con el servidor.</p>
+        <button class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg font-semibold text-sm transition-colors" (click)="ngOnInit()">
+          Reintentar
         </button>
-      }
-    </div>
+      </div>
+    } @else if (categoriesEmpty) {
+      <div class="bg-white border border-gray-100 rounded-2xl p-10 text-center w-full max-w-2xl mx-auto shadow-sm">
+        <span class="material-symbols-outlined text-4xl text-gray-300 mb-2">category</span>
+        <h3 class="text-lg font-semibold text-slate-700">Por el momento no hay categorías disponibles</h3>
+      </div>
+    } @else {
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+        @for (cat of categories.slice(0, 8); track cat.id) {
+          <button
+            (click)="navigateToCategory(cat.id)"
+            class="group flex flex-col items-center text-center rounded-2xl bg-white border border-gray-100
+                   p-6 shadow-sm hover:shadow-md hover:border-amber-200 hover:scale-105
+                   transition-all duration-200 cursor-pointer w-full">
+            <div class="w-14 h-14 rounded-full bg-amber-50 group-hover:bg-amber-100
+                        flex items-center justify-center mb-3 transition-colors duration-200 overflow-hidden relative">
+              <ng-container *ngIf="cat.imageUrl; else iconFallback">
+                <img [src]="cat.imageUrl" [alt]="cat.name" width="56" height="56" loading="lazy" class="w-full h-full object-cover" />
+              </ng-container>
+              <ng-template #iconFallback>
+                <span class="material-symbols-outlined text-2xl text-amber-600">{{ getCategoryIcon(cat.name) }}</span>
+              </ng-template>
+            </div>
+            <span class="font-bold text-sm text-slate-800 leading-tight mb-1">{{ cat.name }}</span>
+            <span class="text-xs text-gray-500 leading-tight">
+              {{ cat.description ? cat.description : (cat.activeProductCount > 0 ? cat.activeProductCount + ' productos' : 'Ver productos') }}
+            </span>
+          </button>
+        }
+      </div>
+    }
 
   </div>
 </section>
+} @placeholder {
+  <div class="py-16 bg-gray-50 min-h-[400px]"></div>
+}
 
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      PRODUCTOS EN TENDENCIA (Solución 2)
      ═══════════════════════════════════════════════════════════════════════ -->
-@if (!loadingTrending && trendingProducts && trendingProducts.length > 0) {
+@defer (on viewport) {
 <section class="py-16 bg-gray-50 border-y border-gray-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-end justify-between mb-10">
@@ -191,87 +238,147 @@
       </a>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-      @for (product of trendingProducts; track product.productId) {
-        <div class="group rounded-2xl border border-gray-100 bg-white overflow-hidden
-                    hover:shadow-xl hover:border-amber-200 hover:-translate-y-1
-                    transition-all duration-300 cursor-pointer flex flex-col relative"
-             (click)="router.navigate(['/producto', product.productId])">
+    @if (loadingTrending) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="animate-pulse bg-white border border-gray-100 rounded-2xl h-80 w-full"></div>
+        }
+      </div>
+    } @else if (trendingError) {
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center w-full max-w-2xl mx-auto">
+        <span class="material-symbols-outlined text-4xl text-red-400 mb-2">error</span>
+        <h3 class="text-lg font-bold text-red-800 mb-1">No fue posible cargar las tendencias</h3>
+        <p class="text-sm text-red-600 mb-4">Revisa tu conexión o intenta más tarde.</p>
+        <button class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg font-semibold text-sm transition-colors" (click)="ngOnInit()">
+          Reintentar
+        </button>
+      </div>
+    } @else if (trendingEmpty) {
+      <div class="bg-white border border-gray-100 rounded-2xl p-10 text-center w-full max-w-2xl mx-auto shadow-sm">
+        <span class="material-symbols-outlined text-4xl text-gray-300 mb-2">trending_down</span>
+        <h3 class="text-lg font-semibold text-slate-700">Aún no hay tendencias suficientes</h3>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        @for (product of trendingProducts; track product.productId) {
+          <div class="group rounded-2xl border border-gray-100 bg-white overflow-hidden
+                      hover:shadow-xl hover:border-amber-200 hover:-translate-y-1
+                      transition-all duration-300 cursor-pointer flex flex-col relative"
+               role="button"
+               tabindex="0"
+               (click)="router.navigate(['/producto', product.productId])"
+               (keydown.enter)="router.navigate(['/producto', product.productId])">
 
-          <!-- Badge Tendencia -->
-          <div class="absolute top-3 right-3 z-10 flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md">
-            <span class="material-symbols-outlined text-[14px]">trending_up</span>
-            <span>En tendencia</span>
-          </div>
+            <!-- Badge Tendencia -->
+            <div class="absolute top-3 right-3 z-10 flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md">
+              <span class="material-symbols-outlined text-[14px]">trending_up</span>
+              <span>En tendencia</span>
+            </div>
 
-          <div class="relative aspect-square bg-gray-50 overflow-hidden">
-            <img [src]="product.imageUrl || 'assets/logoP.png'" (error)="onImageError($event)" [alt]="product.name"
-                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                 loading="lazy" />
-            @if (product.hasDiscount && product.discountPrice) {
-              <span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                -{{ getTrendingDiscountPercent(product) }}%
-              </span>
-            }
-          </div>
+            <div class="relative aspect-square bg-gray-50 overflow-hidden">
+              <img [src]="product.imageUrl || 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png'" (error)="onImageError($event)" [alt]="product.name"
+                   width="400" height="400"
+                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                   loading="lazy" />
+              @if (product.hasDiscount && product.discountPrice) {
+                <span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  -{{ getTrendingDiscountPercent(product) }}%
+                </span>
+              }
+            </div>
 
-          <div class="flex flex-col flex-1 p-4">
-            @if (product.categoryName) {
-              <span class="text-xs text-amber-600 font-semibold uppercase tracking-wide mb-0.5">{{ product.categoryName }}</span>
-            }
-            <p class="text-sm font-semibold text-slate-800 leading-snug mb-2 line-clamp-2">{{ product.name }}</p>
-            
-            <div class="flex-1"></div>
+            <div class="flex flex-col flex-1 p-4">
+              @if (product.categoryName) {
+                <span class="text-xs text-amber-600 font-semibold uppercase tracking-wide mb-0.5">{{ product.categoryName }}</span>
+              }
+              <p class="text-sm font-semibold text-slate-800 leading-snug mb-2 line-clamp-2">{{ product.name }}</p>
+              
+              <div class="flex-1"></div>
 
-            <div class="flex items-end justify-between mt-2">
-              <div>
-                @if (product.hasDiscount && product.discountPrice) {
-                  <p class="text-xs text-gray-400 line-through leading-none mb-0.5">
-                    ${{ product.regularPrice | number:'1.0-0' }}
+              <div class="flex items-end justify-between mt-2">
+                <div>
+                  @if (product.hasDiscount && product.discountPrice) {
+                    <p class="text-xs text-gray-400 line-through leading-none mb-0.5">
+                      ${{ product.regularPrice | number:'1.0-0' }}
+                    </p>
+                  }
+                  <p class="text-lg font-extrabold text-slate-900">
+                    ${{ product.effectivePrice | number:'1.0-0' }}
+                    <span class="text-xs font-normal text-gray-400">MXN</span>
                   </p>
-                }
-                <p class="text-lg font-extrabold text-slate-900">
-                  ${{ product.effectivePrice | number:'1.0-0' }}
-                  <span class="text-xs font-normal text-gray-400">MXN</span>
-                </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
   </div>
 </section>
+} @placeholder {
+  <div class="py-16 bg-gray-50 border-y border-gray-100 min-h-[500px]"></div>
 }
 
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SERVICIOS
+     DEMOSTRACIONES Y PRUEBAS DE SONIDO
      ═══════════════════════════════════════════════════════════════════════ -->
-<section class="py-16 bg-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-    <div class="text-center mb-10">
-      <p class="text-xs font-semibold tracking-widest uppercase text-amber-500 mb-1">Más que una tienda</p>
-      <h2 class="text-3xl font-extrabold text-slate-900">Nuestros Servicios</h2>
+@defer (on viewport) {
+<section class="py-20 relative overflow-hidden bg-slate-900">
+  <!-- Fondo decorativo -->
+  <div class="absolute inset-0 bg-gradient-to-b from-[#4A1F25] to-slate-900 opacity-90"></div>
+  <div class="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-amber-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
+  <div class="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-[#722F37] rounded-full mix-blend-multiply filter blur-[128px] opacity-40"></div>
+  
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="text-center mb-12">
+      <p class="text-sm font-semibold tracking-widest uppercase text-amber-500 mb-2">Escucha su sonido</p>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-white">Pruebas de Sonido & Demostraciones</h2>
+      <p class="mt-4 text-gray-300 max-w-2xl mx-auto">Descubre el sonido real de nuestros instrumentos premium. Videos y demostraciones de alta fidelidad para ayudarte a elegir tu instrumento ideal.</p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      @for (svc of services; track svc.id) {
-        <div class="group rounded-2xl border border-gray-100 bg-gray-50 hover:bg-white
-                    hover:shadow-lg hover:border-amber-200 p-6 text-center
-                    transition-all duration-200 cursor-pointer"
-             (click)="navigateToService(svc.id)">
-          <div class="w-14 h-14 rounded-full bg-white group-hover:bg-amber-50
-                      shadow-sm flex items-center justify-center mx-auto mb-4 transition-colors duration-200">
-            <span class="material-symbols-outlined text-2xl text-amber-600">{{ svc.icon }}</span>
+      @for (demo of soundDemos; track demo.id) {
+        <div class="group rounded-2xl bg-white/5 border border-white/10 overflow-hidden 
+                    hover:border-amber-400/50 hover:bg-white/10 hover:-translate-y-1
+                    transition-all duration-300 cursor-pointer flex flex-col relative shadow-xl backdrop-blur-sm"
+             role="button"
+             tabindex="0"
+             (click)="playDemo(demo)"
+             (keydown.enter)="playDemo(demo)">
+          
+          <div class="relative aspect-video bg-gray-800 overflow-hidden">
+            <img [src]="demo.thumbnail" [alt]="demo.title" width="600" height="338" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
+            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-amber-500/90 text-white flex items-center justify-center
+                          group-hover:scale-110 group-hover:bg-amber-400 transition-all shadow-lg backdrop-blur-md">
+                <span class="material-symbols-outlined text-2xl pl-1">play_arrow</span>
+              </div>
+            </div>
+            <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded">
+              {{ demo.instrument }}
+            </div>
           </div>
-          <h3 class="font-bold text-slate-800 mb-1 text-sm">{{ svc.name }}</h3>
-          <p class="text-xs text-gray-500 leading-relaxed">{{ svc.description }}</p>
+          
+          <div class="p-5">
+            <h3 class="font-bold text-white text-sm mb-1 group-hover:text-amber-400 transition-colors">{{ demo.title }}</h3>
+            <p class="text-xs text-gray-400 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">headphones</span> Ver demostración
+            </p>
+          </div>
         </div>
       }
     </div>
-
+    
+    <div class="mt-12 text-center">
+      <button class="inline-flex items-center gap-2 bg-transparent border-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white px-6 py-3 rounded-xl font-bold transition-all" (click)="router.navigate(['/contacto'])">
+        <span class="material-symbols-outlined">storefront</span>
+        Solicita una prueba en tienda
+      </button>
+    </div>
   </div>
 </section>
+} @placeholder {
+  <div class="py-20 bg-slate-900 min-h-[500px]"></div>
+}

@@ -1,0 +1,344 @@
+<div class="admin-container">
+  <div class="page-header">
+    <div class="header-title">
+      <i class="material-icons">help_center</i>
+      <div class="header-text">
+        <h1>Gestión del Centro de Ayuda</h1>
+        <span class="subtitle">Administra las categorías y preguntas frecuentes</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button type="button" *ngIf="activeTab === 'categories'" class="btn btn-primary" (click)="openCategoryModal()">
+        <i class="material-icons">add</i> Nueva Categoría
+      </button>
+      <button type="button" *ngIf="activeTab === 'faqs'" class="btn btn-primary" (click)="openFaqModal()">
+        <i class="material-icons">add</i> Nueva FAQ
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button type="button"
+        class="tab-btn" 
+        [class.active]="activeTab === 'categories'" 
+        (click)="setTab('categories')">
+        Categorías
+      </button>
+      <button type="button"
+        class="tab-btn" 
+        [class.active]="activeTab === 'faqs'" 
+        (click)="setTab('faqs')">
+        Preguntas Frecuentes (FAQs)
+      </button>
+    </div>
+
+    <!-- TABS CONTENT -->
+    <div class="tab-content" [class.loading]="isLoading">
+      
+      <!-- CATEGORIAS -->
+      <div *ngIf="activeTab === 'categories'" class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 80px">Orden</th>
+              <th style="width: 60px">Icono</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th style="width: 100px">Estado</th>
+              <th style="width: 100px" class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cat of categories">
+              <td><span class="badge badge-light">{{ cat.displayOrder }}</span></td>
+              <td>
+                <i *ngIf="isLegacyIcon(cat.iconKey)" class="material-icons text-muted" style="font-size: 24px;">{{ getBaseName(cat.iconKey || 'label') }}</i>
+                <img *ngIf="!isLegacyIcon(cat.iconKey)" [src]="getPreviewUrl(cat.iconKey)" style="width: 24px; height: 24px; opacity: 0.6;">
+              </td>
+              <td><strong>{{ cat.name }}</strong></td>
+              <td class="text-truncate" style="max-width: 250px;">{{ cat.description || '-' }}</td>
+              <td>
+                <span class="status-badge" [class.active]="cat.active">{{ cat.active ? 'Activo' : 'Inactivo' }}</span>
+              </td>
+              <td class="text-right">
+                <div class="action-group">
+                  <button type="button" class="btn-action edit-btn" title="Editar categoría {{cat.name}}" [attr.aria-label]="'Editar categoría ' + cat.name" (click)="openCategoryModal(cat)">
+                    <i class="material-icons">edit</i>
+                  </button>
+                  <button type="button" class="btn-action delete-btn" title="Eliminar categoría {{cat.name}}" [attr.aria-label]="'Eliminar categoría ' + cat.name" (click)="deleteCategory(cat.id)">
+                    <i class="material-icons">delete</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="categories.length === 0">
+              <td colspan="6" class="text-center py-4 text-muted">No hay categorías registradas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- FAQS -->
+      <div *ngIf="activeTab === 'faqs'" class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 80px">Orden</th>
+              <th>Pregunta</th>
+              <th>Categoría</th>
+              <th style="width: 80px">Destacada</th>
+              <th style="width: 100px">Estado</th>
+              <th style="width: 100px" class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let faq of faqs">
+              <td><span class="badge badge-light">{{ faq.displayOrder }}</span></td>
+              <td><strong>{{ faq.question }}</strong></td>
+              <td><span class="badge badge-primary">{{ getCategoryName(faq.categoryId) }}</span></td>
+              <td class="text-center">
+                <i class="material-icons text-warning" *ngIf="faq.featured" title="Destacada">star</i>
+              </td>
+              <td>
+                <span class="status-badge" [class.active]="faq.active">{{ faq.active ? 'Activo' : 'Inactivo' }}</span>
+              </td>
+              <td class="text-right">
+                <div class="action-group">
+                  <button type="button" class="btn-action edit-btn" title="Editar FAQ" aria-label="Editar FAQ" (click)="openFaqModal(faq)">
+                    <i class="material-icons">edit</i>
+                  </button>
+                  <button type="button" class="btn-action delete-btn" title="Eliminar FAQ" aria-label="Eliminar FAQ" (click)="deleteFaq(faq.id)">
+                    <i class="material-icons">delete</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="faqs.length === 0">
+              <td colspan="6" class="text-center py-4 text-muted">No hay preguntas registradas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORÍA CON ICON PICKER -->
+<div class="help-modal-root" *ngIf="showCategoryModal">
+  <div class="modal-backdrop" aria-hidden="true" (click)="onCreateCategoryBackdropClick()"></div>
+  
+  <section class="modal-dialog modal-category-picker" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h2>{{ isEditing ? 'Editar' : 'Nueva' }} Categoría</h2>
+      <button type="button" class="btn-close" (click)="requestCloseCategoryModal()" aria-label="Cerrar modal"><i class="material-icons">close</i></button>
+    </div>
+    
+    <form class="modal-form" (ngSubmit)="saveCategory()" #categoryForm="ngForm">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nombre <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="catName" [ngModel]="currentCategory.name" (ngModelChange)="onCategoryNameChange($event)" placeholder="Ej. Envíos y Entregas">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea class="form-control" name="catDesc" rows="2" [(ngModel)]="currentCategory.description"></textarea>
+        </div>
+        
+        <!-- ICON PICKER -->
+        <div class="icon-picker-section">
+          <div style="margin-bottom: 12px;">
+            <label style="margin-bottom: 2px;">Icono</label>
+            <small class="text-muted" style="display: block; font-size: 0.75rem; margin-bottom: 8px;">Busca por objeto, función o concepto.</small>
+          </div>
+          
+          <!-- Búsqueda manual -->
+          <div class="search-input-wrapper">
+            <i class="material-icons">search</i>
+            <input 
+              type="text" 
+              class="form-control search-icon-input" 
+              name="iconSearch"
+              placeholder="Buscar un icono relacionado (ej. casa, carrito)..." 
+              [ngModel]="iconSearchQuery"
+              (ngModelChange)="onIconSearchChange($event)">
+            <div *ngIf="isSearchingIcons" class="spinner-small"></div>
+          </div>
+          
+          <div *ngIf="iconSearchNetworkError" class="alert alert-warning d-flex align-items-center justify-content-between p-2 mb-3" style="font-size: 0.85rem; border-radius: 8px;">
+            <div>
+              <i class="material-icons me-2" style="vertical-align: middle; font-size: 18px;">error_outline</i>
+              <span>No fue posible consultar el catálogo de iconos. Intenta nuevamente.</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="retryIconSearch()">Reintentar</button>
+          </div>
+          
+          <div *ngIf="iconSearchError && !iconSearchNetworkError" class="icon-error-msg">
+            <i class="material-icons">error_outline</i> Ocurrió un problema local con los íconos.
+          </div>
+          
+          <!-- Sugerencias -->
+          <div class="icon-suggestions" *ngIf="!isSearchingIcons && visibleIcons.length > 0">
+            <span class="suggestion-title">{{ iconSearchQuery ? 'Resultados de búsqueda para "' + iconSearchQuery + '"' : 'Sugerencias para "' + currentCategory.name + '"' }}</span>
+            <div class="icon-grid">
+              <button 
+                *ngFor="let icon of visibleIcons"
+                type="button"
+                class="icon-btn"
+                [class.selected]="currentCategory.iconKey === icon.id"
+                (click)="selectIcon(icon.id)"
+                [attr.aria-label]="'Seleccionar icono ' + icon.displayName"
+                [attr.aria-pressed]="currentCategory.iconKey === icon.id"
+                [title]="icon.displayName + ' · ' + icon.prefix">
+                <i *ngIf="icon.prefix === 'material-symbols'" class="material-icons">{{ icon.name }}</i>
+                <img *ngIf="icon.prefix !== 'material-symbols'" [src]="icon.previewUrl" class="external-icon-img" (error)="onIconLoadError(icon)" alt="">
+                <span class="icon-label">{{ icon.displayName }}</span>
+              </button>
+            </div>
+            
+            <div class="text-center mt-3" *ngIf="iconSearchResults.length > visibleIcons.length">
+              <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.8rem; padding: 6px 16px; border-radius: 20px;" (click)="showMoreIcons()">
+                Mostrar más ({{ iconSearchResults.length - visibleIcons.length }})
+              </button>
+            </div>
+          </div>
+          
+          <!-- Skeleton -->
+          <div class="icon-suggestions" *ngIf="isSearchingIcons && visibleIcons.length === 0">
+            <span class="suggestion-title">Buscando iconos...</span>
+            <div class="icon-grid">
+              <div class="icon-btn skeleton-btn" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]"></div>
+            </div>
+          </div>
+          
+          <div class="icon-suggestions text-center py-3" *ngIf="!isSearchingIcons && iconSearchResults.length === 0 && iconSearchQuery.length > 1 && !iconSearchNetworkError">
+            <i class="material-icons text-muted" style="font-size: 32px; display: block; margin-bottom: 8px;">search_off</i>
+            <span class="text-muted d-block">No encontramos iconos relacionados con "{{ iconSearchQuery }}".<br>Prueba con otro término o abre el catálogo completo.</span>
+          </div>
+
+          <div class="icon-selected-info">
+            <div class="selected-badge">
+              <ng-container *ngIf="isLegacyIcon(currentCategory.iconKey || 'help'); else externalIcon">
+                <i class="material-icons">{{ getBaseName(currentCategory.iconKey || 'help') }}</i>
+              </ng-container>
+              <ng-template #externalIcon>
+                <img [src]="getPreviewUrl(currentCategory.iconKey)" class="external-icon-img-selected" alt="">
+              </ng-template>
+              <div class="selected-badge-text">
+                <small>Icono seleccionado</small>
+                <strong>{{ getFriendlyIconName(getBaseName(currentCategory.iconKey || 'help')) }}</strong>
+              </div>
+            </div>
+            <a href="https://icon-sets.iconify.design/" target="_blank" class="link-external" title="Explorar todas las colecciones en Iconify">
+              Catálogo completo <i class="material-icons" style="font-size: 14px">open_in_new</i>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Vista previa (Live) -->
+        <div class="live-preview-box">
+          <label>Vista previa pública</label>
+          <div class="preview-card" [class.inactive]="!currentCategory.active">
+            <i *ngIf="isLegacyIcon(currentCategory.iconKey)" class="material-icons">{{ getBaseName(currentCategory.iconKey || 'label') }}</i>
+            <img *ngIf="!isLegacyIcon(currentCategory.iconKey)" [src]="getPreviewUrl(currentCategory.iconKey)" class="preview-external-icon">
+            <div class="preview-text">
+              <strong>{{ currentCategory.name || 'Categoría (Vista previa)' }}</strong>
+              <p>{{ currentCategory.description || 'Sin descripción' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col-6">
+            <div class="form-group">
+              <label>Orden de Visualización</label>
+              <input type="number" class="form-control" name="catDisplayOrder" [(ngModel)]="currentCategory.displayOrder" min="0">
+            </div>
+          </div>
+        </div>
+        <div class="form-group checkbox-group">
+          <label class="custom-checkbox">
+            <input type="checkbox" name="catActive" [(ngModel)]="currentCategory.active">
+            <span class="checkmark"></span>
+            Categoría Activa (Visible al público)
+          </label>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="requestCloseCategoryModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+          {{ isLoading ? 'Guardando...' : 'Guardar categoría' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<!-- MODAL FAQ -->
+<div class="help-modal-root" *ngIf="showFaqModal">
+  <div class="modal-backdrop" aria-hidden="true" (click)="onCreateFaqBackdropClick()"></div>
+  
+  <section class="modal-dialog modal-lg" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h2>{{ isEditing ? 'Editar' : 'Nueva' }} Pregunta (FAQ)</h2>
+      <button type="button" class="btn-close" (click)="requestCloseFaqModal()" aria-label="Cerrar modal"><i class="material-icons">close</i></button>
+    </div>
+    
+    <form class="modal-form" (ngSubmit)="saveFaq()" #faqForm="ngForm">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Categoría <span class="text-danger">*</span></label>
+          <select class="form-control" name="faqCategoryId" [(ngModel)]="currentFaq.categoryId">
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pregunta <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="faqQuestion" [(ngModel)]="currentFaq.question" placeholder="Ej. ¿Cómo realizo una devolución?">
+        </div>
+        <div class="form-group">
+          <label>Respuesta (Texto Plano) <span class="text-danger">*</span></label>
+          <textarea 
+            class="form-control textarea-answer" 
+            name="faqAnswer"
+            [(ngModel)]="currentFaq.answer" 
+            placeholder="Escribe la respuesta. No uses HTML. Presiona Enter para saltos de línea."></textarea>
+          <div class="char-counter">
+            <small class="text-muted">El texto respetará los saltos de línea (Enters) en la vista pública automáticamente.</small>
+            <small class="text-muted">{{ currentFaq.answer?.length || 0 }} / 2000</small>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label>Orden de Visualización</label>
+              <input type="number" class="form-control" name="faqDisplayOrder" [(ngModel)]="currentFaq.displayOrder" min="0">
+            </div>
+          </div>
+        </div>
+        <div class="form-group checkbox-group">
+          <label class="custom-checkbox">
+            <input type="checkbox" name="faqActive" [(ngModel)]="currentFaq.active">
+            <span class="checkmark"></span>
+            Activa (Visible al público)
+          </label>
+        </div>
+        <div class="form-group checkbox-group" style="margin-top: 12px;">
+          <label class="custom-checkbox">
+            <input type="checkbox" name="faqFeatured" [(ngModel)]="currentFaq.featured">
+            <span class="checkmark"></span>
+            Destacada (Sugerida en inicio)
+          </label>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="requestCloseFaqModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+          {{ isLoading ? 'Guardando...' : 'Guardar pregunta' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

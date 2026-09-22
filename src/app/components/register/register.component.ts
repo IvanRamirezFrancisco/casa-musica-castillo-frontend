@@ -979,10 +979,10 @@ export class RegisterComponent implements OnInit {
     this.successMessage = '';
     this.showEmailVerification = false;
     
-    this.markFormGroupTouched();
+    this.registerForm.markAllAsTouched();
     
     if (!this.registerForm.valid) {
-      this.errorMessage = 'Por favor completa todos los campos correctamente para continuar';
+      this.focusFirstInvalidField();
       return;
     }
     
@@ -999,6 +999,7 @@ export class RegisterComponent implements OnInit {
     // Validación adicional de seguridad
     if (!this.sanitizationService.isValidEmail(sanitizedData.email)) {
       this.errorMessage = 'Email no válido o contiene caracteres peligrosos';
+      this.focusFirstInvalidField();
       return;
     }
     
@@ -1033,7 +1034,17 @@ export class RegisterComponent implements OnInit {
           this.errorMessage = '❌ No se pudo conectar con el servidor. Verifica tu conexión a internet.';
         } else if (error.status === 422 || error.status === 400) {
           // Errores de validación de campos (formato, longitud, etc.)
-          this.errorMessage = '❌ Error de validación. Por favor revisa los campos del formulario.';
+          // Mapeo seguro backend a frontend si es posible, de lo contrario error general
+          const backendErrorMsg = error.error?.message?.toLowerCase() || '';
+          if (backendErrorMsg.includes('username') || backendErrorMsg.includes('usuario')) {
+            this.registerForm.get('username')?.setErrors({ serverError: true });
+            this.errorMessage = 'El nombre de usuario ya está en uso o no es válido.';
+          } else if (backendErrorMsg.includes('email') || backendErrorMsg.includes('correo')) {
+            this.registerForm.get('email')?.setErrors({ serverError: true });
+            this.errorMessage = 'El correo electrónico ya está registrado o no es válido.';
+          } else {
+            this.errorMessage = '❌ Error de validación. Por favor revisa los campos del formulario.';
+          }
         } else {
           this.errorMessage = '❌ Ocurrió un error al procesar tu solicitud. Por favor intenta nuevamente.';
         }
@@ -1044,11 +1055,21 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  private markFormGroupTouched(): void {
-    Object.keys(this.registerForm.controls).forEach(key => {
-      const control = this.registerForm.get(key);
-      control?.markAsTouched();
-    });
+  /**
+   * Localiza y enfoca el primer campo inválido del formulario.
+   */
+  private focusFirstInvalidField(): void {
+    const controls = this.registerForm.controls;
+    for (const name in controls) {
+      if (controls[name].invalid) {
+        const invalidElement = document.getElementById(name);
+        if (invalidElement) {
+          invalidElement.focus();
+          invalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        break;
+      }
+    }
   }
 
   /**

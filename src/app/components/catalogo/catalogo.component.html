@@ -2,16 +2,8 @@
 <!-- ║  CASTILLO — CATÁLOGO  ·  Professional UI               ║ -->
 <!-- ╚══════════════════════════════════════════════════════════╝ -->
 
-<!-- Breadcrumb -->
-<nav class="bg-white border-b border-slate-100">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-    <ol class="flex items-center gap-2 text-sm text-slate-500">
-      <li><a routerLink="/home" class="hover:text-red-600 transition-colors duration-150">Inicio</a></li>
-      <li><span class="material-symbols-outlined text-sm text-slate-300">chevron_right</span></li>
-      <li class="font-medium text-slate-800">Catálogo</li>
-    </ol>
-  </div>
-</nav>
+<!-- Breadcrumb: Se omite en la raíz del catálogo por criterio UX (menor ruido visual y no añade profundidad extra) -->
+<!-- <nav class="bg-white border-b border-slate-100"> ... </nav> -->
 
 <!-- ── LAYOUT PRINCIPAL ─────────────────────────────────────── -->
 <div class="bg-slate-50 min-h-screen">
@@ -252,19 +244,21 @@
                 <span class="material-symbols-outlined text-6xl text-slate-200">music_note</span>
               </div>
 
-              <!-- Botón Favoritos -->
+              <!-- Botón Favoritos (RECONSTRUIDO) -->
               <button (click)="toggleFavorite(producto.id, $event)"
                       [disabled]="togglingFavs.has(producto.id)"
-                      class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm hover:bg-white flex items-center justify-center shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300 group"
+                      class="cmc-favorite-button absolute top-3 right-3 z-10 transition-all duration-300"
                       [ngClass]="isFavorite(producto.id) ? 'text-red-600' : 'text-slate-400 hover:text-red-500'"
-                      title="{{ isFavorite(producto.id) ? 'Quitar de favoritos' : 'Agregar a favoritos' }}">
+                      title="{{ isFavorite(producto.id) ? 'Quitar de favoritos' : 'Agregar a favoritos' }}"
+                      aria-label="Agregar a favoritos">
                 
-                <span class="material-symbols-outlined text-[20px] leading-none transition-transform duration-300 flex items-center justify-center"
-                      style="margin-top: 1px;"
-                      [ngClass]="isFavorite(producto.id) ? 'scale-110' : 'group-hover:scale-110'"
-                      [style.font-variation-settings]="isFavorite(producto.id) ? '\'FILL\' 1' : '\'FILL\' 0'">
-                  {{ isFavorite(producto.id) ? 'favorite' : 'favorite_border' }}
-                </span>
+                <!-- SVG de Bootstrap Icons oficial -->
+                <svg *ngIf="!isFavorite(producto.id) && !togglingFavs.has(producto.id)" class="cmc-favorite-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+                </svg>
+                <svg *ngIf="isFavorite(producto.id) && !togglingFavs.has(producto.id)" class="cmc-favorite-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                </svg>
 
                 <!-- Spinner de carga -->
                 <span *ngIf="togglingFavs.has(producto.id)" class="absolute inset-0 rounded-full border-2 border-slate-100 border-t-red-500 animate-spin"></span>
@@ -351,8 +345,13 @@
                   {{ producto.stock > 0 ? 'Agregar' : 'Agotado' }}
                 </button>
                 <button (click)="verDetalle(producto); $event.stopPropagation()"
-                        class="flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 transition-all duration-200 flex-shrink-0">
-                  <span class="material-symbols-outlined text-base">visibility</span>
+                        class="cmc-view-button text-slate-500 hover:text-slate-700 transition-all duration-200"
+                        title="Vista rápida" 
+                        aria-label="Ver producto">
+                  <svg class="cmc-view-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                  </svg>
                 </button>
               </div>
 

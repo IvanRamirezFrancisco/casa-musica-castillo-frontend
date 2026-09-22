@@ -165,6 +165,12 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       title: 'Pronóstico de Demanda',
       subtitle: 'Pronóstico de demanda mediante SMA.',
       icon: 'trending_up'
+    },
+    {
+      route: '/admin/help-center',
+      title: 'Centro de Ayuda',
+      subtitle: 'Administra las categorías y preguntas frecuentes',
+      icon: 'help_center'
     }
   ];
 
@@ -188,6 +194,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       // Visible si tiene CUALQUIERA de los permisos de BD
       requiredAnyPermission: ['DATABASE_VIEW', 'DATABASE_BACKUP', 'DATABASE_MAINTAIN', 'DATABASE_AUTOMATE'],
     },
+    { title: 'Centro de Ayuda', icon: 'help_center', route: '/admin/help-center', badge: null, requiredPermission: 'HELP_MANAGE' }
   ];
 
   /**

@@ -1,1 +1,71 @@
 /* All styles via Tailwind CSS */
+
+.cmc-favorite-button {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #e1e5ea;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.96);
+    display: inline-grid !important;
+    place-items: center !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
+    flex: 0 0 36px !important;
+    transform: none !important;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.cmc-favorite-icon {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    transform: none !important;
+    overflow: visible !important;
+}
+
+.cmc-view-button {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 40px !important;
+    height: 38px !important;
+    min-width: 40px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #e1e5ea;
+    border-radius: 11px;
+    background: #ffffff;
+    display: inline-grid !important;
+    place-items: center !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
+    flex: 0 0 40px !important;
+    position: static !important;
+    transform: none !important;
+    cursor: pointer;
+}
+
+.cmc-view-icon {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    transform: none !important;
+    color: #73859b;
+}
+
+.cmc-view-button:hover .cmc-view-icon {
+    color: #4a5568;
+}

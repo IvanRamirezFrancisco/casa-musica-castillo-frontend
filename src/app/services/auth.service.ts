@@ -539,17 +539,66 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
 
   /**
    * Navega al primer módulo al que el usuario tiene acceso tras el login.
-   * Imprime auditoría en consola para facilitar diagnóstico en desarrollo.
-   *
-   * Cascada:
-   *  1. No-staff (cliente) → /home
-   *  2. Staff/Admin → primer ruta donde hasPermission() == true
-   *  3. Staff sin permiso conocido → /admin (fallback)
+   * Si se proporciona una returnUrl, valida que pertenezca al Allowlist estricto.
    */
-  redirectAfterLogin(): void {
+  public resolveSafeReturnUrl(url: string | null): string | null {
+    if (!url) return null;
+
+    // Minimal Allowlist de rutas protegidas que pueden requerir redirección tras login
+    const ALLOWED_ROUTES = [
+      '/orders/my',
+      '/checkout',
+      '/carrito',
+      '/wishlist'
+    ];
+
+    try {
+      // Usar URL API para validar path y bloquear open redirects (http://, javascript:, etc.)
+      // Al anteponer un dummy origin, podemos parsear de forma segura si la URL intenta salir del dominio.
+      const parsedUrl = new URL(url, 'http://dummy.local');
+      
+      // Bloquear explícitamente redirects que intentan escapar o inyectar schemes
+      if (parsedUrl.origin !== 'http://dummy.local') {
+        return null;
+      }
+      
+      const path = parsedUrl.pathname;
+      
+      // Verificar si el path exacto o su base está en el allowlist
+      // Utilizamos === o validación estricta de segmentos para evitar ataques como /orders/my-malicious
+      const isAllowed = ALLOWED_ROUTES.some(allowedRoute => {
+        // Coincidencia exacta
+        if (path === allowedRoute) return true;
+        // Coincidencia de subrutas seguras (ej. /orders/my/123)
+        if (path.startsWith(allowedRoute + '/')) return true;
+        return false;
+      });
+
+      if (isAllowed) {
+        // Reconstruimos la url solo con pathname y search params, ignorando posibles payloads XSS en el hash
+        return path + parsedUrl.search;
+      }
+    } catch (e) {
+      return null;
+    }
+
+    return null;
+  }
+
+  redirectAfterLogin(requestedReturnUrl?: string | null): void {
     const user = this.getCurrentUserSnapshot();
     const allAuthorities = this.getRolesAndPermissions();
     const isStaffResult = this.isStaff();
+    
+    // 1. Intentar validar y usar returnUrl
+    const safeUrl = this.resolveSafeReturnUrl(requestedReturnUrl || null);
+    if (safeUrl) {
+      if (!environment.production) {
+        console.log(`✅ Redirigiendo a returnUrl seguro: ${safeUrl}`);
+      }
+      this.router.navigateByUrl(safeUrl, { replaceUrl: true });
+      return;
+    }
 
     // FASE 0 - Seguridad - 2026-05-15
     // Los logs de auditoría con roles, permisos y datos del usuario

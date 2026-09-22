@@ -112,3 +112,11 @@ export interface MyReviewsResponse {
   reviews: ProductReviewDTO[];
   totalReviews: number;
 }
+
+export interface EligibilityResponse {
+  canReview: boolean;
+  hasPurchased: boolean;
+  alreadyReviewed: boolean;
+  reviewId?: number;
+  reviewStatus?: string;
+}

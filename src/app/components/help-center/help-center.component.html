@@ -1,162 +1,151 @@
-<div class="help-center-container">
-  <!-- Breadcrumbs -->
-  <nav class="breadcrumbs">
-    <div class="breadcrumbs-inner">
-      <a routerLink="/home">Inicio</a>
-      <span class="separator">/</span>
-      <span class="current">Centro de Ayuda</span>
-    </div>
-  </nav>
-
-  <!-- Header -->
-  <div class="help-header">
-    <button class="back-button" (click)="navigateToHome()">
-      <span class="material-symbols-outlined">arrow_back</span>
-      Volver al Inicio
-    </button>
-    
-    <div class="header-content">
-      <span class="material-symbols-outlined header-icon">help_center</span>
-      <h1>Centro de Ayuda</h1>
-      <p>¿Cómo podemos ayudarte hoy?</p>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="search-container">
-      <div class="search-box">
-        <span class="material-symbols-outlined">search</span>
+<div class="help-center-wrapper">
+  <!-- Hero Section -->
+  <header class="help-hero">
+    <div class="hero-content">
+      <span class="kicker">Centro de Ayuda</span>
+      <h1>¿Cómo podemos ayudarte?</h1>
+      <p class="subtitle">Encuentra respuestas sobre tu cuenta, compras, pedidos y nuestros productos.</p>
+      
+      <!-- Barra de Búsqueda -->
+      <div class="search-container">
+        <i class="material-icons search-icon">search</i>
         <input 
           type="text" 
           [(ngModel)]="searchQuery" 
-          placeholder="Buscar en preguntas frecuentes..."
-          class="search-input">
-        <button 
-          class="clear-btn" 
-          *ngIf="searchQuery" 
-          (click)="searchQuery = ''">
-          <span class="material-symbols-outlined">close</span>
+          (ngModelChange)="onSearchChange()"
+          placeholder="Busca por tema, palabra clave o pregunta..."
+          class="search-input"
+          [attr.aria-label]="'Buscar ayuda'"
+        >
+        <div *ngIf="isSearching" class="search-loader"></div>
+        <button *ngIf="searchQuery && !isSearching" class="clear-btn" (click)="searchQuery = ''; onSearchChange()" aria-label="Limpiar búsqueda">
+          <i class="material-icons">close</i> Limpiar
         </button>
       </div>
     </div>
-  </div>
+  </header>
 
-  <!-- Categories -->
-  <div class="categories-section">
-    <h2 class="section-title">Categorías</h2>
-    <div class="categories-grid">
-      <div 
-        class="category-card"
-        *ngFor="let category of categories"
-        [class.active]="selectedCategory === category.id"
-        (click)="selectCategory(category.id)">
-        <span class="material-symbols-outlined category-icon">{{ category.icon }}</span>
-        <h3>{{ category.name }}</h3>
-        <span class="category-count">{{ category.count }} preguntas</span>
+  <div class="help-container">
+    <div class="layout-grid">
+      <!-- Sidebar - Categorías -->
+      <aside class="sidebar">
+        <h3>Categorías</h3>
+        <div class="category-scroll-wrapper">
+          <nav class="category-nav">
+            <!-- Esqueleto Cargando -->
+            <ng-container *ngIf="isLoadingCategories">
+               <div class="skeleton-category" *ngFor="let i of [1,2,3,4]"></div>
+            </ng-container>
+  
+            <ng-container *ngIf="!isLoadingCategories">
+              <button type="button"
+                class="category-btn" 
+                [class.active]="selectedCategory === 'all'"
+                (click)="selectCategory('all')">
+                <i class="material-icons">apps</i>
+                <span class="cat-name">Todas las preguntas</span>
+              </button>
+              
+              <button type="button"
+                *ngFor="let cat of categories" 
+                class="category-btn"
+                [class.active]="selectedCategory === cat.id.toString() || selectedCategory === cat.name"
+                (click)="selectCategory(cat.id)">
+                <ng-container *ngIf="isLegacyIcon(cat.iconKey); else externalIcon">
+                  <i class="material-icons">{{ getBaseName(cat.iconKey || 'label') }}</i>
+                </ng-container>
+                <ng-template #externalIcon>
+                  <img [src]="getPreviewUrl(cat.iconKey)" class="external-icon-img-cat" alt="">
+                </ng-template>
+                <span class="cat-name">{{ cat.name }}</span>
+                <span class="badge" *ngIf="cat.activeFaqCount">{{ cat.activeFaqCount }}</span>
+              </button>
+            </ng-container>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Contenido Principal - FAQs -->
+      <main class="content-area">
+        <div class="section-header">
+          <ng-container *ngIf="searchQuery">
+            <h2>Resultados para "{{ searchQuery }}"</h2>
+            <span class="section-subtitle">{{ filteredFAQs.length }} resultados encontrados</span>
+          </ng-container>
+          
+          <ng-container *ngIf="!searchQuery">
+            <h2 *ngIf="selectedCategory === 'all'">Preguntas frecuentes</h2>
+            <h2 *ngIf="selectedCategory !== 'all'">{{ getCategoryNameSafe(selectedCategory) }}</h2>
+            <span class="section-subtitle" *ngIf="selectedCategory !== 'all'">{{ filteredFAQs.length }} preguntas</span>
+          </ng-container>
+        </div>
+
+        <div class="faq-list">
+          <!-- Cargando FAQs -->
+          <ng-container *ngIf="isLoadingFaqs">
+             <div class="skeleton-faq" *ngFor="let i of [1,2,3,4]"></div>
+          </ng-container>
+
+          <!-- Empty State -->
+          <div *ngIf="!isLoadingFaqs && filteredFAQs.length === 0" class="empty-state">
+            <i class="material-icons">search_off</i>
+            <h3 *ngIf="searchQuery">No encontramos una respuesta para "{{ searchQuery }}".</h3>
+            <h3 *ngIf="!searchQuery">No se encontraron resultados</h3>
+            <p *ngIf="searchQuery">Prueba con otras palabras o explora las categorías.</p>
+            <p *ngIf="!searchQuery">Intenta con otros términos o cambia de categoría.</p>
+            <button class="btn-secondary" (click)="searchQuery = ''; selectedCategory = 'all'; onSearchChange()">
+              Limpiar búsqueda
+            </button>
+          </div>
+
+          <!-- FAQs -->
+          <ng-container *ngIf="!isLoadingFaqs">
+            <div 
+              *ngFor="let faq of filteredFAQs" 
+              class="faq-item"
+              [class.open]="faq.isOpen">
+              
+              <div class="faq-question" (click)="toggleFAQ(faq)">
+                <div class="faq-question-text">
+                  <span class="category-tag" *ngIf="selectedCategory === 'all'">{{ faq.categoryName }}</span>
+                  <h3>
+                    <!-- Renderizado seguro de coincidencia -->
+                    <ng-container *ngFor="let part of getHighlightedParts(faq.question, searchQuery)">
+                      <mark class="highlight" *ngIf="part.isMatch">{{ part.text }}</mark>
+                      <ng-container *ngIf="!part.isMatch">{{ part.text }}</ng-container>
+                    </ng-container>
+                  </h3>
+                </div>
+                <button class="toggle-btn" [attr.aria-expanded]="faq.isOpen" [attr.aria-label]="faq.isOpen ? 'Cerrar respuesta' : 'Abrir respuesta'">
+                  <i class="material-icons">expand_more</i>
+                </button>
+              </div>
+              
+              <div class="faq-answer" [style.max-height]="faq.isOpen ? '1500px' : '0'">
+                <div class="faq-answer-content" [style.white-space]="'pre-line'">
+                  <!-- Respuesta con coincidencia segura -->
+                  <ng-container *ngFor="let part of getHighlightedParts(faq.answer, searchQuery)">
+                    <mark class="highlight" *ngIf="part.isMatch">{{ part.text }}</mark>
+                    <ng-container *ngIf="!part.isMatch">{{ part.text }}</ng-container>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="help-contact">
+      <div class="contact-section">
+        <h4>¿No encontraste lo que buscabas?</h4>
+        <p>Podemos orientarte directamente en Casa de Música Castillo.</p>
+        <a routerLink="/contacto" class="btn-outline-primary" (click)="$event.preventDefault(); contactSupport()">
+          <i class="material-icons">storefront</i> Contactar con la tienda
+        </a>
       </div>
-    </div>
-  </div>
-
-  <!-- FAQs -->
-  <div class="faqs-section">
-    <h2 class="section-title">
-      Preguntas Frecuentes
-      <span class="results-count" *ngIf="searchQuery">({{ filteredFAQs.length }} resultados)</span>
-    </h2>
-
-    <!-- No Results -->
-    <div class="no-results" *ngIf="filteredFAQs.length === 0">
-      <span class="material-symbols-outlined no-results-icon">search_off</span>
-      <h3>No encontramos resultados</h3>
-      <p>Intenta con otras palabras clave o explora las categorías</p>
-    </div>
-
-    <!-- FAQ List -->
-    <div class="faq-list" *ngIf="filteredFAQs.length > 0">
-      <div 
-        class="faq-item"
-        *ngFor="let faq of filteredFAQs"
-        [class.open]="faq.isOpen">
-        
-        <div class="faq-header" (click)="toggleFAQ(faq)">
-          <div class="faq-question">
-            <span class="material-symbols-outlined question-icon">help</span>
-            <h3>{{ faq.question }}</h3>
-          </div>
-          <span class="material-symbols-outlined toggle-icon">
-            {{ faq.isOpen ? 'expand_less' : 'expand_more' }}
-          </span>
-        </div>
-
-        <div class="faq-answer" *ngIf="faq.isOpen">
-          <div class="answer-content">
-            <span class="material-symbols-outlined answer-icon">check_circle</span>
-            <p>{{ faq.answer }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Contact Section -->
-  <div class="contact-section">
-    <div class="contact-card">
-      <span class="material-symbols-outlined contact-icon">support_agent</span>
-      <h2>¿No encontraste lo que buscabas?</h2>
-      <p>Nuestro equipo de soporte está aquí para ayudarte</p>
-      
-      <div class="contact-methods">
-        <div class="contact-method">
-          <span class="material-symbols-outlined">mail</span>
-          <div class="method-info">
-            <h4>Email</h4>
-            <p>soporte&#64;casamusicacastillo.com</p>
-          </div>
-        </div>
-
-        <div class="contact-method">
-          <span class="material-symbols-outlined">phone</span>
-          <div class="method-info">
-            <h4>Teléfono</h4>
-            <p>55 1234 5678</p>
-          </div>
-        </div>
-
-        <div class="contact-method">
-          <span class="material-symbols-outlined">schedule</span>
-          <div class="method-info">
-            <h4>Horario</h4>
-            <p>Lun - Vie: 9:00 AM - 6:00 PM</p>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-contact" (click)="contactSupport()">
-        <span class="material-symbols-outlined">send</span>
-        Contactar Soporte
-      </button>
-    </div>
-  </div>
-
-  <!-- Quick Links -->
-  <div class="quick-links-section">
-    <h2 class="section-title">Enlaces Rápidos</h2>
-    <div class="quick-links-grid">
-      <a routerLink="/catalogo" class="quick-link">
-        <span class="material-symbols-outlined">inventory_2</span>
-        <span>Catálogo</span>
-      </a>
-      <a routerLink="/ofertas" class="quick-link">
-        <span class="material-symbols-outlined">local_offer</span>
-        <span>Ofertas</span>
-      </a>
-      <a routerLink="/dashboard" class="quick-link">
-        <span class="material-symbols-outlined">account_circle</span>
-        <span>Mi Cuenta</span>
-      </a>
-      <a routerLink="/carrito" class="quick-link">
-        <span class="material-symbols-outlined">shopping_cart</span>
-        <span>Carrito</span>
-      </a>
     </div>
   </div>
 </div>

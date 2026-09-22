@@ -180,7 +180,7 @@ export class ProductCardComponent implements OnInit, OnDestroy {
   }
 
   onImageError(event: any): void {
-    event.target.src = '/assets/logoP.png';
+    event.target.src = '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png';
   }
 
   private updateCartStatus(): void {

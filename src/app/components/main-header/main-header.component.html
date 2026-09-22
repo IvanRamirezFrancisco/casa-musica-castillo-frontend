@@ -1,4 +1,4 @@
-<header class="header-main">
+<header class="header-main" [class.header-hidden]="!isHeaderVisible" [class.header-compact]="isHeaderCompact">
   <div class="container">
     <div class="header-content">
       <!-- Mobile Menu Button -->
@@ -6,17 +6,19 @@
         <span class="material-icons">{{ isMobileMenuOpen ? 'close' : 'menu' }}</span>
       </button>
 
-      <div class="logo-section" routerLink="/home" style="cursor: pointer;">
-        <img src="assets/logoP.png" alt="Casa de Música Castillo" class="logo-image" />
-        <span class="logo-text">CASTILLO</span>
+      <div class="logo-section" routerLink="/home" style="cursor: pointer;" aria-label="Inicio">
+        <img src="https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png" alt="Casa de Música Castillo" width="200" height="75" class="logo-image" />
       </div>
       
       <div class="search-section">
-        <app-global-search></app-global-search>
+        <app-global-search (searchActiveChange)="onSearchActiveChange($event)"></app-global-search>
       </div>
       
       <!-- Acciones para usuario NO logueado -->
       <div class="user-actions" *ngIf="!isLoggedIn">
+        <button class="action-btn mobile-search-trigger" (click)="toggleMobileSearch()" aria-label="Abrir búsqueda" [attr.aria-expanded]="isMobileSearchOpen">
+          <span class="material-icons">search</span>
+        </button>
         <button class="action-btn" (click)="toggleWishlist()" title="Lista de deseos">
           <span class="material-icons">favorite_border</span>
           <span class="action-count" *ngIf="wishlistCount > 0">{{wishlistCount}}</span>
@@ -32,6 +34,9 @@
 
       <!-- Acciones para usuario LOGUEADO -->
       <div class="user-actions" *ngIf="isLoggedIn">
+        <button class="action-btn mobile-search-trigger" (click)="toggleMobileSearch()" aria-label="Abrir búsqueda" [attr.aria-expanded]="isMobileSearchOpen">
+          <span class="material-icons">search</span>
+        </button>
         <button class="action-btn" (click)="toggleWishlist()" title="Lista de deseos">
           <span class="material-icons">favorite</span>
           <span class="action-count" *ngIf="wishlistCount > 0">{{wishlistCount}}</span>
@@ -98,6 +103,11 @@
         </div>
       </div>
     </div>
+    
+    <!-- Fila inferior exclusiva para la búsqueda móvil -->
+    <div class="mobile-search-row" *ngIf="isMobileSearchOpen">
+      <app-global-search (searchActiveChange)="onSearchActiveChange($event)"></app-global-search>
+    </div>
   </div>
   
   <!-- Overlay para cerrar el menú (fuera del nav) -->
@@ -108,82 +118,114 @@
     <div class="container nav-container" [class.mobile-open]="isMobileMenuOpen">
       <!-- Header del menú móvil con Logo -->
       <div class="mobile-nav-header">
-        <div class="mobile-logo-section">
-          <img src="assets/logoP.png" alt="Casa de Música Castillo" class="mobile-logo-image" />
-          <div class="mobile-brand-text">
-            <span class="mobile-logo-title">Casa de Música</span>
-            <span class="mobile-logo-subtitle">CASTILLO</span>
-          </div>
+        <div class="logo-section mobile-menu-logo" routerLink="/home" (click)="closeMobileMenu()" style="cursor: pointer;" aria-label="Inicio">
+          <img src="https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png" alt="Casa de Música Castillo" width="200" height="75" class="logo-image" />
         </div>
-        <button class="close-mobile-menu" (click)="closeMobileMenu()">
+        <button class="close-mobile-menu" (click)="closeMobileMenu()" aria-label="Cerrar menú">
           <span class="material-icons">close</span>
         </button>
       </div>
 
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeMobileMenu()">
-            <span class="material-icons">home</span>
-            <span class="nav-text">Inicio</span>
-          </a>
-        </li>
+      <div class="mobile-nav-scroll-area">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeMobileMenu()">
+              <span class="material-icons">home</span>
+              <span class="nav-text">Inicio</span>
+            </a>
+          </li>
 
-        <li class="nav-item">
-          <a routerLink="/catalogo" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
-            <span class="material-icons">library_music</span>
-            <span class="nav-text">Catálogo</span>
-          </a>
-        </li>
-        <li class="nav-item" *ngIf="!isLoggedIn">
-          <a routerLink="/register" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
-            <span class="material-icons">person_add</span>
-            <span class="nav-text">Registrarse</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/ayuda" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
-            <span class="material-icons">help_outline</span>
-            <span class="nav-text">Ayuda</span>
-          </a>
-        </li>
-        
-        <!-- Menú desplegable "Más" -->
-        <li class="nav-item dropdown-nav">
-          <button class="nav-link dropdown-trigger" (click)="toggleMoreMenu(); $event.stopPropagation()">
-            <span class="material-icons">more_horiz</span>
-            <span class="nav-text">Más</span>
-            <span class="material-icons dropdown-arrow" [class.open]="showMoreMenu">expand_more</span>
-          </button>
+          <li class="nav-item">
+            <a routerLink="/catalogo" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+              <span class="material-icons">library_music</span>
+              <span class="nav-text">Catálogo</span>
+            </a>
+          </li>
           
-          <div class="dropdown-menu-nav" *ngIf="showMoreMenu" (click)="$event.stopPropagation()">
-            <a routerLink="/ayuda/contacto" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
-              <span class="material-icons">email</span>
-              <span>Contáctanos</span>
+          <li class="nav-item" *ngIf="!isLoggedIn">
+            <a routerLink="/register" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+              <span class="material-icons">person_add</span>
+              <span class="nav-text">Registrarse</span>
             </a>
-            <a routerLink="/mapa-sitio" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
-              <span class="material-icons">map</span>
-              <span>Mapa del Sitio</span>
+          </li>
+          
+          <li class="nav-item">
+            <a routerLink="/ayuda" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+              <span class="material-icons">help_outline</span>
+              <span class="nav-text">Ayuda</span>
             </a>
-            <a routerLink="/forgot-password" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav" *ngIf="!isLoggedIn">
-              <span class="material-icons">lock_reset</span>
-              <span>Recuperar Contraseña</span>
-            </a>
-            <a routerLink="/ayuda/chat" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
-              <span class="material-icons">chat</span>
-              <span>Chat de Soporte</span>
-            </a>
-            <div class="dropdown-divider"></div>
-            <a routerLink="/nosotros" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
+          </li>
+          
+          <!-- Navegación Secundaria: Información -->
+          <li class="nav-item dropdown-nav" [class.dropdown-expanded]="showInfoMenu">
+            <button type="button" class="nav-link dropdown-trigger" (click)="toggleInfoMenu(); $event.stopPropagation()" [attr.aria-expanded]="showInfoMenu" aria-haspopup="menu" aria-controls="info-menu">
               <span class="material-icons">info</span>
-              <span>Sobre Nosotros</span>
-            </a>
-            <a routerLink="/terminos" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
-              <span class="material-icons">gavel</span>
-              <span>Términos y Condiciones</span>
-            </a>
-          </div>
-        </li>
-      </ul>
+              <span class="nav-text">Información</span>
+              <span class="material-icons dropdown-arrow" [class.open]="showInfoMenu">expand_more</span>
+            </button>
+            
+            <!-- Desktop: Popover refinado | Mobile: Acordeón interno -->
+            <div id="info-menu" class="dropdown-menu-nav" *ngIf="showInfoMenu" (click)="$event.stopPropagation()">
+              <div class="dropdown-content-grid">
+                
+                <div class="dropdown-group">
+                  <span class="dropdown-group-title">LA TIENDA</span>
+                  <a routerLink="/mapa-sitio" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                    <div class="dropdown-item-icon-container"><span class="material-icons">explore</span></div>
+                    <div class="dropdown-item-text">
+                      <span class="dropdown-item-title">Explorar el sitio</span>
+                      <span class="dropdown-item-desc">Consulta todas las secciones</span>
+                    </div>
+                  </a>
+                </div>
+
+                <div class="dropdown-group">
+                  <span class="dropdown-group-title">TUS COMPRAS</span>
+                  <a routerLink="/informacion/envios" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                    <div class="dropdown-item-icon-container"><span class="material-icons">local_shipping</span></div>
+                    <div class="dropdown-item-text">
+                      <span class="dropdown-item-title">Envíos y entregas</span>
+                      <span class="dropdown-item-desc">Información sobre tu pedido</span>
+                    </div>
+                  </a>
+                  <a routerLink="/informacion/pagos" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                    <div class="dropdown-item-icon-container"><span class="material-icons">payment</span></div>
+                    <div class="dropdown-item-text">
+                      <span class="dropdown-item-title">Formas de pago</span>
+                      <span class="dropdown-item-desc">Consulta los métodos disponibles</span>
+                    </div>
+                  </a>
+                </div>
+
+                <div class="dropdown-group">
+                  <span class="dropdown-group-title">POLÍTICAS Y PRIVACIDAD</span>
+                  <a routerLink="/terminos" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                    <div class="dropdown-item-icon-container"><span class="material-icons">gavel</span></div>
+                    <div class="dropdown-item-text">
+                      <span class="dropdown-item-title">Términos y condiciones</span>
+                    </div>
+                  </a>
+                  <a routerLink="/privacidad" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                    <div class="dropdown-item-icon-container"><span class="material-icons">security</span></div>
+                    <div class="dropdown-item-text">
+                      <span class="dropdown-item-title">Aviso de privacidad</span>
+                    </div>
+                  </a>
+                </div>
+
+                <hr class="dropdown-divider">
+                <a href="https://wa.me/525512345678?text=Hola%2C%20me%20gustar%C3%ADa%20recibir%20informaci%C3%B3n%20sobre%20un%20producto." target="_blank" rel="noopener noreferrer" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav whatsapp-cta">
+                  <div class="dropdown-item-icon-container whatsapp-icon"><span class="material-icons">chat</span></div>
+                  <div class="dropdown-item-text">
+                    <span class="dropdown-item-title">Contactar por WhatsApp</span>
+                  </div>
+                </a>
+
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
   </nav>
   
@@ -194,7 +236,7 @@
       class="flying-product"
       [style.left.px]="product.startX"
       [style.top.px]="product.startY">
-      <img [src]="product.productImage" [alt]="product.productName" />
+      <img [src]="product.productImage" [alt]="product.productName" width="40" height="40" />
     </div>
   </div>
 </header>

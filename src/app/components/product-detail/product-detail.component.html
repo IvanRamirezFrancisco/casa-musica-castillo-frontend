@@ -28,16 +28,23 @@
 
     <!-- Breadcrumbs -->
     <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8 flex-wrap"
-         aria-label="Ruta de navegación">
-      <a [routerLink]="['/']" class="hover:text-amber-600 transition-colors">Inicio</a>
-      <span class="text-gray-300">/</span>
-      <a [routerLink]="['/catalogo']" class="hover:text-amber-600 transition-colors">Catálogo</a>
+         aria-label="Migas de pan">
+      <a [routerLink]="['/']" class="hover:text-amber-700 transition-colors">Inicio</a>
+      <span class="material-symbols-outlined text-[16px] text-gray-300">chevron_right</span>
+      <a [routerLink]="['/catalogo']" class="hover:text-amber-700 transition-colors">Catálogo</a>
+      
       <ng-container *ngIf="product.category">
-        <span class="text-gray-300">/</span>
-        <span class="text-gray-600">{{ product.category.name }}</span>
+        <span class="material-symbols-outlined text-[16px] text-gray-300">chevron_right</span>
+        <a [routerLink]="['/catalogo']" [queryParams]="{ category: product.category.id }" class="hover:text-amber-700 transition-colors">
+          {{ product.category.name }}
+        </a>
       </ng-container>
-      <span class="text-gray-300">/</span>
-      <span class="text-gray-800 font-medium truncate max-w-[200px]">{{ product.name }}</span>
+      
+      <span class="material-symbols-outlined text-[16px] text-gray-300">chevron_right</span>
+      <span class="text-gray-800 font-medium truncate max-w-[200px]" 
+            aria-current="page" [title]="product.name">
+        {{ product.name }}
+      </span>
     </nav>
 
     <!-- ══════════════════════════════════════════════════════════════════════
@@ -63,9 +70,27 @@
             </button>
           </div>
           <!-- Imagen principal -->
-          <div class="relative flex-1 aspect-square bg-gray-50 rounded-xl overflow-hidden">
+          <div class="relative flex-1 aspect-square bg-gray-50 rounded-xl overflow-hidden cursor-zoom-in group"
+               (click)="openGallery()"
+               role="button"
+               tabindex="0"
+               [attr.aria-label]="'Ampliar imagen de ' + product.name"
+               (keydown.enter)="openGallery()">
             <img [src]="currentImage" [alt]="product.name"
-                 class="w-full h-full object-contain p-4 transition-opacity duration-200">
+                 class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-[1.02]">
+                 
+            <!-- Indicador Ampliar -->
+            <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none hidden md:flex">
+              <div class="bg-white/90 text-gray-800 text-sm font-semibold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                <span class="material-symbols-outlined text-lg">zoom_in</span>
+                Ampliar
+              </div>
+            </div>
+            <!-- En móvil el icono queda discreto abajo derecha -->
+            <div class="absolute bottom-3 right-3 bg-white/80 backdrop-blur text-gray-800 p-2 rounded-full shadow md:hidden flex items-center justify-center pointer-events-none">
+              <span class="material-symbols-outlined text-[20px]">zoom_in</span>
+            </div>
+
             <span *ngIf="discountPercent > 0"
                   class="absolute top-3 left-3 bg-red-500 text-white text-sm font-bold
                          px-3 py-1 rounded-full shadow">
@@ -170,24 +195,25 @@
 
           <!-- Cantidad + Añadir al carrito -->
           <div *ngIf="inStock" class="flex items-center gap-3 flex-wrap pt-1">
-            <div class="flex items-stretch border border-gray-300 rounded-lg overflow-hidden h-12">
+            <div class="flex items-stretch border border-gray-300 rounded-lg overflow-hidden h-12 focus-within:ring-2 focus-within:ring-amber-400">
               <button (click)="decrementQuantity()"
                       [disabled]="quantity <= 1"
                       class="px-4 text-xl text-gray-600 hover:bg-gray-100
                              disabled:opacity-40 disabled:cursor-not-allowed
-                             transition-colors h-full"
+                             transition-colors h-full border-r border-gray-200"
                       aria-label="Disminuir cantidad">−</button>
               <input type="number"
                      [(ngModel)]="quantity"
-                     [max]="product.stock" min="1" readonly
-                     class="w-14 text-center text-lg font-semibold text-gray-800
-                            border-x border-gray-300 focus:outline-none h-full"
+                     (blur)="normalizeQuantity()"
+                     [max]="product.stock" min="1"
+                     class="quantity-input w-14 text-center text-lg font-semibold text-gray-800
+                            border-none focus:outline-none focus:ring-0 h-full p-0 m-0"
                      aria-label="Cantidad seleccionada">
               <button (click)="incrementQuantity()"
                       [disabled]="quantity >= product.stock"
                       class="px-4 text-xl text-gray-600 hover:bg-gray-100
                              disabled:opacity-40 disabled:cursor-not-allowed
-                             transition-colors h-full"
+                             transition-colors h-full border-l border-gray-200"
                       aria-label="Aumentar cantidad">+</button>
             </div>
             <button (click)="addToCart($event)"
@@ -209,22 +235,8 @@
             <span class="material-symbols-outlined text-base">info</span>
             Este producto está temporalmente agotado.
           </div>
-
-          <!-- Ventajas -->
-          <ul class="mt-1 space-y-2 border-t border-gray-100 pt-4 text-sm text-gray-500">
-            <li class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-amber-500 text-base">local_shipping</span>
-              Envío gratis en compras mayores a $1,000
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-amber-500 text-base">autorenew</span>
-              Devoluciones dentro de 30 días
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-amber-500 text-base">support_agent</span>
-              Soporte técnico especializado
-            </li>
-          </ul>
+          
+          <!-- Los beneficios falsos han sido eliminados por política. -->
 
         </div>
       </div>
@@ -361,112 +373,157 @@
     <!-- ══════════════════════════════════════════════════════════════════════
          SECCIÓN 3 — RESEÑAS DE CLIENTES
          ══════════════════════════════════════════════════════════════════════ -->
-    <section id="reviews" class="mt-8 bg-white rounded-2xl shadow-sm p-6 lg:p-10">
+    <app-product-reviews [product]="product"></app-product-reviews>
 
-      <h2 class="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-        <span class="w-1 h-7 bg-amber-500 rounded-full inline-block"></span>
-        Reseñas de Clientes
-      </h2>
+  </div>
+</div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+<!-- ══════════════════════════════════════════════════════════════════════
+     MODAL DE GALERÍA DE IMÁGENES (LIGHTBOX UX PRO MAX)
+     ══════════════════════════════════════════════════════════════════════ -->
+<div *ngIf="showGalleryModal"
+     class="cmc-lightbox-overlay text-white"
+     role="dialog"
+     aria-modal="true"
+     [attr.aria-label]="'Visor de imágenes: ' + product?.name"
+     cdkTrapFocus
+     [cdkTrapFocusAutoCapture]="true"
+     (keydown.escape)="closeGallery()"
+     (keydown.arrowLeft)="previousImage($event)"
+     (keydown.arrowRight)="nextImage($event)">
+     
+  <!-- Entrance Wrapper (Aisla la animación de CSS Transform) -->
+  <div class="lightbox-entrance-wrapper" (click)="onBackdropClick($event)">
+  
+    <!-- ARIA Live region (oculto visualmente) -->
+    <div aria-live="polite" class="sr-only">
+      Imagen {{ selectedImageIndex + 1 }} de {{ allImages.length }}.
+    </div>
 
-        <!-- Columna izquierda: resumen visual -->
-        <div class="flex flex-col items-center text-center gap-4 lg:border-r lg:border-gray-100 lg:pr-10">
-          <!-- Nota grande -->
-          <p class="text-7xl font-extrabold text-gray-900 leading-none">
-            {{ product.averageRating > 0 ? (product.averageRating | number:'1.1-1') : '—' }}
-          </p>
-          <div class="flex gap-1">
-            <span *ngFor="let star of getStars(product.averageRating ?? 0)"
-                  class="text-3xl"
-                  [class.text-amber-400]="star"
-                  [class.text-gray-200]="!star">★</span>
-          </div>
-          <p class="text-sm text-gray-400">de 5 — {{ product.reviewCount }} reseñas</p>
-
-          <!-- Barras de distribución -->
-          <div class="w-full space-y-1.5 mt-2">
-            <div *ngFor="let s of [5,4,3,2,1]"
-                 class="flex items-center gap-2 text-xs text-gray-500">
-              <span class="w-4 text-right shrink-0">{{ s }}</span>
-              <span class="text-amber-400 text-xs">★</span>
-              <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div class="h-full bg-amber-400 rounded-full transition-all duration-500"
-                     [style.width.%]="getRatingBarPercent(s)">
-                </div>
-              </div>
-              <span class="w-8 text-right shrink-0">{{ getRatingBarPercent(s) }}%</span>
-            </div>
-          </div>
-
-          <!-- CTA escribir reseña -->
-          <button *ngIf="isLoggedIn"
-                  class="mt-4 w-full flex items-center justify-center gap-2 px-5 py-2.5
-                         border-2 border-amber-500 text-amber-600 font-semibold rounded-lg
-                         hover:bg-amber-50 transition-colors text-sm">
-            <span class="material-symbols-outlined text-base">rate_review</span>
-            Escribir una reseña
-          </button>
-          <a *ngIf="!isLoggedIn"
-             routerLink="/login"
-             class="mt-4 w-full flex items-center justify-center gap-2 px-5 py-2.5
-                    border-2 border-gray-300 text-gray-500 font-semibold rounded-lg
-                    hover:bg-gray-50 transition-colors text-sm">
-            <span class="material-symbols-outlined text-base">login</span>
-            Inicia sesión para reseñar
-          </a>
+    <!-- Controles Superiores -->
+    <div class="lightbox-toolbar w-full flex flex-col md:flex-row justify-between items-center bg-gradient-to-b from-black/80 to-transparent p-4 gap-4 pointer-events-none">
+      
+      <!-- Izquierda: Información -->
+      <div class="flex items-center gap-3 pointer-events-auto max-w-full md:max-w-[50%]">
+        <h2 class="text-sm font-medium text-white/90 truncate drop-shadow-md" [title]="product?.name">
+          {{ product?.name }}
+        </h2>
+        <div *ngIf="allImages.length > 1" class="shrink-0 text-white/80 text-xs font-semibold tracking-wide bg-black/40 px-2 py-1 rounded border border-white/10">
+          {{ selectedImageIndex + 1 }} de {{ allImages.length }}
         </div>
-
-        <!-- Columna derecha: lista de reseñas -->
-        <div class="lg:col-span-2 space-y-6">
-          <article *ngFor="let review of mockReviews"
-                   class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-            <!-- Cabecera de la reseña -->
-            <div class="flex items-start justify-between gap-4 mb-2">
-              <div class="flex items-center gap-3">
-                <!-- Avatar inicial -->
-                <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center
-                            justify-center text-white font-bold text-sm shrink-0">
-                  {{ review.author[0] }}
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-gray-800">{{ review.author }}</p>
-                  <p class="text-xs text-gray-400">{{ review.date }}</p>
-                </div>
-              </div>
-              <span *ngIf="review.verified"
-                    class="shrink-0 flex items-center gap-1 text-xs text-green-600
-                           bg-green-50 px-2 py-1 rounded-full font-medium">
-                <span class="material-symbols-outlined text-sm">verified</span>
-                Compra verificada
-              </span>
-            </div>
-
-            <!-- Estrellas + Título -->
-            <div class="flex items-center gap-2 mb-1">
-              <div class="flex">
-                <span *ngFor="let star of getStars(review.rating)"
-                      class="text-base"
-                      [class.text-amber-400]="star"
-                      [class.text-gray-300]="!star">★</span>
-              </div>
-              <p class="text-sm font-semibold text-gray-800">{{ review.title }}</p>
-            </div>
-
-            <!-- Cuerpo -->
-            <p class="text-sm text-gray-600 leading-relaxed">{{ review.body }}</p>
-          </article>
-
-          <!-- Si no hay reseñas reales -->
-          <div *ngIf="product.reviewCount === 0 && mockReviews.length === 0"
-               class="text-center py-10 text-gray-400">
-            <span class="material-symbols-outlined text-5xl mb-3 block">rate_review</span>
-            <p class="text-sm">Sé el primero en opinar sobre este producto.</p>
-          </div>
-        </div>
-
       </div>
-    </section>
+      
+      <!-- Derecha: Controles de Zoom y Cerrar -->
+      <div class="flex items-center gap-2 md:gap-4 pointer-events-auto">
+        <!-- Zoom Controls -->
+        <div class="flex items-center bg-[#1a1a1a]/80 rounded border border-white/10 shadow-lg text-white">
+          <button (click)="zoomOut()" 
+                  [disabled]="zoomScale <= 1"
+                  class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059] disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Alejar imagen">
+            <span class="material-symbols-outlined text-[20px]">remove</span>
+          </button>
+          
+          <div class="px-2 md:px-3 text-xs md:text-sm font-medium text-center min-w-[3.5rem] md:min-w-[4rem] select-none text-white/90">
+            {{ zoomScale * 100 | number:'1.0-0' }}%
+          </div>
+          
+          <button (click)="zoomIn()" 
+                  [disabled]="zoomScale >= 4"
+                  class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059] disabled:opacity-30 disabled:cursor-not-allowed border-r border-white/10"
+                  aria-label="Acercar imagen">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+          </button>
+          
+          <button *ngIf="zoomScale > 1 || panX !== 0 || panY !== 0"
+                  (click)="resetZoom()" 
+                  class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
+                  aria-label="Restablecer zoom y posición"
+                  title="Restablecer">
+            <span class="material-symbols-outlined text-[20px]">center_focus_strong</span>
+          </button>
+        </div>
+        
+        <!-- Cerrar -->
+        <button (click)="closeGallery()"
+                class="flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded bg-[#1a1a1a]/80 hover:bg-red-600/90 text-white transition-colors border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
+                aria-label="Cerrar visualizador">
+          <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Image Viewport -->
+    <div class="lightbox-viewport w-full"
+         (wheel)="onWheel($event)"
+         (pointerdown)="onPointerDown($event)"
+         (pointermove)="onPointerMove($event)"
+         (pointerup)="onPointerUp($event)"
+         (pointercancel)="onPointerUp($event)"
+         (pointerleave)="onPointerUp($event)">
+         
+      <!-- Controles de navegación lateral (Solo si hay > 1 imagen) -->
+      <button *ngIf="allImages.length > 1"
+              (click)="previousImage($event)"
+              class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-black/60 text-white hover:bg-[#C5A059] transition-all z-10 border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059] pointer-events-auto"
+              aria-label="Imagen anterior">
+        <span class="material-symbols-outlined text-2xl md:text-3xl">chevron_left</span>
+      </button>
+      
+      <button *ngIf="allImages.length > 1"
+              (click)="nextImage($event)"
+              class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-black/60 text-white hover:bg-[#C5A059] transition-all z-10 border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059] pointer-events-auto"
+              aria-label="Siguiente imagen">
+        <span class="material-symbols-outlined text-2xl md:text-3xl">chevron_right</span>
+      </button>
 
+      <!-- Stage protegido del Pan para asegurar el Padding -->
+      <div class="lightbox-image-stage">
+      
+        <!-- Loading State -->
+        <div *ngIf="isLightboxImageLoading" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <div class="w-12 h-12 border-4 border-white/20 border-t-[#C5A059] rounded-full animate-spin shadow-lg"></div>
+        </div>
+        
+        <!-- Error State -->
+        <div *ngIf="lightboxImageError" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10 bg-black/40 rounded-xl backdrop-blur-sm pointer-events-auto m-auto max-w-sm">
+          <span class="material-symbols-outlined text-red-400 text-5xl mb-3">broken_image</span>
+          <p class="text-white font-medium mb-4">No fue posible cargar esta imagen.</p>
+          <button (click)="retryLightboxImage()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059]">
+            Reintentar
+          </button>
+        </div>
+
+        <!-- Imagen principal -->
+        <img *ngIf="!lightboxImageError"
+             [src]="allImages[selectedImageIndex]" 
+             [alt]="'Imagen ampliada de ' + product?.name"
+             class="w-full h-full object-contain pointer-events-none"
+             [style.transform]="'translate3d(' + panX + 'px, ' + panY + 'px, 0) scale(' + zoomScale + ')'"
+             [class.cursor-grab]="zoomScale > 1 && !isPanning"
+             [class.cursor-grabbing]="isPanning"
+             [style.opacity]="isLightboxImageLoading ? 0.3 : 1"
+             (load)="onLightboxImageLoad()"
+             (error)="onLightboxImageError()"
+             (dblclick)="onImageDoubleClick($event)"
+             draggable="false"
+             style="pointer-events: auto;">
+      </div>
+    </div>
+    
+    <!-- Bottom Area (Thumbnails) -->
+    <div *ngIf="allImages.length > 1" class="lightbox-bottom-area w-full flex justify-center items-center pointer-events-auto" (click)="$event.stopPropagation()">
+      <div class="lightbox-thumbnails-scroll">
+        <button *ngFor="let img of allImages; let i = index"
+                (click)="selectImage(i)"
+                [attr.aria-current]="i === selectedImageIndex ? 'true' : 'false'"
+                [attr.aria-label]="'Ver imagen ' + (i + 1)"
+                class="relative overflow-hidden rounded border-2 shrink-0 transition-all focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
+                [ngClass]="i === selectedImageIndex ? 'border-[#C5A059] scale-105 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'">
+          <img [src]="img" class="w-16 h-16 object-cover bg-white" alt="Miniatura">
+        </button>
+      </div>
+    </div>
+    
   </div>
 </div>

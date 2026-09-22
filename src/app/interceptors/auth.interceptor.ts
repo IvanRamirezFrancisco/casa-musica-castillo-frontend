@@ -4,7 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
-import Swal from 'sweetalert2';
+
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -58,7 +58,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem('token');
 
   let authReq = req;
-  if (token) {
+  // NO enviar el JWT a dominios externos (ej. Iconify)
+  const isExternalApi = req.url.includes('api.iconify.design');
+  
+  if (token && !isExternalApi) {
     authReq = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -85,12 +88,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
       if (error.status === 403 && !isPublicRequest) {
         if (error.error?.code === 'SECURITY_HIERARCHY_VIOLATION') {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Acción restringida',
-            text: 'Esta acción está protegida por la jerarquía de seguridad del sistema.',
-            footer: '<small>Si necesitas realizar este cambio, solicita autorización al propietario técnico.</small>',
-            confirmButtonColor: '#722f37'
+          import('sweetalert2').then(module => {
+            const Swal = module.default;
+            Swal.fire({
+              icon: 'warning',
+              title: 'Acción restringida',
+              text: 'Esta acción está protegida por la jerarquía de seguridad del sistema.',
+              footer: '<small>Si necesitas realizar este cambio, solicita autorización al propietario técnico.</small>',
+              confirmButtonColor: '#722f37'
+            });
           });
         } else if (!environment.production) {
           console.warn('[AuthInterceptor] 403 Forbidden:', req.url);

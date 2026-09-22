@@ -111,21 +111,21 @@ export class UserDashboardComponent implements OnInit {
           id: '1',
           name: 'Guitarra Fender Stratocaster',
           price: 18900,
-          image: '/assets/logoP.png',
+          image: '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png',
           category: 'Guitarras'
         },
         {
           id: '2',
           name: 'Piano Digital Yamaha P-125',
           price: 12500,
-          image: '/assets/logoP.png',
+          image: '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png',
           category: 'Pianos'
         },
         {
           id: '3',
           name: 'Batería Pearl Export',
           price: 22000,
-          image: '/assets/logoP.png',
+          image: '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png',
           category: 'Baterías'
         }
       ];

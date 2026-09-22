@@ -660,7 +660,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   onImageError(event: Event): void {
-    (event.target as HTMLImageElement).src = '/assets/logoP.png';
+    (event.target as HTMLImageElement).src = '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png';
   }
 
   requestShippingQuote(): void {
