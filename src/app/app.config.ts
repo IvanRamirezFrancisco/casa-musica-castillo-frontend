@@ -1,5 +1,6 @@
-import { ApplicationConfig, importProvidersFrom, LOCALE_ID } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, LOCALE_ID, isDevMode } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -12,6 +13,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { sanitizationInterceptor } from './interceptors/sanitization-functional.interceptor';
 import { browserCompatibilityInterceptor } from './interceptors/browser-compatibility.interceptor';
+import { offlineInterceptor } from './interceptors/offline.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,11 +26,16 @@ export const appConfig: ApplicationConfig = {
       })
     ),
     provideHttpClient(withInterceptors([
+      offlineInterceptor,
       browserCompatibilityInterceptor,
       authInterceptor,
       sanitizationInterceptor
     ])),
     importProvidersFrom(ReactiveFormsModule),
-    provideAnimations()
+    provideAnimations(),
+    provideServiceWorker('ngsw-worker.js', {
+        enabled: !isDevMode(),
+        registrationStrategy: 'registerWhenStable:30000'
+    })
   ]
 };

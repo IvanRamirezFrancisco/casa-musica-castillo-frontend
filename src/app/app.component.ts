@@ -6,6 +6,9 @@ import { MainHeaderComponent } from './components/main-header/main-header.compon
 import { MainFooterComponent } from './components/main-footer/main-footer.component';
 import { CartToastComponent } from './components/cart-toast/cart-toast.component';
 
+import { PwaUpdateService } from './services/pwa-update.service';
+import { ConnectivityService } from './services/connectivity.service';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -21,7 +24,11 @@ export class AppComponent {
   // Admin tiene su propio layout completo con sidebar y topbar
   private routesWithoutLayout = ['/reset-password', '/verify-account', '/admin'];
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private pwaUpdateService: PwaUpdateService,
+    private connectivityService: ConnectivityService
+  ) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {

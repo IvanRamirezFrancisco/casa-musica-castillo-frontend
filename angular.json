@@ -29,7 +29,8 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
-              }
+              },
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
@@ -40,6 +41,7 @@
           },
           "configurations": {
             "production": {
+              "serviceWorker": "ngsw-config.json",
               "budgets": [
                 {
                   "type": "initial",
