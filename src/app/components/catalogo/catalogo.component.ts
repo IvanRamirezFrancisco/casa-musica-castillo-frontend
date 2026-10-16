@@ -10,6 +10,7 @@ import { PublicApiService } from '../../services/public-api.service';
 import { WishlistService } from '../../services/wishlist.service';
 import { User } from '../../models/user.model';
 import { PublicProduct, PublicCategory, SpringPage } from '../../models/product.model';
+import { ConnectivityService } from '../../services/connectivity.service';
 
 @Component({
   selector: 'app-catalogo',
@@ -75,8 +76,13 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private publicApiService: PublicApiService,
     private cartService: CartService,
-    private wishlistService: WishlistService
+    private wishlistService: WishlistService,
+    private connectivityService: ConnectivityService
   ) {}
+
+  get isOnline(): boolean {
+    return this.connectivityService.isOnline;
+  }
 
   ngOnInit(): void {
     // Verificar autenticación
@@ -147,8 +153,12 @@ export class CatalogoComponent implements OnInit, OnDestroy {
 
         this.loading = false;
       },
-      error: () => {
-        this.error = 'No se pudo cargar el catálogo. Inténtalo de nuevo.';
+      error: (err) => {
+        if (!this.connectivityService.isOnline || err?.status === 0 || err?.error?.offline) {
+          this.error = 'No hay información guardada para esta sección. Conéctate a Internet para actualizarla.';
+        } else {
+          this.error = 'No se pudo cargar el catálogo. Inténtalo de nuevo.';
+        }
         this.loading = false;
       }
     });

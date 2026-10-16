@@ -2,18 +2,18 @@
 
 Este directorio contiene la aplicación Angular del sistema de autenticación.
 
-## Configuración para Railway
+## Configuración de Despliegue (Vercel + Render)
 
 ### Archivos de configuración:
 
+- `vercel.json` - Configuración de despliegue y rewrites SPA en Vercel
 - `Dockerfile` - Configuración Docker para build y deployment
 - `nginx.conf` - Configuración de servidor web Nginx
-- `railway.json` - Configuración específica de Railway
 - `src/environments/environment.prod.ts` - Variables de entorno para producción
 
 ### Backend URL configurada:
 
-- **Producción**: `https://backendapp-production-ce23.up.railway.app/api`
+- **Producción**: `https://casa-musica-castillo-backend.onrender.com/api`
 - **Desarrollo**: `http://localhost:8080/api`
 
 ### Build verificado:
@@ -26,7 +26,7 @@ Este directorio contiene la aplicación Angular del sistema de autenticación.
 
 ### Servicios configurados:
 
-- **AuthService**: Conectado al backend en Railway
+- **AuthService**: Conectado al backend en Render
 - **SmsService**: Configurado para 2FA SMS
 - **PasswordResetService**: Para recuperación de contraseñas
 - **GoogleAuthService**: Para autenticación Google

@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { PublicApiService } from '../../services/public-api.service';
 import { User } from '../../models/user.model';
 import { PublicProduct, PublicCategory, PublicTrendingProduct } from '../../models/product.model';
+import { ConnectivityService } from '../../services/connectivity.service';
 
 @Component({
   selector: 'app-home',
@@ -117,8 +118,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     public router: Router,
     private authService: AuthService,
-    private publicApiService: PublicApiService
+    private publicApiService: PublicApiService,
+    private connectivityService: ConnectivityService
   ) {}
+
+  get isOnline(): boolean {
+    return this.connectivityService.isOnline;
+  }
 
   ngOnInit(): void {
     // Iniciar hero slider con retraso seguro para evitar penalización LCP

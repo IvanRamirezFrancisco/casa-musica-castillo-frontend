@@ -11,6 +11,7 @@ import { PublicProduct, ProductRecommendation, ProductTrendStatus } from '../../
 import { ProductRecommendationCardComponent } from './product-recommendation-card/product-recommendation-card.component';
 import { ProductReviewsComponent } from '../product-reviews/product-reviews.component';
 import { A11yModule } from '@angular/cdk/a11y';
+import { ConnectivityService } from '../../services/connectivity.service';
 
 
 @Component({
@@ -85,8 +86,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private publicApiService: PublicApiService,
     private cartService: CartService,
     private authService: AuthService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private connectivityService: ConnectivityService
   ) {}
+
+  get isOnline(): boolean {
+    return this.connectivityService.isOnline;
+  }
 
   ngOnInit(): void {
     this.authService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
@@ -131,9 +137,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error HTTP al cargar producto:', err);
-        this.error = err.status === 404
-          ? 'Producto no encontrado'
-          : `Error al cargar el producto (${err.status})`;
+        if (!this.connectivityService.isOnline || err?.status === 0 || err?.error?.offline) {
+          this.error = 'No hay información guardada para este producto. Conéctate a Internet para consultarlo.';
+        } else if (err.status === 404) {
+          this.error = 'Producto no encontrado';
+        } else {
+          this.error = `Error al cargar el producto (${err.status})`;
+        }
         this.loading = false;
       }
     });

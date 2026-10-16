@@ -12,8 +12,10 @@
 <!-- ── Error ──────────────────────────────────────────────────────────────────── -->
 <div *ngIf="error && !loading"
      class="min-h-[60vh] flex flex-col items-center justify-center gap-6 text-center px-4">
-  <span class="material-symbols-outlined text-6xl text-red-400">error_outline</span>
-  <h2 class="text-2xl font-semibold text-gray-700">{{ error }}</h2>
+  <span class="material-symbols-outlined text-6xl" [ngClass]="!isOnline ? 'text-amber-400' : 'text-red-400'">
+    {{ !isOnline ? 'wifi_off' : 'error_outline' }}
+  </span>
+  <h2 class="text-2xl font-semibold text-gray-700 max-w-lg">{{ error }}</h2>
   <button (click)="goBack()"
           class="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600
                  text-white font-semibold rounded-lg transition-colors">
@@ -25,6 +27,16 @@
 <!-- ── Contenido Principal ──────────────────────────────────────────────────── -->
 <div *ngIf="product && !loading" class="bg-gray-50 min-h-screen">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- AVISO DISCRETO OFFLINE -->
+    <div *ngIf="!isOnline"
+         class="mb-6 p-3.5 bg-amber-50 border border-amber-200/80 rounded-2xl flex items-center gap-3 text-amber-900 text-xs sm:text-sm shadow-sm">
+      <span class="material-symbols-outlined text-amber-600 text-xl flex-shrink-0">wifi_off</span>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+        <span class="font-semibold">Sin conexión. Mostrando información guardada.</span>
+        <span class="text-amber-800 text-xs">Los precios y la disponibilidad pueden haber cambiado.</span>
+      </div>
+    </div>
 
     <!-- Breadcrumbs -->
     <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8 flex-wrap"

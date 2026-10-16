@@ -44,3 +44,8 @@ Thumbs.db
 # Environment variables
 .env
 .env.*
+
+# Archivos locales y generados - no versionar
+/.agents/
+/.agents/**
+/frontend-repomix.xml

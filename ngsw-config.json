@@ -46,16 +46,103 @@
   ],
   "dataGroups": [
     {
+      "name": "public-home-products",
+      "urls": [
+        "https://casa-musica-castillo-backend.onrender.com/api/public/products/latest**",
+        "https://casa-musica-castillo-backend.onrender.com/api/public/products/featured**",
+        "https://casa-musica-castillo-backend.onrender.com/api/public/products/trending**",
+        "http://localhost:8080/api/public/products/latest**",
+        "http://localhost:8080/api/public/products/featured**",
+        "http://localhost:8080/api/public/products/trending**",
+        "/api/public/products/latest**",
+        "/api/public/products/featured**",
+        "/api/public/products/trending**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 20,
+        "maxAge": "12h",
+        "timeout": "4s"
+      }
+    },
+    {
+      "name": "public-product-catalog",
+      "urls": [
+        "https://casa-musica-castillo-backend.onrender.com/api/public/products/catalog**",
+        "http://localhost:8080/api/public/products/catalog**",
+        "/api/public/products/catalog**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 40,
+        "maxAge": "8h",
+        "timeout": "4s"
+      }
+    },
+    {
+      "name": "public-product-detail",
+      "urls": [
+        "https://casa-musica-castillo-backend.onrender.com/api/public/products/*",
+        "https://casa-musica-castillo-backend.onrender.com/api/public/products/*/trend-status",
+        "https://casa-musica-castillo-backend.onrender.com/api/public/products/*/recommendations",
+        "http://localhost:8080/api/public/products/*",
+        "http://localhost:8080/api/public/products/*/trend-status",
+        "http://localhost:8080/api/public/products/*/recommendations",
+        "/api/public/products/*",
+        "/api/public/products/*/trend-status",
+        "/api/public/products/*/recommendations"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 50,
+        "maxAge": "24h",
+        "timeout": "4s"
+      }
+    },
+    {
+      "name": "public-categories",
+      "urls": [
+        "https://casa-musica-castillo-backend.onrender.com/api/public/categories/**",
+        "http://localhost:8080/api/public/categories/**",
+        "/api/public/categories/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 10,
+        "maxAge": "3d",
+        "timeout": "3s"
+      }
+    },
+    {
+      "name": "public-help-center",
+      "urls": [
+        "https://casa-musica-castillo-backend.onrender.com/api/public/help/**",
+        "http://localhost:8080/api/public/help/**",
+        "/api/public/help/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 20,
+        "maxAge": "7d",
+        "timeout": "3s"
+      }
+    },
+    {
       "name": "public-cloudinary-images",
       "urls": [
         "https://res.cloudinary.com/dy3ibnjl7/image/upload/**"
       ],
       "cacheConfig": {
         "strategy": "performance",
-        "maxSize": 80,
+        "maxSize": 100,
         "maxAge": "7d",
         "timeout": "5s"
       }
     }
+  ],
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/__*"
   ]
 }

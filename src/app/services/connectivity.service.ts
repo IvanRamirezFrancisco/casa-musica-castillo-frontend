@@ -66,7 +66,7 @@ export class ConnectivityService implements OnDestroy {
       icon: isOnline ? 'success' : 'warning',
       title: isOnline
         ? 'Conexión restablecida.'
-        : 'Sin conexión. Algunas funciones no están disponibles.',
+        : 'Sin conexión. Mostrando información guardada.',
       showConfirmButton: false,
       timer: isOnline ? 3000 : 5000,
       timerProgressBar: true,
