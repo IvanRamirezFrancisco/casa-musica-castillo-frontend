@@ -1,4 +1,41 @@
 <div class="app-container">
+  <!-- Banner global accesible de conectividad / estado del servidor -->
+  <div *ngIf="!connectivityService.online()"
+       role="status"
+       aria-live="polite"
+       class="bg-[#3d171c] text-white border-b border-[#C5A059]/40 px-4 py-2 text-xs sm:text-sm font-medium shadow-sm z-50">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-2 text-center">
+      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#C5A059]/20 text-[#E2B84F] shrink-0">
+        <i class="fas fa-wifi-slash text-xs" aria-hidden="true"></i>
+      </span>
+      <span class="font-semibold text-[#E2B84F]">Sin conexión a Internet.</span>
+      <span class="text-white/90">Puedes seguir consultando contenido disponible sin conexión.</span>
+    </div>
+  </div>
+
+  <div *ngIf="connectivityService.online() && connectivityService.serverUnavailable()"
+       role="status"
+       aria-live="polite"
+       class="bg-amber-950 text-amber-50 border-b border-amber-500/30 px-4 py-2 text-xs sm:text-sm font-medium shadow-sm z-50">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-2 text-center">
+      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 shrink-0">
+        <i class="fas fa-server text-xs" aria-hidden="true"></i>
+      </span>
+      <span class="font-semibold text-amber-200">El servidor está tardando en responder.</span>
+      <span class="text-amber-100/90">Mostrando información disponible mientras el servicio se restablece.</span>
+    </div>
+  </div>
+
+  <div *ngIf="connectivityService.online() && !connectivityService.serverUnavailable() && connectivityService.justReconnected()"
+       role="status"
+       aria-live="polite"
+       class="bg-emerald-900 text-emerald-50 border-b border-emerald-500/30 px-4 py-1.5 text-xs sm:text-sm font-medium shadow-sm z-50 transition-all">
+    <div class="max-w-7xl mx-auto flex items-center justify-center gap-2 text-center">
+      <i class="fas fa-check-circle text-emerald-300 text-xs" aria-hidden="true"></i>
+      <span><strong>Conexión restablecida.</strong> Los servicios en línea están activos nuevamente.</span>
+    </div>
+  </div>
+
   <!-- Header Global (se oculta en login/register) -->
   <app-main-header *ngIf="showHeaderFooter"></app-main-header>
   
@@ -11,3 +48,4 @@
   <!-- Toast Notifications para Carrito -->
   <app-cart-toast></app-cart-toast>
 </div>
+

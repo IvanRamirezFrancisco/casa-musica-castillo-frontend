@@ -2,9 +2,21 @@
   <!-- Hero Section -->
   <section class="info-hero">
     <div class="hero-content">
-      <span class="hero-badge">Información</span>
+      <!-- Breadcrumb -->
+      <nav aria-label="Migas de pan" class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/75 mb-5 flex-wrap">
+        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1">
+          <span class="material-icons text-base" aria-hidden="true">home</span>
+          Inicio
+        </a>
+        <span class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</span>
+        <span class="text-white/75">Información</span>
+        <span class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</span>
+        <span class="text-[#E2B84F] font-semibold" aria-current="page">Envíos y entregas</span>
+      </nav>
+
+      <span class="hero-badge">Logística y Entrega</span>
       <h1 class="hero-title">Envíos y entregas</h1>
-      <p class="hero-subtitle">Conoce las opciones disponibles para recibir tu compra.</p>
+      <p class="hero-subtitle">Conoce las modalidades disponibles para recibir tus instrumentos con seguridad y seguimiento transparente.</p>
     </div>
   </section>
 
@@ -12,27 +24,29 @@
   <main class="info-main-content">
     <div class="info-intro">
       <p>
-        Para ofrecerte la mejor experiencia, calculamos el costo y la disponibilidad de envío en función de tu dirección y del volumen de tu pedido. A continuación te explicamos las opciones que verás disponibles en la pasarela de pago (Checkout).
+        Para ofrecerte la mejor experiencia, calculamos el costo y la disponibilidad de envío en función de tu dirección y del volumen de tu pedido. A continuación te explicamos las opciones que verás disponibles en la pasarela de pago (<strong>Checkout</strong>).
       </p>
     </div>
 
+    <!-- Modalidades de entrega -->
     <div class="options-grid">
       <!-- Opción 1: Envío Local / A domicilio -->
       <div class="info-card">
         <div class="card-icon-container">
-          <span class="material-icons">local_shipping</span>
+          <span class="material-icons" aria-hidden="true">local_shipping</span>
         </div>
-        <h3 class="card-title">Envío a domicilio</h3>
-        <p class="card-desc">Recibe tu compra directamente en la dirección indicada.</p>
+        <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-[#C5A059] mb-1">Modalidad 01</span>
+        <h2 class="card-title">Envío a domicilio</h2>
+        <p class="card-desc">Recibe tu compra directamente en la dirección indicada al realizar tu pedido.</p>
         
         <ul class="card-features">
           <li>
-            <span class="material-icons feature-icon">check_circle</span>
+            <span class="material-icons feature-icon" aria-hidden="true">check_circle</span>
             <span class="feature-text"><strong>Cálculo Automático:</strong> El costo de envío se calculará automáticamente durante tu proceso de compra según tu código postal.</span>
           </li>
           <li>
-            <span class="material-icons feature-icon">map</span>
-            <span class="feature-text"><strong>Cobertura Local:</strong> Disponible en nuestras zonas de cobertura inmediata.</span>
+            <span class="material-icons feature-icon" aria-hidden="true">map</span>
+            <span class="feature-text"><strong>Cobertura Local:</strong> Disponible en nuestras zonas de cobertura inmediata registradas en el sistema.</span>
           </li>
         </ul>
       </div>
@@ -40,22 +54,23 @@
       <!-- Opción 2: Recolección en tienda -->
       <div class="info-card">
         <div class="card-icon-container">
-          <span class="material-icons">storefront</span>
+          <span class="material-icons" aria-hidden="true">storefront</span>
         </div>
-        <h3 class="card-title">Recolección en tienda</h3>
-        <p class="card-desc">Recoge el pedido directamente en nuestra sucursal.</p>
+        <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-[#C5A059] mb-1">Modalidad 02 · Sin costo</span>
+        <h2 class="card-title">Recolección en tienda</h2>
+        <p class="card-desc">Recoge el pedido directamente en nuestra sucursal de Huejutla de Reyes.</p>
         
         <ul class="card-features">
           <li>
-            <span class="material-icons feature-icon">money_off</span>
-            <span class="feature-text"><strong>Sin costo:</strong> Este servicio es completamente gratuito.</span>
+            <span class="material-icons feature-icon" aria-hidden="true">money_off</span>
+            <span class="feature-text"><strong>Sin costo:</strong> Este servicio es completamente gratuito para cualquier pedido.</span>
           </li>
           <li>
-            <span class="material-icons feature-icon">notifications_active</span>
+            <span class="material-icons feature-icon" aria-hidden="true">notifications_active</span>
             <span class="feature-text"><strong>Aviso de disponibilidad:</strong> Te notificaremos cuando tu pedido esté listo para ser recogido.</span>
           </li>
           <li>
-            <span class="material-icons feature-icon">security</span>
+            <span class="material-icons feature-icon" aria-hidden="true">security</span>
             <span class="feature-text"><strong>Código Seguro:</strong> Cuando el pedido esté <em>Listo para Recolección</em>, encontrarás la información necesaria en tu sección de Mis Pedidos.</span>
           </li>
         </ul>
@@ -64,35 +79,122 @@
       <!-- Opción 3: Cotización Foránea -->
       <div class="info-card">
         <div class="card-icon-container">
-          <span class="material-icons">public</span>
+          <span class="material-icons" aria-hidden="true">public</span>
         </div>
-        <h3 class="card-title">Envío fuera de zona</h3>
-        <p class="card-desc">Tu dirección está fuera de nuestra zona local.</p>
+        <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-[#C5A059] mb-1">Modalidad 03 · Asistida</span>
+        <h2 class="card-title">Envío fuera de zona</h2>
+        <p class="card-desc">Atención personalizada cuando tu dirección está fuera de nuestra zona local.</p>
         
         <ul class="card-features">
           <li>
-            <span class="material-icons feature-icon">calculate</span>
+            <span class="material-icons feature-icon" aria-hidden="true">calculate</span>
             <span class="feature-text"><strong>Cotización Personalizada:</strong> Si el sistema detecta que te encuentras fuera de la zona de envío automático, requerirá una cotización especial.</span>
           </li>
           <li>
-            <span class="material-icons feature-icon">chat</span>
+            <span class="material-icons feature-icon" aria-hidden="true">chat</span>
             <span class="feature-text"><strong>Soporte WhatsApp:</strong> Podrás contactar a un asesor para gestionar el envío foráneo de tus instrumentos pesados o voluminosos.</span>
           </li>
         </ul>
       </div>
     </div>
 
+    <!-- Proceso paso a paso -->
+    <section class="bg-white rounded-2xl border border-[#C5A059]/25 p-6 sm:p-8 shadow-sm mb-12">
+      <div class="text-center max-w-2xl mx-auto mb-8">
+        <span class="text-xs font-bold uppercase tracking-widest text-[#C5A059] block mb-1">Flujo Operativo</span>
+        <h2 class="text-2xl font-bold text-[#292524]">Proceso de preparación y entrega</h2>
+        <p class="text-sm text-slate-600 mt-1">Conoce las etapas por las que pasa tu pedido desde que se confirma tu compra.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div *ngFor="let item of processSteps" class="relative bg-[#FCFAF7] rounded-xl p-5 border border-[#E5E0D8]">
+          <div class="flex items-center justify-between mb-3">
+            <span class="w-10 h-10 rounded-lg bg-[#722F37] text-white flex items-center justify-center">
+              <span class="material-icons text-xl" aria-hidden="true">{{ item.icon }}</span>
+            </span>
+            <span class="text-xs font-mono font-bold text-[#C5A059] bg-white px-2.5 py-1 rounded-full border border-[#C5A059]/30">
+              Paso {{ item.step }}
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-[#292524] mb-1.5">{{ item.title }}</h3>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{{ item.desc }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recomendaciones al recibir tu instrumento -->
+    <section class="bg-white rounded-2xl border border-[#C5A059]/25 p-6 sm:p-8 shadow-sm mb-12">
+      <div class="mb-6">
+        <span class="text-xs font-bold uppercase tracking-widest text-[#C5A059] block mb-1">Cuidado de tu compra</span>
+        <h2 class="text-2xl font-bold text-[#292524]">Recomendaciones al recibir tu pedido</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div *ngFor="let tip of receptionTips" class="flex items-start gap-3.5 p-4 rounded-xl bg-[#FCFAF7] border border-slate-200/70">
+          <span class="material-icons text-[#722F37] text-2xl shrink-0 mt-0.5" aria-hidden="true">{{ tip.icon }}</span>
+          <div>
+            <h3 class="text-sm font-bold text-[#292524] mb-1">{{ tip.title }}</h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{{ tip.text }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preguntas Frecuentes sobre Envíos -->
+    <section class="bg-white rounded-2xl border border-[#C5A059]/25 p-6 sm:p-8 shadow-sm mb-12">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-[#C5A059] block mb-1">Dudas rápidas</span>
+          <h2 class="text-2xl font-bold text-[#292524]">Preguntas frecuentes sobre envíos</h2>
+        </div>
+        <a routerLink="/ayuda" class="text-sm font-semibold text-[#722F37] hover:underline inline-flex items-center gap-1">
+          Ir al Centro de Ayuda
+          <span class="material-icons text-base" aria-hidden="true">arrow_forward</span>
+        </a>
+      </div>
+
+      <div class="space-y-3">
+        <div *ngFor="let faq of shippingFaqs; let i = index"
+             class="border border-[#E5E0D8] rounded-xl overflow-hidden transition-colors"
+             [ngClass]="faq.isOpen ? 'border-[#722F37]/50 bg-[#FCFAF7]' : 'bg-white'">
+          <button type="button"
+                  (click)="toggleFaq(i)"
+                  [attr.aria-expanded]="faq.isOpen"
+                  [attr.aria-controls]="'shipping-faq-' + i"
+                  class="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-semibold text-sm sm:text-base text-[#292524] hover:text-[#722F37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A059]">
+            <span>{{ faq.question }}</span>
+            <span class="material-icons text-[#722F37] transition-transform duration-200 shrink-0"
+                  [class.rotate-180]="faq.isOpen"
+                  aria-hidden="true">
+              expand_more
+            </span>
+          </button>
+          <div *ngIf="faq.isOpen"
+               [id]="'shipping-faq-' + i"
+               class="px-5 pb-4 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+            {{ faq.answer }}
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- CTA Section -->
     <section class="info-cta">
       <div class="cta-content">
         <h2>¿Ya realizaste una compra?</h2>
         <p>Puedes consultar el estado actual, timeline y opciones de recolección directamente en tu cuenta.</p>
-        <a routerLink="/orders/my" class="btn-primary">
-          Consultar mis pedidos
-          <span class="material-icons">arrow_forward</span>
-        </a>
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <a routerLink="/orders/my" class="btn-primary">
+            Consultar mis pedidos
+            <span class="material-icons" aria-hidden="true">arrow_forward</span>
+          </a>
+          <a routerLink="/informacion/pagos"
+             class="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg border border-[#722F37]/30 text-[#722F37] font-semibold hover:bg-[#722F37]/5 transition-colors">
+            Ver formas de pago
+          </a>
+        </div>
       </div>
     </section>
 
   </main>
 </div>
+

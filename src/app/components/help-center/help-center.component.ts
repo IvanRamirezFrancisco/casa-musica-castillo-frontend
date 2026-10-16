@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HelpCenterService } from '../../services/help-center.service';
 import { HelpCategory, Faq } from '../../models/help-center.model';
+import { ConnectivityService } from '../../services/connectivity.service';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-help-center',
@@ -14,23 +16,31 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   templateUrl: './help-center.component.html',
   styleUrls: ['./help-center.component.css']
 })
-export class HelpCenterComponent implements OnInit {
+export class HelpCenterComponent implements OnInit, OnDestroy {
   searchQuery = '';
   selectedCategory: string = 'all';
   
   categories: HelpCategory[] = [];
+  allFaqs: (Faq & { isOpen?: boolean })[] = [];
   faqs: (Faq & { isOpen?: boolean })[] = [];
   
   isLoadingCategories = true;
   isLoadingFaqs = true;
   isSearching = false;
+  faqsError = false;
 
   private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
-    private helpCenterService: HelpCenterService
+    private helpCenterService: HelpCenterService,
+    public connectivityService: ConnectivityService
   ) {}
+
+  get isOnline(): boolean {
+    return this.connectivityService.isOnline;
+  }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -38,22 +48,47 @@ export class HelpCenterComponent implements OnInit {
 
     // Configurar búsqueda con debounce (evitar llamadas múltiples al backend)
     this.searchSubject.pipe(
-      debounceTime(400),
-      distinctUntilChanged()
+      debounceTime(350),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
     ).subscribe(query => {
       this.executeSearch(query);
     });
+
+    // Recargar automáticamente al restablecer la conexión si había error previo
+    this.connectivityService.isOnline$.pipe(
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(online => {
+      if (online) {
+        if (this.faqsError || this.allFaqs.length === 0) {
+          this.loadFaqs();
+        }
+        if (this.categories.length === 0) {
+          this.loadCategories();
+        }
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  retryLoad(): void {
+    this.loadCategories();
+    this.loadFaqs();
   }
 
   loadCategories(): void {
     this.isLoadingCategories = true;
-    this.helpCenterService.getPublicCategories().subscribe({
+    this.helpCenterService.getPublicCategories().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.categories = data;
         this.isLoadingCategories = false;
       },
-      error: (err) => {
-        console.error('Error al cargar categorías', err);
+      error: () => {
         this.isLoadingCategories = false;
       }
     });
@@ -61,14 +96,17 @@ export class HelpCenterComponent implements OnInit {
 
   loadFaqs(): void {
     this.isLoadingFaqs = true;
-    this.helpCenterService.getPublicFaqs().subscribe({
+    this.faqsError = false;
+    this.helpCenterService.getPublicFaqs().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
-        this.faqs = data.map(faq => ({ ...faq, isOpen: false }));
+        this.allFaqs = data.map((faq, idx) => ({ ...faq, isOpen: idx === 0 }));
+        this.faqs = [...this.allFaqs];
         this.isLoadingFaqs = false;
+        this.faqsError = false;
       },
-      error: (err) => {
-        console.error('Error al cargar FAQs', err);
+      error: () => {
         this.isLoadingFaqs = false;
+        this.faqsError = this.allFaqs.length === 0;
       }
     });
   }
@@ -78,35 +116,56 @@ export class HelpCenterComponent implements OnInit {
   }
 
   executeSearch(query: string): void {
-    if (!query || query.trim().length < 2) {
+    const trimmed = (query || '').trim();
+    if (trimmed.length < 2) {
       if (this.isSearching) {
         this.isSearching = false;
-        this.loadFaqs(); // Restaurar todo
+        this.faqs = [...this.allFaqs];
       }
       return;
     }
-    
+
     this.isSearching = true;
+
+    // Si estamos sin conexión y tenemos FAQs en memoria/caché, filtramos localmente sin fallar
+    if (!this.isOnline && this.allFaqs.length > 0) {
+      this.filterLocalFaqs(trimmed);
+      return;
+    }
+    
     this.isLoadingFaqs = true;
-    this.helpCenterService.searchFaqs(query).subscribe({
+    this.helpCenterService.searchFaqs(trimmed).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
-        this.faqs = data.map(faq => ({ ...faq, isOpen: false }));
+        this.faqs = data.map((faq, idx) => ({ ...faq, isOpen: idx === 0 }));
         this.isLoadingFaqs = false;
-        this.selectedCategory = 'all'; // Resetear categoría al buscar
+        this.selectedCategory = 'all';
       },
-      error: (err) => {
-        console.error('Error al buscar FAQs', err);
+      error: () => {
         this.isLoadingFaqs = false;
+        if (this.allFaqs.length > 0) {
+          this.filterLocalFaqs(trimmed);
+        }
       }
     });
   }
 
+  private filterLocalFaqs(trimmedQuery: string): void {
+    const lower = trimmedQuery.toLowerCase();
+    this.faqs = this.allFaqs
+      .filter(f =>
+        f.question.toLowerCase().includes(lower) ||
+        f.answer.toLowerCase().includes(lower) ||
+        (f.categoryName && f.categoryName.toLowerCase().includes(lower))
+      )
+      .map((faq, idx) => ({ ...faq, isOpen: idx === 0 }));
+    this.selectedCategory = 'all';
+  }
+
   get filteredFAQs(): (Faq & { isOpen?: boolean })[] {
     if (this.isSearching) {
-      return this.faqs; // Ya filtrados por el backend
+      return this.faqs;
     }
     
-    // Filtrar localmente por categoría
     if (this.selectedCategory !== 'all') {
       return this.faqs.filter(faq => faq.categoryName === this.selectedCategory || faq.categoryId.toString() === this.selectedCategory);
     }
@@ -116,10 +175,10 @@ export class HelpCenterComponent implements OnInit {
 
   selectCategory(categoryId: string | number): void {
     this.selectedCategory = categoryId.toString();
-    this.searchQuery = ''; // Limpiar búsqueda al cambiar categoría
+    this.searchQuery = '';
     if (this.isSearching) {
       this.isSearching = false;
-      this.loadFaqs();
+      this.faqs = [...this.allFaqs];
     }
   }
 
@@ -143,19 +202,14 @@ export class HelpCenterComponent implements OnInit {
     let matchIndex = lowerText.indexOf(lowerSearch, currentIndex);
 
     while (matchIndex !== -1) {
-      // Texto antes del match
       if (matchIndex > currentIndex) {
         result.push({ text: text.substring(currentIndex, matchIndex), isMatch: false });
       }
-      
-      // El match
       result.push({ text: text.substring(matchIndex, matchIndex + search.length), isMatch: true });
-      
       currentIndex = matchIndex + search.length;
       matchIndex = lowerText.indexOf(lowerSearch, currentIndex);
     }
 
-    // Texto después del último match
     if (currentIndex < text.length) {
       result.push({ text: text.substring(currentIndex), isMatch: false });
     }
@@ -168,7 +222,18 @@ export class HelpCenterComponent implements OnInit {
   }
 
   contactSupport(): void {
-    alert('Información de contacto:\n\nEmail: contacto@casademusicacastillo.com\nTeléfono: (55) 1234-5678');
+    Swal.fire({
+      title: 'Casa de Música Castillo',
+      html: `
+        <div style="text-align: left; font-size: 0.95rem; line-height: 1.6; color: #333;">
+          <p style="margin-bottom: 10px;"><strong>Sucursal física:</strong><br>C. Morelos 18, Col. Centro, C.P. 43000, Huejutla de Reyes, Hidalgo.</p>
+          <p style="margin-bottom: 0;">También puedes consultar el estado de tus compras en la sección <strong>Mis Pedidos</strong> o revisar nuestras guías de Envíos y Formas de Pago.</p>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonColor: '#722F37',
+      confirmButtonText: 'Entendido'
+    });
   }
 
   navigateToHome(): void {
@@ -194,3 +259,4 @@ export class HelpCenterComponent implements OnInit {
     return `https://api.iconify.design/${prefix}/${name}.svg`;
   }
 }
+

@@ -1,6 +1,7 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ConnectivityService } from '../services/connectivity.service';
 
@@ -47,21 +48,26 @@ function isPublicStorefrontGet(req: { method: string; url: string; headers: { ha
 }
 
 /**
- * Interceptor de conectividad offline:
+ * Interceptor de conectividad offline y resiliencia del backend:
  *
  * 1. GET PÚBLICO DEL STOREFRONT (/api/public/...):
  *    NO se bloquea. Se permite salir al navegador (next(req)) para que el Angular Service Worker
  *    lo intercepte mediante sus dataGroups y sirva la respuesta desde Cache Storage en modo offline.
  *
  * 2. OPERACIONES DE ESCRITURA (POST, PUT, PATCH, DELETE) Y ENDPOINTS PRIVADOS:
- *    Se bloquean inmediatamente con un HttpErrorResponse status 0 controlado y explicativo.
- *    En mutaciones se activa el toast de conectividad.
+ *    Se bloquean inmediatamente en modo offline con un HttpErrorResponse status 0 controlado y explicativo.
+ *    En mutaciones se activa el aviso deduplicado de conectividad.
  *    Esto protege login, registro, carrito privado, checkout, pedidos, pagos y administración.
+ *
+ * 3. DETECCIÓN DE SERVIDOR LENTO / CAÍDO (Render cold start / 502 / 503 / 504):
+ *    Si el navegador tiene red pero el backend devuelve 5xx o fallo de red, actualiza ConnectivityService
+ *    para informar al usuario con claridad sin confundirlo con una caída de su propio Internet.
  */
 export const offlineInterceptor: HttpInterceptorFn = (req, next) => {
   const connectivity = inject(ConnectivityService);
+  const backendReq = isBackendRequest(req.url);
 
-  if (!connectivity.isOnline && isBackendRequest(req.url)) {
+  if (!connectivity.isOnline && backendReq) {
     // Si es una petición pública GET, dejamos que el Service Worker la resuelva desde su caché
     if (isPublicStorefrontGet(req)) {
       return next(req);
@@ -69,7 +75,7 @@ export const offlineInterceptor: HttpInterceptorFn = (req, next) => {
 
     // Acciones de usuario que modifican estado (POST, PUT, PATCH, DELETE)
     if (req.method !== 'GET' && req.method !== 'HEAD') {
-      connectivity.notifyOfflineAction();
+      connectivity.notifyOfflineAction('Esta acción requiere conexión a Internet.');
     }
 
     return throwError(() => new HttpErrorResponse({
@@ -78,10 +84,25 @@ export const offlineInterceptor: HttpInterceptorFn = (req, next) => {
       statusText: 'Offline',
       error: {
         offline: true,
-        message: 'Sin conexión. Esta acción requiere conexión a Internet.'
+        message: 'Esta acción requiere conexión a Internet. Puedes seguir consultando el contenido guardado.'
       }
     }));
   }
 
-  return next(req);
+  return next(req).pipe(
+    tap(event => {
+      if (backendReq && event instanceof HttpResponse) {
+        connectivity.reportServerRecovered();
+      }
+    }),
+    catchError((err: unknown) => {
+      if (backendReq && err instanceof HttpErrorResponse) {
+        if (connectivity.isOnline && (err.status === 0 || err.status === 502 || err.status === 503 || err.status === 504)) {
+          connectivity.reportServerUnavailable();
+        }
+      }
+      return throwError(() => err);
+    })
+  );
 };
+

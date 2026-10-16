@@ -94,6 +94,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     return this.connectivityService.isOnline;
   }
 
+  currentProductId: number | null = null;
+
   ngOnInit(): void {
     this.authService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
       this.isLoggedIn = !!user;
@@ -101,15 +103,26 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const productId = +params['id'];
-      console.log('ID capturado de la URL:', productId);
       if (productId) {
+        this.currentProductId = productId;
         this.loadProduct(productId);
       } else {
-        console.error('Error: ID de producto inválido en la URL:', params['id']);
         this.error = 'Producto no encontrado';
         this.loading = false;
       }
     });
+
+    this.connectivityService.isOnline$.pipe(takeUntil(this.destroy$)).subscribe(online => {
+      if (online && this.error && this.currentProductId) {
+        this.loadProduct(this.currentProductId);
+      }
+    });
+  }
+
+  retryLoadProduct(): void {
+    if (this.currentProductId) {
+      this.loadProduct(this.currentProductId);
+    }
   }
 
   ngOnDestroy(): void {
@@ -127,22 +140,18 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.quantity = 1;
     this.loadRecommendations(id);
 
-    console.log('Cargando producto con ID:', id);
-
     this.publicApiService.getProductById(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: (product) => {
-        console.log('Producto cargado correctamente:', product);
         this.product = product;
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error HTTP al cargar producto:', err);
         if (!this.connectivityService.isOnline || err?.status === 0 || err?.error?.offline) {
           this.error = 'No hay información guardada para este producto. Conéctate a Internet para consultarlo.';
         } else if (err.status === 404) {
           this.error = 'Producto no encontrado';
         } else {
-          this.error = `Error al cargar el producto (${err.status})`;
+          this.error = 'El servidor está tardando en responder. Inténtalo de nuevo en unos momentos.';
         }
         this.loading = false;
       }
@@ -499,6 +508,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   addToCart(event?: MouseEvent): void {
     if (!this.product) return;
 
+    if (!this.connectivityService.isOnline) {
+      this.connectivityService.notifyOfflineAction('Agregar al carrito requiere conexión a Internet.');
+      return;
+    }
+
     if (!this.isLoggedIn) {
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: `/producto/${this.product.id}` }
@@ -521,6 +535,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   onAddRecommendationToCart(rec: ProductRecommendation): void {
     if (this.addingToCartMap[rec.productId]) return;
 
+    if (!this.connectivityService.isOnline) {
+      this.connectivityService.notifyOfflineAction('Agregar al carrito requiere conexión a Internet.');
+      return;
+    }
+
     if (!this.isLoggedIn) {
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: `/producto/${this.product?.id}` }
@@ -533,7 +552,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const productLike = {
       id: rec.productId.toString(),
       name: rec.name,
-      images: [rec.imageUrl || '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png'],
+      images: [rec.imageUrl || '/assets/icons/icon-192x192.png'],
       price: rec.effectivePrice,
       inStock: rec.stock > 0
     } as any;

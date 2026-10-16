@@ -1,10 +1,22 @@
 <div class="info-page-container">
   <!-- Hero Section -->
-  <section class="info-hero">
+  <section class="info-hero" style="background: linear-gradient(135deg, #722F37 0%, #58242a 100%); color: #FFFFFF;">
     <div class="hero-content">
-      <span class="hero-badge">Información</span>
+      <!-- Breadcrumb -->
+      <nav aria-label="Migas de pan" class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/75 mb-5 flex-wrap">
+        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1">
+          <span class="material-icons text-base" aria-hidden="true">home</span>
+          Inicio
+        </a>
+        <span class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</span>
+        <span class="text-white/75">Información</span>
+        <span class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</span>
+        <span class="text-[#E2B84F] font-semibold" aria-current="page">Formas de pago</span>
+      </nav>
+
+      <span class="hero-badge">Transacciones Seguras</span>
       <h1 class="hero-title">Formas de pago</h1>
-      <p class="hero-subtitle">Consulta las opciones seguras disponibles para completar tu compra.</p>
+      <p class="hero-subtitle">Consulta los métodos oficiales habilitados en nuestro Checkout y cómo se valida tu compra paso a paso.</p>
     </div>
   </section>
 
@@ -14,57 +26,88 @@
     <div class="options-grid">
       <!-- Opción 1: Mercado Pago -->
       <div class="info-card">
-        <div class="card-icon-container">
-          <span class="material-icons">account_balance_wallet</span>
+        <div class="flex items-center justify-between mb-6">
+          <div class="card-icon-container !mb-0">
+            <span class="material-icons" aria-hidden="true">account_balance_wallet</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
+            <span class="material-icons text-sm" aria-hidden="true">bolt</span>
+            Validación automática
+          </span>
         </div>
-        <h3 class="card-title">Mercado Pago</h3>
-        <p class="card-desc">Pago en línea rápido y seguro a través de Mercado Pago.</p>
+        <h2 class="card-title">Mercado Pago</h2>
+        <p class="card-desc">Pago en línea rápido y seguro a través de la pasarela oficial de Mercado Pago.</p>
         
-        <ul class="method-features">
+        <ul class="card-features">
           <li>
-            <span class="material-icons">security</span>
+            <span class="material-icons feature-icon" aria-hidden="true">security</span>
             <span class="feature-text"><strong>Flujo de pago:</strong> Al confirmar tu pedido durante el Checkout, serás redirigido a la pasarela segura de Mercado Pago para procesar tu transacción.</span>
           </li>
           <li>
-            <span class="material-icons">payments</span>
-            <span class="feature-text"><strong>Opciones de Mercado Pago:</strong> Continúa en Mercado Pago para consultar las opciones disponibles para tu pago.</span>
+            <span class="material-icons feature-icon" aria-hidden="true">payments</span>
+            <span class="feature-text"><strong>Medios admitidos en pasarela:</strong> Dentro de Mercado Pago podrás seleccionar las opciones habilitadas por la plataforma para completar tu pago.</span>
           </li>
           <li>
-            <span class="material-icons">check_circle</span>
-            <span class="feature-text"><strong>Validación automática:</strong> Una vez aprobado el pago por la plataforma, tu pedido cambiará de estado automáticamente.</span>
+            <span class="material-icons feature-icon" aria-hidden="true">check_circle</span>
+            <span class="feature-text"><strong>Confirmación inmediata:</strong> Una vez aprobado el pago por la plataforma, tu pedido cambiará de estado automáticamente sin necesidad de subir comprobante.</span>
           </li>
         </ul>
       </div>
 
       <!-- Opción 2: Transferencia o Depósito -->
       <div class="info-card">
-        <div class="card-icon-container">
-          <span class="material-icons">account_balance</span>
+        <div class="flex items-center justify-between mb-6">
+          <div class="card-icon-container !mb-0">
+            <span class="material-icons" aria-hidden="true">account_balance</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200">
+            <span class="material-icons text-sm" aria-hidden="true">fact_check</span>
+            Validación de comprobante
+          </span>
         </div>
-        <h3 class="card-title">Transferencia o Depósito</h3>
-        <p class="card-desc">Paga directamente a nuestra cuenta bancaria en ventanilla o desde tu app del banco.</p>
+        <h2 class="card-title">Transferencia o Depósito Bancario</h2>
+        <p class="card-desc">Paga directamente a nuestra cuenta bancaria autorizada desde la app de tu banco o en ventanilla.</p>
         
-        <ul class="method-features">
+        <ul class="card-features">
           <li>
-            <span class="material-icons">account_balance_wallet</span>
-            <span class="feature-text"><strong>Datos bancarios:</strong> Al seleccionar este método en el checkout, recibirás las cuentas destino autorizadas (CLABE y número de cuenta).</span>
+            <span class="material-icons feature-icon" aria-hidden="true">account_balance_wallet</span>
+            <span class="feature-text"><strong>Datos bancarios oficiales:</strong> Al seleccionar este método en el checkout, recibirás las cuentas destino autorizadas (CLABE y número de cuenta).</span>
           </li>
           <li>
-            <span class="material-icons">upload_file</span>
+            <span class="material-icons feature-icon" aria-hidden="true">upload_file</span>
             <span class="feature-text"><strong>Subida de comprobante:</strong> Es indispensable subir una foto o captura de pantalla de tu comprobante de pago en la sección de "Mis pedidos" para iniciar el proceso de validación.</span>
           </li>
           <li>
-            <span class="material-icons">hourglass_empty</span>
-            <span class="feature-text"><strong>Validación manual:</strong> El comprobante será revisado antes de confirmar el pago. Asegúrate de que el número de referencia sea visible en la imagen.</span>
+            <span class="material-icons feature-icon" aria-hidden="true">hourglass_empty</span>
+            <span class="feature-text"><strong>Revisión manual:</strong> El comprobante será revisado antes de confirmar el pago. Asegúrate de que el monto, fecha y número de referencia sean visibles en la imagen.</span>
           </li>
         </ul>
       </div>
     </div>
 
+    <!-- Step-by-Step Transfer Verification -->
+    <section class="bg-white rounded-2xl border border-[#C5A059]/25 p-6 sm:p-8 shadow-sm mb-10">
+      <div class="text-center max-w-2xl mx-auto mb-8">
+        <span class="text-xs font-bold uppercase tracking-widest text-[#C5A059] block mb-1">Guía Paso a Paso</span>
+        <h2 class="text-2xl font-bold text-[#292524]">¿Cómo validar tu pago por transferencia?</h2>
+        <p class="text-sm text-slate-600 mt-1">Sigue estos 4 pasos para que nuestro equipo valide tu comprobante sin contratiempos.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div *ngFor="let item of transferSteps" class="bg-[#FCFAF7] rounded-xl p-5 border border-[#E5E0D8]">
+          <span class="inline-block text-xs font-mono font-bold text-[#722F37] bg-[#722F37]/10 px-2.5 py-1 rounded-md mb-3">
+            Paso {{ item.step }}
+          </span>
+          <h3 class="text-base font-bold text-[#292524] mb-1.5">{{ item.title }}</h3>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{{ item.desc }}</p>
+        </div>
+      </div>
+    </section>
+
     <!-- Security Warning -->
     <section class="security-warning">
       <div class="security-icon">
-        <span class="material-icons">gpp_good</span>
+        <span class="material-icons" aria-hidden="true">gpp_good</span>
       </div>
       <div class="security-text">
         <h3>Protege tus datos de pago</h3>
@@ -72,18 +115,56 @@
       </div>
     </section>
 
+    <!-- Preguntas Frecuentes sobre Pagos -->
+    <section class="bg-white rounded-2xl border border-[#C5A059]/25 p-6 sm:p-8 shadow-sm mb-12">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-[#C5A059] block mb-1">Resolución de dudas</span>
+          <h2 class="text-2xl font-bold text-[#292524]">Preguntas frecuentes sobre pagos</h2>
+        </div>
+        <a routerLink="/ayuda" class="text-sm font-semibold text-[#722F37] hover:underline inline-flex items-center gap-1">
+          Ver más en el Centro de Ayuda
+          <span class="material-icons text-base" aria-hidden="true">arrow_forward</span>
+        </a>
+      </div>
+
+      <div class="space-y-3">
+        <div *ngFor="let faq of paymentFaqs; let i = index"
+             class="border border-[#E5E0D8] rounded-xl overflow-hidden transition-colors"
+             [ngClass]="faq.isOpen ? 'border-[#722F37]/50 bg-[#FCFAF7]' : 'bg-white'">
+          <button type="button"
+                  (click)="toggleFaq(i)"
+                  [attr.aria-expanded]="faq.isOpen"
+                  [attr.aria-controls]="'payment-faq-' + i"
+                  class="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-semibold text-sm sm:text-base text-[#292524] hover:text-[#722F37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A059]">
+            <span>{{ faq.question }}</span>
+            <span class="material-icons text-[#722F37] transition-transform duration-200 shrink-0"
+                  [class.rotate-180]="faq.isOpen"
+                  aria-hidden="true">
+              expand_more
+            </span>
+          </button>
+          <div *ngIf="faq.isOpen"
+               [id]="'payment-faq-' + i"
+               class="px-5 pb-4 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+            {{ faq.answer }}
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- CTA Section -->
     <section class="info-cta">
       <div class="cta-content">
         <h2>¿Listo para encontrar tu instrumento ideal?</h2>
-        <p>Visita nuestro catálogo para descubrir todas nuestras novedades.</p>
+        <p>Visita nuestro catálogo para descubrir todas nuestras novedades o consulta nuestras opciones de entrega.</p>
         <div class="cta-actions">
           <a routerLink="/catalogo" class="btn-primary">
             Explorar catálogo
-            <span class="material-icons">arrow_forward</span>
+            <span class="material-icons" aria-hidden="true">arrow_forward</span>
           </a>
-          <a routerLink="/ayuda" class="btn-secondary">
-            Centro de ayuda
+          <a routerLink="/informacion/envios" class="btn-secondary">
+            Ver envíos y entregas
           </a>
         </div>
       </div>
@@ -91,3 +172,4 @@
 
   </main>
 </div>
+

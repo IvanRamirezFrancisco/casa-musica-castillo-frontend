@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { skip, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { PublicApiService } from '../../services/public-api.service';
 import { User } from '../../models/user.model';
@@ -96,9 +96,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
     }
-    this.initialTimeout = setTimeout(() => {
-      this.resetSliderTimer();
-    }, 20000);
+    this.ngZone.runOutsideAngular(() => {
+      this.initialTimeout = setTimeout(() => {
+        this.resetSliderTimer();
+      }, 20000);
+    });
   }
 
   private resetSliderTimer(): void {
@@ -106,11 +108,15 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.sliderInterval) clearInterval(this.sliderInterval);
-    this.sliderInterval = setInterval(() => {
-      if (typeof document !== 'undefined' && document.hidden) return;
-      this.hasInteractedOrAutoplayed = true;
-      this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
-    }, 6000);
+    this.ngZone.runOutsideAngular(() => {
+      this.sliderInterval = setInterval(() => {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        this.ngZone.run(() => {
+          this.hasInteractedOrAutoplayed = true;
+          this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
+        });
+      }, 6000);
+    });
   }
 
   private destroy$ = new Subject<void>();
@@ -119,7 +125,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     public router: Router,
     private authService: AuthService,
     private publicApiService: PublicApiService,
-    private connectivityService: ConnectivityService
+    public connectivityService: ConnectivityService,
+    private ngZone: NgZone
   ) {}
 
   get isOnline(): boolean {
@@ -127,7 +134,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Iniciar hero slider con retraso seguro para evitar penalización LCP
+    // Iniciar hero slider fuera de NgZone para no bloquear ApplicationRef.isStable ni el Service Worker
     this.startAutoplayWithDelay();
 
     // Verificar si el usuario está logueado
@@ -136,7 +143,32 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.isLoggedIn = !!user;
     });
 
-    // Cargar productos destacados reales
+    this.loadHomeData();
+
+    // Al recuperar conexión, recargar automáticamente secciones que hayan quedado sin caché
+    this.connectivityService.isOnline$.pipe(skip(1), takeUntil(this.destroy$)).subscribe(online => {
+      if (online) {
+        if (this.categoriesError || this.categories.length === 0) {
+          this.loadCategories();
+        }
+        if (this.trendingError || this.trendingProducts.length === 0) {
+          this.loadTrending();
+        }
+        if (this.featuredProducts.length === 0 || this.latestProducts.length === 0) {
+          this.loadFeaturedAndLatest();
+        }
+      }
+    });
+  }
+
+  loadHomeData(): void {
+    this.loadFeaturedAndLatest();
+    this.loadTrending();
+    this.loadCategories();
+  }
+
+  loadFeaturedAndLatest(): void {
+    this.loadingFeatured = true;
     this.publicApiService.getFeaturedProducts(0, 4).pipe(takeUntil(this.destroy$)).subscribe({
       next: (page) => {
         this.featuredProducts = page.content;
@@ -145,13 +177,15 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: () => { this.loadingFeatured = false; }
     });
 
-    // Cargar últimos productos
     this.publicApiService.getLatestProducts().pipe(takeUntil(this.destroy$)).subscribe({
       next: (products) => { this.latestProducts = products; },
       error: () => {}
     });
+  }
 
-    // Cargar productos en tendencia (Solución 2)
+  loadTrending(): void {
+    this.loadingTrending = true;
+    this.trendingError = false;
     this.publicApiService.getTrendingProducts(8).pipe(takeUntil(this.destroy$)).subscribe({
       next: (products) => {
         this.trendingProducts = products;
@@ -163,8 +197,11 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.trendingError = true;
       }
     });
+  }
 
-    // Cargar categorías con productos activos
+  loadCategories(): void {
+    this.loadingCategories = true;
+    this.categoriesError = false;
     this.publicApiService.getActiveCategories(true).pipe(takeUntil(this.destroy$)).subscribe({
       next: (cats) => {
         this.categories = cats;
@@ -312,6 +349,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   navigateToHelp() { this.router.navigate(['/ayuda']); }
 
   onImageError(event: any): void {
-    event.target.src = '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png';
+    if (event?.target && event.target.src !== window.location.origin + '/assets/icons/icon-192x192.png') {
+      event.target.src = '/assets/icons/icon-192x192.png';
+    }
   }
 }

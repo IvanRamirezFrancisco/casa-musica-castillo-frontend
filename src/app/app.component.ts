@@ -27,7 +27,7 @@ export class AppComponent {
   constructor(
     private router: Router,
     private pwaUpdateService: PwaUpdateService,
-    private connectivityService: ConnectivityService
+    public connectivityService: ConnectivityService
   ) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)

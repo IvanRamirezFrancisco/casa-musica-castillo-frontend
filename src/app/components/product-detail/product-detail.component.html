@@ -9,19 +9,33 @@
   <p class="text-sm tracking-wide">Cargando producto...</p>
 </div>
 
-<!-- ── Error ──────────────────────────────────────────────────────────────────── -->
+<!-- ── Error / Sin caché ─────────────────────────────────────────────────────── -->
 <div *ngIf="error && !loading"
-     class="min-h-[60vh] flex flex-col items-center justify-center gap-6 text-center px-4">
-  <span class="material-symbols-outlined text-6xl" [ngClass]="!isOnline ? 'text-amber-400' : 'text-red-400'">
-    {{ !isOnline ? 'wifi_off' : 'error_outline' }}
-  </span>
-  <h2 class="text-2xl font-semibold text-gray-700 max-w-lg">{{ error }}</h2>
-  <button (click)="goBack()"
-          class="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600
-                 text-white font-semibold rounded-lg transition-colors">
-    <span class="material-symbols-outlined text-xl">arrow_back</span>
-    Volver al Catálogo
-  </button>
+     class="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-4 py-12">
+  <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-1"
+       [ngClass]="!isOnline ? 'bg-amber-50 text-[#722F37]' : 'bg-red-50 text-red-500'">
+    <span class="material-symbols-outlined text-4xl">
+      {{ !isOnline ? 'wifi_off' : 'error_outline' }}
+    </span>
+  </div>
+  <h2 class="text-xl sm:text-2xl font-bold text-slate-800 max-w-lg">
+    {{ !isOnline ? 'Producto no disponible sin conexión' : 'No pudimos cargar el producto' }}
+  </h2>
+  <p class="text-sm text-slate-600 max-w-md leading-relaxed">{{ error }}</p>
+  <div class="flex flex-wrap items-center justify-center gap-3 mt-2">
+    <button (click)="retryLoadProduct()"
+            class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#722F37] hover:bg-[#5a252c]
+                   text-white text-sm font-semibold rounded-xl transition-colors shadow-sm">
+      <span class="material-symbols-outlined text-lg">refresh</span>
+      Reintentar
+    </button>
+    <button (click)="goBack()"
+            class="inline-flex items-center gap-2 px-5 py-2.5 border border-slate-200 bg-white hover:bg-slate-50
+                   text-slate-700 text-sm font-semibold rounded-xl transition-colors">
+      <span class="material-symbols-outlined text-lg">arrow_back</span>
+      Volver al Catálogo
+    </button>
+  </div>
 </div>
 
 <!-- ── Contenido Principal ──────────────────────────────────────────────────── -->
@@ -30,12 +44,17 @@
 
     <!-- AVISO DISCRETO OFFLINE -->
     <div *ngIf="!isOnline"
-         class="mb-6 p-3.5 bg-amber-50 border border-amber-200/80 rounded-2xl flex items-center gap-3 text-amber-900 text-xs sm:text-sm shadow-sm">
-      <span class="material-symbols-outlined text-amber-600 text-xl flex-shrink-0">wifi_off</span>
-      <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-        <span class="font-semibold">Sin conexión. Mostrando información guardada.</span>
-        <span class="text-amber-800 text-xs">Los precios y la disponibilidad pueden haber cambiado.</span>
+         class="mb-6 p-4 bg-[#FAF6F0] border border-[#C5A059]/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 text-xs sm:text-sm shadow-sm">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#722F37] text-xl flex-shrink-0">wifi_off</span>
+        <div>
+          <span class="font-bold text-[#722F37]">Información guardada.</span>
+          <span class="text-slate-600 sm:ml-1.5">La disponibilidad y el precio pueden haber cambiado.</span>
+        </div>
       </div>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 text-amber-900 text-xs font-medium self-start sm:self-auto">
+        Modo lectura sin conexión
+      </span>
     </div>
 
     <!-- Breadcrumbs -->

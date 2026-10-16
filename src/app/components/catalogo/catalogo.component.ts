@@ -124,6 +124,21 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     this.cartService.cartCount$.pipe(takeUntil(this.destroy$)).subscribe(count => {
       this.cartItemCount = count;
     });
+
+    // Al restablecer la conexión, recargar automáticamente si había error o faltaban categorías
+    this.connectivityService.isOnline$.pipe(distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(online => {
+      if (online) {
+        if (this.error || this.productos.length === 0) {
+          this.loadProducts();
+        }
+        if (this.categorias.length === 0) {
+          this.publicApiService.getActiveCategories(true).pipe(takeUntil(this.destroy$)).subscribe({
+            next: (cats) => this.categorias = cats,
+            error: () => {}
+          });
+        }
+      }
+    });
   }
 
   loadProducts(): void {
@@ -155,9 +170,9 @@ export class CatalogoComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         if (!this.connectivityService.isOnline || err?.status === 0 || err?.error?.offline) {
-          this.error = 'No hay información guardada para esta sección. Conéctate a Internet para actualizarla.';
+          this.error = 'No hay información guardada para esta consulta. Conéctate a Internet para actualizar el catálogo.';
         } else {
-          this.error = 'No se pudo cargar el catálogo. Inténtalo de nuevo.';
+          this.error = 'El servidor está tardando en responder. Inténtalo de nuevo en unos segundos.';
         }
         this.loading = false;
       }
@@ -205,6 +220,11 @@ export class CatalogoComponent implements OnInit, OnDestroy {
 
   toggleFavorite(productId: number, event: Event): void {
     event.stopPropagation();
+
+    if (!this.connectivityService.isOnline) {
+      this.connectivityService.notifyOfflineAction('Esta acción requiere conexión a Internet.');
+      return;
+    }
     
     if (!this.isLoggedIn) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
@@ -226,6 +246,10 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   agregarAlCarrito(producto: PublicProduct, event?: MouseEvent): void {
     if (event) {
       event.stopPropagation();
+    }
+    if (!this.connectivityService.isOnline) {
+      this.connectivityService.notifyOfflineAction('Agregar al carrito requiere conexión a Internet.');
+      return;
     }
     if (!this.isLoggedIn) {
       this.router.navigate(['/login'], {
