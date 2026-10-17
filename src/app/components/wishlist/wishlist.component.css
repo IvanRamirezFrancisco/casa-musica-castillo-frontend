@@ -3,10 +3,8 @@
    Diseño premium con glassmorphism y micro-animaciones
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 :host {
-  font-family: 'Inter', var(--fuente-principal, sans-serif);
+  font-family: 'Inter', 'Roboto', var(--fuente-principal, system-ui, -apple-system, sans-serif);
 }
 
 .wishlist-page {

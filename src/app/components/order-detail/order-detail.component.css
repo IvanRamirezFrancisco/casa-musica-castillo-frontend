@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-:host { font-family: 'Inter', sans-serif; }
+:host { font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif; }
 
 .detail-page {
   --wine: #722f37; --wine-dark: #5a2029; --wine-light: #8f3b44;
@@ -234,9 +233,9 @@
 }
 
 .btn-secondary {
-  display: inline-flex; align-items: center; gap: .5rem; 
-  background: #fff; color: var(--gray-800); border: 1px solid var(--gray-300); 
-  border-radius: 6px; padding: .5rem 1rem; font-weight: 500; font-size: .85rem; 
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: #fff; color: var(--gray-800); border: 1px solid var(--gray-300);
+  border-radius: 6px; padding: .5rem 1rem; font-weight: 500; font-size: .85rem;
   cursor: pointer; transition: all .2s;
 }
 .btn-secondary:hover {

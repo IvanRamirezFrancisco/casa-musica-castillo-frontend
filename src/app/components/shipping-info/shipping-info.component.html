@@ -3,15 +3,15 @@
   <section class="info-hero">
     <div class="hero-content">
       <!-- Breadcrumb (Visible solo en móvil; oculto en escritorio donde ya existe la barra de navegación principal) -->
-      <nav aria-label="Breadcrumb" class="flex md:hidden items-center justify-center gap-1.5 text-xs text-white/80 mb-4 max-w-full overflow-hidden flex-nowrap px-3 py-1 rounded-full bg-black/15 border border-white/10 w-fit mx-auto">
-        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
-          <span class="material-icons text-sm" aria-hidden="true">home</span>
-          <span>Inicio</span>
+      <nav aria-label="Breadcrumb" class="cmc-mobile-breadcrumb flex md:hidden items-center justify-center gap-1.5 text-xs text-[#FFFDFC]/90 mb-4 max-w-full overflow-hidden flex-nowrap px-3.5 py-1 rounded-full bg-black/25 border border-white/20 w-fit mx-auto">
+        <a routerLink="/home" class="cmc-breadcrumb-home !text-[#FFFDFC] hover:!text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
+          <span class="material-icons text-sm !text-inherit" aria-hidden="true">home</span>
+          <span class="!text-inherit font-medium">Inicio</span>
         </a>
-        <span class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</span>
-        <span class="text-white/75 shrink-0">Información</span>
-        <span class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</span>
-        <span class="text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">Envíos y entregas</span>
+        <span class="cmc-breadcrumb-sep material-icons text-xs !text-[#FFFDFC]/65 shrink-0" aria-hidden="true">chevron_right</span>
+        <span class="cmc-breadcrumb-mid !text-[#FFFDFC]/90 shrink-0">Información</span>
+        <span class="cmc-breadcrumb-sep material-icons text-xs !text-[#FFFDFC]/65 shrink-0" aria-hidden="true">chevron_right</span>
+        <span class="cmc-breadcrumb-current !text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">Envíos y entregas</span>
       </nav>
 
       <span class="hero-badge">Logística y Entrega</span>
@@ -38,7 +38,7 @@
         <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-[#C5A059] mb-1">Modalidad 01</span>
         <h2 class="card-title">Envío a domicilio</h2>
         <p class="card-desc">Recibe tu compra directamente en la dirección indicada al realizar tu pedido.</p>
-        
+
         <ul class="card-features">
           <li>
             <span class="material-icons feature-icon" aria-hidden="true">check_circle</span>
@@ -59,7 +59,7 @@
         <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-[#C5A059] mb-1">Modalidad 02 · Sin costo</span>
         <h2 class="card-title">Recolección en tienda</h2>
         <p class="card-desc">Recoge el pedido directamente en nuestra sucursal de Huejutla de Reyes.</p>
-        
+
         <ul class="card-features">
           <li>
             <span class="material-icons feature-icon" aria-hidden="true">money_off</span>
@@ -84,7 +84,7 @@
         <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-[#C5A059] mb-1">Modalidad 03 · Asistida</span>
         <h2 class="card-title">Envío fuera de zona</h2>
         <p class="card-desc">Atención personalizada cuando tu dirección está fuera de nuestra zona local.</p>
-        
+
         <ul class="card-features">
           <li>
             <span class="material-icons feature-icon" aria-hidden="true">calculate</span>

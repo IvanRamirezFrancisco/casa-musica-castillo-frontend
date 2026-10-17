@@ -7,13 +7,13 @@
       </button>
 
       <div class="logo-section" routerLink="/home" style="cursor: pointer;" aria-label="Inicio">
-        <img src="https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png" alt="Casa de Música Castillo" width="200" height="75" class="logo-image" />
+        <img src="https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png" onerror="this.onerror=null;this.src='/assets/icons/icon-192x192.png'" alt="Casa de Música Castillo" width="200" height="75" class="logo-image" />
       </div>
-      
+
       <div class="search-section">
         <app-global-search (searchActiveChange)="onSearchActiveChange($event)"></app-global-search>
       </div>
-      
+
       <!-- Acciones para usuario NO logueado -->
       <div class="user-actions" *ngIf="!isLoggedIn">
         <button class="action-btn mobile-search-trigger" (click)="toggleMobileSearch()" aria-label="Abrir búsqueda" [attr.aria-expanded]="isMobileSearchOpen">
@@ -45,13 +45,13 @@
           <span class="material-icons">shopping_cart</span>
           <span class="cart-count" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
         </button>
-        
+
         <!-- Menú de usuario logueado -->
         <div class="user-menu-container">
           <button class="action-btn user-btn" (click)="toggleUserMenu()" title="Mi cuenta">
             <span class="material-icons">account_circle</span>
           </button>
-          
+
           <!-- Dropdown del usuario -->
           <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
             <div class="user-dropdown-header">
@@ -63,9 +63,9 @@
                 <p class="user-email">{{ currentUser?.email }}</p>
               </div>
             </div>
-            
+
             <div class="dropdown-divider"></div>
-            
+
             <ul class="dropdown-menu-list">
               <li *ngIf="isAdminUser()">
                 <button (click)="navigateToAdmin()" class="dropdown-item admin-item">
@@ -92,9 +92,9 @@
                 </button>
               </li>
             </ul>
-            
+
             <div class="dropdown-divider"></div>
-            
+
             <button (click)="logout()" class="dropdown-item logout-item">
               <span class="material-icons">logout</span>
               <span>Cerrar Sesión</span>
@@ -103,16 +103,16 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Fila inferior exclusiva para la búsqueda móvil -->
     <div class="mobile-search-row" *ngIf="isMobileSearchOpen">
       <app-global-search (searchActiveChange)="onSearchActiveChange($event)"></app-global-search>
     </div>
   </div>
-  
+
   <!-- Overlay para cerrar el menú (fuera del nav) -->
   <div class="mobile-overlay" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
-  
+
   <!-- Navegación Secundaria (integrada al header para que se comporte como parte del sticky header) -->
   <nav class="secondary-nav" [class.mobile-open]="isMobileMenuOpen">
     <div class="container nav-container" [class.mobile-open]="isMobileMenuOpen">
@@ -141,21 +141,21 @@
               <span class="nav-text">Catálogo</span>
             </a>
           </li>
-          
+
           <li class="nav-item" *ngIf="!isLoggedIn">
             <a routerLink="/register" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
               <span class="material-icons">person_add</span>
               <span class="nav-text">Registrarse</span>
             </a>
           </li>
-          
+
           <li class="nav-item">
             <a routerLink="/ayuda" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
               <span class="material-icons">help_outline</span>
               <span class="nav-text">Ayuda</span>
             </a>
           </li>
-          
+
           <!-- Navegación Secundaria: Información -->
           <li class="nav-item dropdown-nav" [class.dropdown-expanded]="showInfoMenu">
             <button type="button" class="nav-link dropdown-trigger" (click)="toggleInfoMenu(); $event.stopPropagation()" [attr.aria-expanded]="showInfoMenu" aria-haspopup="menu" aria-controls="info-menu">
@@ -163,11 +163,11 @@
               <span class="nav-text">Información</span>
               <span class="material-icons dropdown-arrow" [class.open]="showInfoMenu">expand_more</span>
             </button>
-            
+
             <!-- Desktop: Popover refinado | Mobile: Acordeón interno -->
             <div id="info-menu" class="dropdown-menu-nav" *ngIf="showInfoMenu" (click)="$event.stopPropagation()">
               <div class="dropdown-content-grid">
-                
+
                 <div class="dropdown-group">
                   <span class="dropdown-group-title">LA TIENDA</span>
                   <a routerLink="/mapa-sitio" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
@@ -228,11 +228,11 @@
       </div>
     </div>
   </nav>
-  
+
   <!-- Animaciones de productos volando al carrito -->
   <div class="flying-products-container">
-    <div 
-      *ngFor="let product of flyingProducts" 
+    <div
+      *ngFor="let product of flyingProducts"
       class="flying-product"
       [style.left.px]="product.startX"
       [style.top.px]="product.startY">

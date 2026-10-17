@@ -1,12 +1,106 @@
-/* -- Importaciones externas (deben ser siempre las primeras) -- */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;600;700&display=swap');
+/* -- Fuentes e Iconos Locales (Soporte 100% Offline sin dependencia de CDN externo) -- */
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/assets/fonts/MaterialIcons-Regular.woff2') format('woff2');
+}
 
-/* -- Tailwind CSS (used only by csv-import-export modal component) -- */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('/assets/fonts/MaterialSymbolsOutlined.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('/assets/fonts/Montserrat-Variable-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('/assets/fonts/Montserrat-Variable-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/assets/fonts/Roboto-Variable-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/assets/fonts/Roboto-Variable-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/assets/fonts/Roboto-Variable-latin.woff2') format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons', 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined', 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* -- Tailwind CSS -- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos Globales - Casa de Mï¿½sica Castillo */
+/* Estilos Globales - Casa de Música Castillo */
 :root {
   /* Colores Principales (Mapeados a nuevos tokens de Fase 1A) */
   --primary-color: #722F37;    /* Conservado para legacy/admin. Nuevo predominante es primary-500 (#A64D5B) */
@@ -19,11 +113,11 @@
   --success-color: #27AE60;    /* Verde Bosque */
   --error-color: #C0392B;      /* Rojo Ladrillo */
   --text-light: #ffffff;       /* Texto blanco */
-  
-  /* Tipografï¿½a */
-  --font-title: 'Montserrat', sans-serif;  /* Tï¿½tulos y nombres de instrumentos */
-  --font-body: 'Roboto', sans-serif;       /* Cuerpo, tablas, formularios */
-  
+
+  /* Tipografía con fallback métrico consistente */
+  --font-title: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-body: 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
   /* Variaciones de colores para estados */
   --primary-hover: #913F4D;    /* primary-600 */
   --primary-light: #A64D5B;    /* primary-500 */
@@ -33,14 +127,14 @@
   --text-muted: #6B6560;       /* texto-muted */
   --border-color: #E7DED5;     /* surface-border */  /* Beige medio - Bordes y separadores */
   --surface-dark: #3B1F24;     /* Dark warm surface (burdeos muy oscuro) */
-  
+
   /* Sombras profesionales */
   --shadow-light: rgba(128, 0, 32, 0.08);
   --shadow-medium: rgba(128, 0, 32, 0.15);
   --shadow-strong: rgba(128, 0, 32, 0.25);
   --card-shadow: 0 2px 8px rgba(26, 26, 26, 0.1);
   --card-shadow-hover: 0 8px 24px rgba(26, 26, 26, 0.15);
-  
+
   /* Medidas y transiciones */
   --border-radius: 8px;
   --border-radius-lg: 12px;
@@ -722,4 +816,41 @@ body.modal-open {
   max-width: 280px !important;
   line-height: 1.4 !important;
   white-space: normal !important;
+}
+
+/* -- Migaja de pan móvil unificada (páginas informativas y legales) --
+   Garantiza alto contraste sobre hero burdeos (#722F37) anulando la regla global `a { color: var(--primary-color) }`. */
+.cmc-mobile-breadcrumb {
+  background-color: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 253, 252, 0.22);
+  color: rgba(255, 253, 252, 0.92);
+}
+
+.cmc-mobile-breadcrumb a,
+.cmc-mobile-breadcrumb a:visited,
+.cmc-mobile-breadcrumb .cmc-breadcrumb-home,
+.cmc-mobile-breadcrumb .cmc-breadcrumb-home .material-icons {
+  color: #FFFDFC !important;
+  text-decoration: none !important;
+}
+
+.cmc-mobile-breadcrumb a:hover,
+.cmc-mobile-breadcrumb a:focus-visible,
+.cmc-mobile-breadcrumb .cmc-breadcrumb-home:hover,
+.cmc-mobile-breadcrumb .cmc-breadcrumb-home:hover .material-icons {
+  color: #E2B84F !important;
+}
+
+.cmc-mobile-breadcrumb .cmc-breadcrumb-mid {
+  color: rgba(255, 253, 252, 0.92) !important;
+}
+
+.cmc-mobile-breadcrumb .cmc-breadcrumb-sep {
+  color: rgba(255, 253, 252, 0.65) !important;
+}
+
+.cmc-mobile-breadcrumb .cmc-breadcrumb-current,
+.cmc-mobile-breadcrumb [aria-current="page"] {
+  color: #E2B84F !important;
+  font-weight: 600;
 }

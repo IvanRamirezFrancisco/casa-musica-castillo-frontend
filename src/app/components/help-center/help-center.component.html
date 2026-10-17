@@ -3,25 +3,25 @@
   <header class="help-hero">
     <div class="hero-content">
       <!-- Breadcrumb (Visible solo en móvil; oculto en escritorio donde ya existe la barra de navegación principal) -->
-      <nav aria-label="Breadcrumb" class="flex md:hidden items-center justify-center gap-1.5 text-xs text-white/80 mb-4 max-w-full overflow-hidden flex-nowrap px-3 py-1 rounded-full bg-black/15 border border-white/10 w-fit mx-auto">
-        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
-          <i class="material-icons text-sm" aria-hidden="true">home</i>
-          <span>Inicio</span>
+      <nav aria-label="Breadcrumb" class="cmc-mobile-breadcrumb flex md:hidden items-center justify-center gap-1.5 text-xs text-[#FFFDFC]/90 mb-4 max-w-full overflow-hidden flex-nowrap px-3.5 py-1 rounded-full bg-black/25 border border-white/20 w-fit mx-auto">
+        <a routerLink="/home" class="cmc-breadcrumb-home !text-[#FFFDFC] hover:!text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
+          <span class="material-icons text-sm !text-inherit" aria-hidden="true">home</span>
+          <span class="!text-inherit font-medium">Inicio</span>
         </a>
-        <i class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</i>
-        <span class="text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">Centro de Ayuda</span>
+        <span class="cmc-breadcrumb-sep material-icons text-xs !text-[#FFFDFC]/65 shrink-0" aria-hidden="true">chevron_right</span>
+        <span class="cmc-breadcrumb-current !text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">Centro de Ayuda</span>
       </nav>
 
       <span class="kicker">Soporte y Orientación</span>
       <h1>¿Cómo podemos ayudarte?</h1>
       <p class="subtitle">Encuentra respuestas sobre tu cuenta, compras, envíos, formas de pago y nuestros instrumentos.</p>
-      
+
       <!-- Barra de Búsqueda -->
       <div class="search-container">
         <i class="material-icons search-icon" aria-hidden="true">search</i>
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery" 
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
           (ngModelChange)="onSearchChange()"
           placeholder="Busca por tema, palabra clave o pregunta..."
           class="search-input"
@@ -105,18 +105,18 @@
             <ng-container *ngIf="isLoadingCategories">
                <div class="skeleton-category" *ngFor="let i of [1,2,3,4]"></div>
             </ng-container>
-  
+
             <ng-container *ngIf="!isLoadingCategories">
               <button type="button"
-                class="category-btn" 
+                class="category-btn"
                 [class.active]="selectedCategory === 'all'"
                 (click)="selectCategory('all')">
                 <i class="material-icons" aria-hidden="true">apps</i>
                 <span class="cat-name">Todas las preguntas</span>
               </button>
-              
+
               <button type="button"
-                *ngFor="let cat of categories" 
+                *ngFor="let cat of categories"
                 class="category-btn"
                 [class.active]="selectedCategory === cat.id.toString() || selectedCategory === cat.name"
                 (click)="selectCategory(cat.id)">
@@ -141,7 +141,7 @@
             <h2>Resultados para "{{ searchQuery }}"</h2>
             <span class="section-subtitle">{{ filteredFAQs.length }} resultado{{ filteredFAQs.length === 1 ? '' : 's' }} encontrado{{ filteredFAQs.length === 1 ? '' : 's' }}</span>
           </ng-container>
-          
+
           <ng-container *ngIf="!searchQuery">
             <h2 *ngIf="selectedCategory === 'all'">Preguntas frecuentes</h2>
             <h2 *ngIf="selectedCategory !== 'all'">{{ getCategoryNameSafe(selectedCategory) }}</h2>
@@ -183,11 +183,11 @@
 
           <!-- FAQs -->
           <ng-container *ngIf="!isLoadingFaqs && !faqsError">
-            <div 
-              *ngFor="let faq of filteredFAQs; let i = index" 
+            <div
+              *ngFor="let faq of filteredFAQs; let i = index"
               class="faq-item"
               [class.open]="faq.isOpen">
-              
+
               <button type="button"
                       class="faq-question w-full text-left border-0"
                       (click)="toggleFAQ(faq)"
@@ -207,7 +207,7 @@
                   <i class="material-icons">expand_more</i>
                 </span>
               </button>
-              
+
               <div [id]="'faq-answer-' + (faq.id || i)"
                    class="faq-answer"
                    [style.max-height]="faq.isOpen ? '1500px' : '0'">

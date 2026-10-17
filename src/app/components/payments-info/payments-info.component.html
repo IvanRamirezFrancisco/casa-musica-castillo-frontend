@@ -3,15 +3,15 @@
   <section class="info-hero" style="background: linear-gradient(135deg, #722F37 0%, #58242a 100%); color: #FFFFFF;">
     <div class="hero-content">
       <!-- Breadcrumb (Visible solo en móvil; oculto en escritorio donde ya existe la barra de navegación principal) -->
-      <nav aria-label="Breadcrumb" class="flex md:hidden items-center justify-center gap-1.5 text-xs text-white/80 mb-4 max-w-full overflow-hidden flex-nowrap px-3 py-1 rounded-full bg-black/15 border border-white/10 w-fit mx-auto">
-        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
-          <span class="material-icons text-sm" aria-hidden="true">home</span>
-          <span>Inicio</span>
+      <nav aria-label="Breadcrumb" class="cmc-mobile-breadcrumb flex md:hidden items-center justify-center gap-1.5 text-xs text-[#FFFDFC]/90 mb-4 max-w-full overflow-hidden flex-nowrap px-3.5 py-1 rounded-full bg-black/25 border border-white/20 w-fit mx-auto">
+        <a routerLink="/home" class="cmc-breadcrumb-home !text-[#FFFDFC] hover:!text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
+          <span class="material-icons text-sm !text-inherit" aria-hidden="true">home</span>
+          <span class="!text-inherit font-medium">Inicio</span>
         </a>
-        <span class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</span>
-        <span class="text-white/75 shrink-0">Información</span>
-        <span class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</span>
-        <span class="text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">Formas de pago</span>
+        <span class="cmc-breadcrumb-sep material-icons text-xs !text-[#FFFDFC]/65 shrink-0" aria-hidden="true">chevron_right</span>
+        <span class="cmc-breadcrumb-mid !text-[#FFFDFC]/90 shrink-0">Información</span>
+        <span class="cmc-breadcrumb-sep material-icons text-xs !text-[#FFFDFC]/65 shrink-0" aria-hidden="true">chevron_right</span>
+        <span class="cmc-breadcrumb-current !text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">Formas de pago</span>
       </nav>
 
       <span class="hero-badge">Transacciones Seguras</span>
@@ -22,7 +22,7 @@
 
   <!-- Main Content -->
   <main class="info-main-content">
-    
+
     <div class="options-grid">
       <!-- Opción 1: Mercado Pago -->
       <div class="info-card">
@@ -37,7 +37,7 @@
         </div>
         <h2 class="card-title">Mercado Pago</h2>
         <p class="card-desc">Pago en línea rápido y seguro a través de la pasarela oficial de Mercado Pago.</p>
-        
+
         <ul class="card-features">
           <li>
             <span class="material-icons feature-icon" aria-hidden="true">security</span>
@@ -67,7 +67,7 @@
         </div>
         <h2 class="card-title">Transferencia o Depósito Bancario</h2>
         <p class="card-desc">Paga directamente a nuestra cuenta bancaria autorizada desde la app de tu banco o en ventanilla.</p>
-        
+
         <ul class="card-features">
           <li>
             <span class="material-icons feature-icon" aria-hidden="true">account_balance_wallet</span>

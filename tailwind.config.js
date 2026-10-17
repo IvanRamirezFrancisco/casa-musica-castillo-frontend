@@ -35,8 +35,8 @@ module.exports = {
         }
       },
       fontFamily: {
-        title: ['Montserrat', 'sans-serif'],
-        body: ['Roboto', 'sans-serif'],
+        title: ['Montserrat', 'Segoe UI', 'system-ui', '-apple-system', 'sans-serif'],
+        body: ['Roboto', 'Segoe UI', 'system-ui', '-apple-system', 'sans-serif'],
       }
     },
   },

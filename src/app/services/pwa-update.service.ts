@@ -141,7 +141,11 @@ export class PwaUpdateService implements OnDestroy {
         }
       }
 
-      // 3. Incluir únicamente los scripts y hojas de estilo del mismo origen ya cargados en el arranque
+      // 3. Incluir scripts, hojas de estilo y fuentes locales (.woff2) del mismo origen ya cargados en el arranque,
+      // así como las imágenes públicas de Cloudinary ya presentes en la vista inicial para que queden en caché.
+      const cloudinaryUrlsToWarm = new Set<string>([
+        'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png'
+      ]);
       if (typeof performance !== 'undefined' && performance.getEntriesByType) {
         const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
         for (const entry of resources) {
@@ -149,24 +153,31 @@ export class PwaUpdateService implements OnDestroy {
             const parsed = new URL(entry.name);
             if (
               parsed.origin === window.location.origin &&
-              (parsed.pathname.endsWith('.js') || parsed.pathname.endsWith('.css')) &&
+              (parsed.pathname.endsWith('.js') ||
+                parsed.pathname.endsWith('.css') ||
+                parsed.pathname.endsWith('.woff2')) &&
               !parsed.pathname.includes('ngsw-worker.js')
             ) {
               urlsToWarm.add(parsed.pathname);
+            } else if (parsed.href.startsWith('https://res.cloudinary.com/dy3ibnjl7/image/upload/')) {
+              cloudinaryUrlsToWarm.add(parsed.href);
             }
           } catch {}
         }
       }
 
-      // 4. Poblar el Cache Storage del Service Worker activo
-      await Promise.allSettled(
-        Array.from(urlsToWarm).map(url =>
+      // 4. Poblar el Cache Storage del Service Worker activo (recursos locales y de marca)
+      await Promise.allSettled([
+        ...Array.from(urlsToWarm).map(url =>
           fetch(url, {
             credentials: 'same-origin',
             cache: url === '/index.html' ? 'no-cache' : 'default'
           })
+        ),
+        ...Array.from(cloudinaryUrlsToWarm).map(url =>
+          fetch(url, { mode: 'no-cors', cache: 'default' })
         )
-      );
+      ]);
 
       // 5. Verificar /ngsw/state mientras hay conexión para recuperar estados degradados heredados
       await this.verifyAndHealServiceWorkerState();
