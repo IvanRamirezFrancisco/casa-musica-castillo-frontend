@@ -2,14 +2,14 @@
   <!-- Hero Section -->
   <header class="help-hero">
     <div class="hero-content">
-      <!-- Breadcrumb -->
-      <nav aria-label="Migas de pan" class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/75 mb-4 flex-wrap">
-        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1">
-          <i class="material-icons text-base" aria-hidden="true">home</i>
-          Inicio
+      <!-- Breadcrumb (Visible solo en móvil; oculto en escritorio donde ya existe la barra de navegación principal) -->
+      <nav aria-label="Breadcrumb" class="flex md:hidden items-center justify-center gap-1.5 text-xs text-white/80 mb-4 max-w-full overflow-hidden flex-nowrap px-3 py-1 rounded-full bg-black/15 border border-white/10 w-fit mx-auto">
+        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
+          <i class="material-icons text-sm" aria-hidden="true">home</i>
+          <span>Inicio</span>
         </a>
-        <i class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</i>
-        <span class="text-[#E2B84F] font-semibold" aria-current="page">Centro de Ayuda</span>
+        <i class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</i>
+        <span class="text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">Centro de Ayuda</span>
       </nav>
 
       <span class="kicker">Soporte y Orientación</span>

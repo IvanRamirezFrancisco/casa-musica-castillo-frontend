@@ -2,16 +2,16 @@
   <!-- Hero Section -->
   <section class="info-hero" style="background: linear-gradient(135deg, #722F37 0%, #58242a 100%); color: #FFFFFF;">
     <div class="hero-content">
-      <!-- Breadcrumb -->
-      <nav aria-label="Migas de pan" class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/75 mb-5 flex-wrap">
-        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1">
-          <span class="material-icons text-base" aria-hidden="true">home</span>
-          Inicio
+      <!-- Breadcrumb (Visible solo en móvil; oculto en escritorio donde ya existe la barra de navegación principal) -->
+      <nav aria-label="Breadcrumb" class="flex md:hidden items-center justify-center gap-1.5 text-xs text-white/80 mb-4 max-w-full overflow-hidden flex-nowrap px-3 py-1 rounded-full bg-black/15 border border-white/10 w-fit mx-auto">
+        <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
+          <span class="material-icons text-sm" aria-hidden="true">home</span>
+          <span>Inicio</span>
         </a>
-        <span class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</span>
-        <span class="text-white/75">Información</span>
-        <span class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</span>
-        <span class="text-[#E2B84F] font-semibold" aria-current="page">Formas de pago</span>
+        <span class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</span>
+        <span class="text-white/75 shrink-0">Información</span>
+        <span class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</span>
+        <span class="text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">Formas de pago</span>
       </nav>
 
       <span class="hero-badge">Transacciones Seguras</span>

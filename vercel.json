@@ -1,7 +1,49 @@
 {
+  "headers": [
+    {
+      "source": "/ngsw.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/ngsw-worker.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!ngsw\\.json|ngsw-worker\\.js|manifest\\.webmanifest|favicon\\.ico|assets/|media/|.*\\.(?:js|css|mjs|json|webmanifest|ico|png|jpg|jpeg|webp|avif|gif|svg|woff|woff2|ttf|otf|map)$).*)",
       "destination": "/index.html"
     }
   ]

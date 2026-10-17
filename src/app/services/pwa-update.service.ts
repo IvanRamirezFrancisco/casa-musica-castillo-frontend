@@ -16,6 +16,8 @@ export class PwaUpdateService implements OnDestroy {
   private readonly subscription = new Subscription();
   private promptOpen = false;
   private reloading = false;
+  private warmUpInProgress = false;
+  private recoveryAttempted = false;
 
   constructor(private appRef: ApplicationRef, private swUpdate: SwUpdate) {
     if (!this.swUpdate.isEnabled) {
@@ -25,7 +27,14 @@ export class PwaUpdateService implements OnDestroy {
     this.subscription.add(
       this.swUpdate.versionUpdates.subscribe((event: VersionEvent) => {
         if (event.type === 'VERSION_READY') {
-          this.promptUserToUpdate();
+          // Asignar el cliente actual al nuevo manifestHash inmediatamente para que el warmup
+          // almacene /index.html en la versión más reciente incluso antes de recargar con F5.
+          this.swUpdate.activateUpdate()
+            .then(() => this.warmUpAppShellCache(true))
+            .catch(() => {})
+            .finally(() => this.promptUserToUpdate());
+        } else if (event.type === 'NO_NEW_VERSION_DETECTED') {
+          this.warmUpAppShellCache(false);
         }
       })
     );
@@ -35,16 +44,19 @@ export class PwaUpdateService implements OnDestroy {
       this.swUpdate.unrecoverable.subscribe(() => this.reloadOnce())
     );
 
-    // Buscar actualizaciones cada 6 horas, cuando la app ya es estable.
+    // Buscar actualizaciones cada 6 horas, cuando la app ya es estable y hay conexión.
     const appIsStable$ = this.appRef.isStable.pipe(first(isStable => isStable));
     const everySixHours$ = interval(6 * 60 * 60 * 1000);
     this.subscription.add(
       concat(appIsStable$, everySixHours$).subscribe(() => {
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          return;
+        }
         this.swUpdate.checkForUpdate().catch(() => { /* sin red: se reintenta en el siguiente ciclo */ });
       })
     );
 
-    this.warmUpAppShellCache();
+    this.setupAppShellWarmUpListeners();
   }
 
   /**
@@ -52,65 +64,146 @@ export class PwaUpdateService implements OnDestroy {
    * y los chunks iniciales ya cargados por el navegador queden almacenados inmediatamente en el Cache Storage
    * del Service Worker apenas tome control del cliente.
    *
-   * Esto evita que el IdleScheduler de ngsw-worker.js falle en dominios de producción (Vercel)
-   * si el usuario pasa a modo Offline antes de que concluya el temporizador idle, previniendo
-   * el estado degradado EXISTING_CLIENTS_ONLY y el error HTTP 504 Gateway Timeout al recargar con F5.
+   * Además verifica /ngsw/state cuando hay red para recuperar automáticamente al Service Worker si una versión
+   * previa quedó degradada en EXISTING_CLIENTS_ONLY o SAFE_MODE en Vercel Preview.
    */
-  private warmUpAppShellCache(): void {
+  private setupAppShellWarmUpListeners(): void {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       return;
     }
 
-    let warmedUp = false;
-    const triggerWarmUp = async () => {
-      if (warmedUp || !navigator.onLine || !navigator.serviceWorker.controller) {
+    if (navigator.serviceWorker.controller) {
+      this.warmUpAppShellCache(false);
+    }
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      this.warmUpAppShellCache(true);
+    });
+    navigator.serviceWorker.ready
+      .then(() => this.warmUpAppShellCache(false))
+      .catch(() => {});
+    window.addEventListener('online', () => {
+      this.warmUpAppShellCache(false);
+    });
+  }
+
+  private async warmUpAppShellCache(forceRefreshIndex: boolean): Promise<void> {
+    if (
+      this.warmUpInProgress ||
+      typeof window === 'undefined' ||
+      !('serviceWorker' in navigator) ||
+      !navigator.onLine ||
+      !navigator.serviceWorker.controller
+    ) {
+      return;
+    }
+
+    this.warmUpInProgress = true;
+    try {
+      const urlsToWarm = new Set<string>(['/index.html', '/manifest.webmanifest', '/favicon.ico']);
+      let expectedMainBundle: string | null = null;
+
+      // 1. Obtener las URLs exactas de app-shell desde ngsw.json sin usar caché HTTP obsoleto
+      const ngswRes = await fetch(`/ngsw.json?ngsw-cache-bust=${Date.now()}`, {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      if (ngswRes.ok) {
+        const manifest = await ngswRes.json();
+        const appShellGroup = manifest?.assetGroups?.find((g: any) => g.name === 'app-shell');
+        if (Array.isArray(appShellGroup?.urls)) {
+          for (const u of appShellGroup.urls) {
+            urlsToWarm.add(u);
+            if (typeof u === 'string' && u.startsWith('/main-') && u.endsWith('.js')) {
+              expectedMainBundle = u.slice(1);
+            }
+          }
+        }
+      }
+
+      // 2. Si se fuerza refresco de /index.html tras una actualización o el /index.html en caché
+      // corresponde a un bundle anterior, limpiar la entrada previa en app-shell:cache antes de pedirla al SW.
+      if (typeof caches !== 'undefined') {
+        const allCacheNames = await caches.keys();
+        const appShellCaches = allCacheNames.filter(name => name.endsWith(':assets:app-shell:cache'));
+        for (const cacheName of appShellCaches) {
+          const cache = await caches.open(cacheName);
+          const cachedIndex = await cache.match('/index.html');
+          if (cachedIndex) {
+            if (forceRefreshIndex) {
+              await cache.delete('/index.html');
+            } else if (expectedMainBundle) {
+              const htmlText = await cachedIndex.clone().text();
+              if (!htmlText.includes(expectedMainBundle)) {
+                await cache.delete('/index.html');
+              }
+            }
+          }
+        }
+      }
+
+      // 3. Incluir únicamente los scripts y hojas de estilo del mismo origen ya cargados en el arranque
+      if (typeof performance !== 'undefined' && performance.getEntriesByType) {
+        const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+        for (const entry of resources) {
+          try {
+            const parsed = new URL(entry.name);
+            if (
+              parsed.origin === window.location.origin &&
+              (parsed.pathname.endsWith('.js') || parsed.pathname.endsWith('.css')) &&
+              !parsed.pathname.includes('ngsw-worker.js')
+            ) {
+              urlsToWarm.add(parsed.pathname);
+            }
+          } catch {}
+        }
+      }
+
+      // 4. Poblar el Cache Storage del Service Worker activo
+      await Promise.allSettled(
+        Array.from(urlsToWarm).map(url =>
+          fetch(url, {
+            credentials: 'same-origin',
+            cache: url === '/index.html' ? 'no-cache' : 'default'
+          })
+        )
+      );
+
+      // 5. Verificar /ngsw/state mientras hay conexión para recuperar estados degradados heredados
+      await this.verifyAndHealServiceWorkerState();
+    } catch {
+      // Ignorar errores silenciosamente si la red cae durante el warmup
+    } finally {
+      this.warmUpInProgress = false;
+    }
+  }
+
+  private async verifyAndHealServiceWorkerState(): Promise<void> {
+    if (this.recoveryAttempted || !navigator.onLine || !navigator.serviceWorker.controller) {
+      return;
+    }
+    try {
+      const stateRes = await fetch('/ngsw/state', { credentials: 'same-origin', cache: 'no-store' });
+      if (!stateRes.ok) {
         return;
       }
-      warmedUp = true;
-
-      try {
-        const urlsToWarm = new Set<string>(['/index.html', '/manifest.webmanifest', '/favicon.ico']);
-
-        // 1. Obtener las URLs exactas de app-shell desde ngsw.json
-        const ngswRes = await fetch('/ngsw.json', { credentials: 'same-origin' });
-        if (ngswRes.ok) {
-          const manifest = await ngswRes.json();
-          const appShellGroup = manifest?.assetGroups?.find((g: any) => g.name === 'app-shell');
-          if (Array.isArray(appShellGroup?.urls)) {
-            appShellGroup.urls.forEach((u: string) => urlsToWarm.add(u));
-          }
+      const stateText = await stateRes.text();
+      if (stateText.includes('EXISTING_CLIENTS_ONLY') || stateText.includes('SAFE_MODE')) {
+        this.recoveryAttempted = true;
+        if (typeof caches !== 'undefined') {
+          const keys = await caches.keys();
+          await Promise.allSettled(
+            keys.filter(k => k.includes('ngsw:')).map(k => caches.delete(k))
+          );
         }
-
-        // 2. Incluir todos los scripts y hojas de estilo iniciales que cargaron antes de que el SW tomara control
-        if (typeof performance !== 'undefined' && performance.getEntriesByType) {
-          const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-          for (const entry of resources) {
-            try {
-              const parsed = new URL(entry.name);
-              if (
-                parsed.origin === window.location.origin &&
-                (parsed.pathname.endsWith('.js') || parsed.pathname.endsWith('.css') || parsed.pathname.endsWith('.woff2')) &&
-                !parsed.pathname.includes('ngsw-worker.js')
-              ) {
-                urlsToWarm.add(parsed.pathname);
-              }
-            } catch {}
-          }
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          await reg.unregister();
+          await navigator.serviceWorker.register('/ngsw-worker.js', { scope: '/' });
         }
-
-        await Promise.allSettled(
-          Array.from(urlsToWarm).map(url => fetch(url, { credentials: 'same-origin' }))
-        );
-      } catch {
-        // Ignorar errores silenciosamente si la red cae durante el warmup
       }
-    };
-
-    if (navigator.serviceWorker.controller) {
-      triggerWarmUp();
+    } catch {
+      // Ignorar si /ngsw/state no está disponible
     }
-    navigator.serviceWorker.addEventListener('controllerchange', () => triggerWarmUp());
-    navigator.serviceWorker.ready.then(() => triggerWarmUp()).catch(() => {});
   }
 
   ngOnDestroy(): void {

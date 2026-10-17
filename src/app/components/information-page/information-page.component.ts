@@ -24,16 +24,16 @@ export interface InfoSection {
              style="background: radial-gradient(circle at 85% 20%, #C5A059 0%, transparent 55%), radial-gradient(circle at 15% 85%, #C5A059 0%, transparent 50%);"></div>
 
         <div class="max-w-6xl mx-auto relative z-10">
-          <!-- Breadcrumb -->
-          <nav aria-label="Migas de pan" class="flex items-center gap-2 text-xs sm:text-sm text-white/75 mb-6 flex-wrap">
-            <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1">
-              <span class="material-icons text-base" aria-hidden="true">home</span>
-              Inicio
+          <!-- Breadcrumb (Visible solo en móvil; oculto en escritorio donde ya existe la barra de navegación principal) -->
+          <nav aria-label="Breadcrumb" class="flex md:hidden items-center gap-1.5 text-xs text-white/80 mb-5 max-w-full overflow-hidden flex-nowrap px-3 py-1 rounded-full bg-black/15 border border-white/10 w-fit">
+            <a routerLink="/home" class="hover:text-[#E2B84F] transition-colors inline-flex items-center gap-1 shrink-0 min-h-[32px] py-1 px-1 rounded focus:outline-none focus:ring-2 focus:ring-[#E2B84F]">
+              <span class="material-icons text-sm" aria-hidden="true">home</span>
+              <span>Inicio</span>
             </a>
-            <span class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</span>
-            <span class="text-white/75">{{ categoryBadge }}</span>
-            <span class="material-icons text-sm text-white/40" aria-hidden="true">chevron_right</span>
-            <span class="text-[#E2B84F] font-semibold" aria-current="page">{{ title }}</span>
+            <span class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</span>
+            <span class="text-white/75 shrink-0 truncate max-w-[110px]">{{ categoryBadge }}</span>
+            <span class="material-icons text-xs text-white/40 shrink-0" aria-hidden="true">chevron_right</span>
+            <span class="text-[#E2B84F] font-semibold truncate min-w-0" aria-current="page">{{ title }}</span>
           </nav>
 
           <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#C5A059]/20 border border-[#C5A059]/40 text-[#E2B84F] text-xs font-bold uppercase tracking-widest mb-4">

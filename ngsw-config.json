@@ -9,20 +9,22 @@
       "updateMode": "prefetch",
       "resources": {
         "files": [
-          "/index.html",
           "/manifest.webmanifest",
           "/favicon.ico",
           "/*.css",
           "/main-*.js",
           "/polyfills-*.js",
           "/scripts-*.js"
+        ],
+        "urls": [
+          "/index.html"
         ]
       }
     },
     {
       "name": "app-chunks",
       "installMode": "lazy",
-      "updateMode": "prefetch",
+      "updateMode": "lazy",
       "resources": {
         "files": [
           "/chunk-*.js"
@@ -32,7 +34,7 @@
     {
       "name": "local-assets",
       "installMode": "lazy",
-      "updateMode": "prefetch",
+      "updateMode": "lazy",
       "resources": {
         "files": [
           "/assets/icons/*icon-*.png",
