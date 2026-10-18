@@ -1,18 +1,27 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { distinctUntilChanged, skip, takeUntil } from 'rxjs/operators';
 import { PublicApiService } from '../../services/public-api.service';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
-import { PublicProduct, ProductRecommendation, ProductTrendStatus } from '../../models/product.model';
+import { PublicProduct, PublicProductAttribute, ProductRecommendation, ProductTrendStatus } from '../../models/product.model';
 import { ProductRecommendationCardComponent } from './product-recommendation-card/product-recommendation-card.component';
 import { ProductReviewsComponent } from '../product-reviews/product-reviews.component';
 import { A11yModule } from '@angular/cdk/a11y';
 import { ConnectivityService } from '../../services/connectivity.service';
 
+export interface TechnicalSpecItem {
+  label: string;
+  value: string;
+  icon: string;
+  isCode?: boolean;
+  isStatus?: boolean;
+  inStock?: boolean;
+}
 
 @Component({
   selector: 'app-product-detail',
@@ -25,6 +34,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   product: PublicProduct | null = null;
 
   loading = true;
+  serverWaking = false;
   error: string | null = null;
 
   // Galería de imágenes
@@ -64,7 +74,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   // Añadiendo al carrito
   addingToCart = false;
 
-  // Recomendaciones y Tendencia
+  // Recomendaciones y Tendencia (Prioridad 2 - Carga Secundaria No Bloqueante)
   recommendations: ProductRecommendation[] = [];
   loadingRecommendations = false;
   trendStatus: ProductTrendStatus | null = null;
@@ -76,9 +86,12 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   private previousBodyOverflow = '';
   private previousBodyPaddingRight = '';
 
-
-
   private destroy$ = new Subject<void>();
+  private productSub?: Subscription;
+  private recommendationsSub?: Subscription;
+  private trendSub?: Subscription;
+  private wakingTimer: ReturnType<typeof setTimeout> | null = null;
+  private secondaryTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -103,7 +116,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const productId = +params['id'];
-      if (productId) {
+      if (productId && !isNaN(productId)) {
         this.currentProductId = productId;
         this.loadProduct(productId);
       } else {
@@ -112,7 +125,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.connectivityService.isOnline$.pipe(takeUntil(this.destroy$)).subscribe(online => {
+    this.connectivityService.isOnline$.pipe(
+      distinctUntilChanged(),
+      skip(1),
+      takeUntil(this.destroy$)
+    ).subscribe(online => {
       if (online && this.error && this.currentProductId) {
         this.loadProduct(this.currentProductId);
       }
@@ -125,27 +142,86 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  private clearTimers(): void {
+    if (this.wakingTimer) {
+      clearTimeout(this.wakingTimer);
+      this.wakingTimer = null;
+    }
+    if (this.secondaryTimer) {
+      clearTimeout(this.secondaryTimer);
+      this.secondaryTimer = null;
+    }
+    this.serverWaking = false;
+  }
+
   ngOnDestroy(): void {
     if (this.showGalleryModal) {
       this.restoreScroll();
     }
+    this.clearTimers();
+    this.productSub?.unsubscribe();
+    this.recommendationsSub?.unsubscribe();
+    this.trendSub?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
   }
 
   private loadProduct(id: number): void {
-    this.loading = true;
+    // Cancelar peticiones anteriores si el usuario cambió de producto rápidamente
+    this.productSub?.unsubscribe();
+    this.recommendationsSub?.unsubscribe();
+    this.trendSub?.unsubscribe();
+    this.clearTimers();
+
     this.error = null;
     this.selectedImageIndex = 0;
     this.quantity = 1;
-    this.loadRecommendations(id);
+    this.trendStatus = null;
+    this.recommendations = [];
+    this.loadingRecommendations = false;
+    this.loadingTrend = false;
 
-    this.publicApiService.getProductById(id).pipe(takeUntil(this.destroy$)).subscribe({
+    // 1. Hidratación instantánea si el producto ya fue cargado en /catalogo o /home
+    const cachedSnapshot = this.publicApiService.getCachedProductSnapshot(id);
+    if (cachedSnapshot) {
+      this.product = cachedSnapshot;
+      this.loading = false;
+      this.scheduleSecondaryLoads(id);
+
+      // Revalidar en segundo plano para actualizar Cache Storage del Service Worker (Offline + F5)
+      this.productSub = this.publicApiService.getProductById(id).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (freshProduct) => {
+          this.product = freshProduct;
+        },
+        error: () => {
+          // Conservamos el snapshot ya renderizado en pantalla
+        }
+      });
+      return;
+    }
+
+    // 2. Carga directa (URL directa o F5): mostrar skeleton estructurado y gestionar cold start
+    this.product = null;
+    this.loading = true;
+
+    if (this.connectivityService.isOnline) {
+      this.wakingTimer = setTimeout(() => {
+        if (this.loading && this.connectivityService.isOnline) {
+          this.serverWaking = true;
+        }
+      }, 3200);
+    }
+
+    this.productSub = this.publicApiService.getProductById(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: (product) => {
+        this.clearTimers();
         this.product = product;
         this.loading = false;
+        // Prioridad 2: iniciar cargas secundarias DESPUÉS de que el producto principal ya está listo
+        this.scheduleSecondaryLoads(product.id);
       },
       error: (err) => {
+        this.clearTimers();
         if (!this.connectivityService.isOnline || err?.status === 0 || err?.error?.offline) {
           this.error = 'No hay información guardada para este producto. Conéctate a Internet para consultarlo.';
         } else if (err.status === 404) {
@@ -158,6 +234,22 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Ejecuta las peticiones secundarias no críticas (tendencia y recomendaciones)
+   * después de renderizar el bloque principal del producto.
+   */
+  private scheduleSecondaryLoads(productId: number): void {
+    if (!this.connectivityService.isOnline) {
+      return;
+    }
+    this.secondaryTimer = setTimeout(() => {
+      if (this.currentProductId === productId && this.product) {
+        this.loadRecommendations(productId);
+        this.loadTrendStatus(productId);
+      }
+    }, 60);
+  }
+
   // ── Galería ────────────────────────────────────────────────────────────────
 
   /** Devuelve todas las URLs de imagen: primero imageUrl, luego las adicionales */
@@ -166,16 +258,27 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const extras = (this.product.images ?? [])
       .slice()
       .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
-      .map(i => i.url);
+      .map(i => i.url)
+      .filter(Boolean);
     if (this.product.imageUrl) {
       return [this.product.imageUrl, ...extras.filter(u => u !== this.product!.imageUrl)];
     }
     return extras.length ? extras : [];
   }
 
+  readonly fallbackImageUrl =
+    "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23FAF8F5'/%3E%3Ccircle cx='200' cy='180' r='54' fill='%23722F37' fill-opacity='0.08'/%3E%3Cpath d='M212 145v58.5a19.5 19.5 0 1 1-11-17.55V132h29v13h-18z' fill='%23722F37' fill-opacity='0.45'/%3E%3Ctext x='200' y='272' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='600' fill='%2364748B'%3ECasa de M%C3%BAsica Castillo%3C/text%3E%3C/svg%3E";
+
   get currentImage(): string {
     const imgs = this.allImages;
-    return imgs[this.selectedImageIndex] ?? 'assets/icons/music-note.svg';
+    return imgs[this.selectedImageIndex] ?? this.fallbackImageUrl;
+  }
+
+  onProductImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src !== this.fallbackImageUrl) {
+      img.src = this.fallbackImageUrl;
+    }
   }
 
   selectImage(index: number): void {
@@ -571,83 +674,167 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/catalogo']);
   }
 
-  // ── Descripción HTML segura ────────────────────────────────────────────────
+  // ── Descripción y Especificaciones Técnicas ────────────────────────────────
 
   /**
    * Sanitiza el HTML de la descripción detallada para evitar XSS.
    */
   get safeDetailedDescription(): SafeHtml | null {
-    if (!this.product?.detailedDescription) return null;
+    if (!this.product?.detailedDescription || !this.product.detailedDescription.trim()) return null;
     return this.sanitizer.bypassSecurityTrustHtml(this.product.detailedDescription);
   }
 
-  private loadProductDetails(id: number): void {
-    this.loading = true;
-    this.error = null;
-    this.trendStatus = null;
+  get hasTextDescription(): boolean {
+    return Boolean(this.product?.description && this.product.description.trim().length > 0);
+  }
 
-    this.publicApiService.getProductById(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (product) => {
-        this.product = product;
-        this.loading = false;
-        
-        // Cargar datos adicionales solo si el producto existe
-        this.loadRecommendations(product.id);
-        this.loadTrendStatus(product.id);
-      },
-      error: (err) => {
-        console.error('Error loading product details:', err);
-        this.error = 'No se pudo cargar el producto. Puede que no exista o no esté disponible.';
-        this.loading = false;
-      }
-    });
+  get savingsAmount(): number {
+    if (!this.product?.discountPrice || !this.product?.price) return 0;
+    if (this.product.discountPrice >= this.product.price) return 0;
+    return this.product.price - this.product.discountPrice;
   }
 
   private loadTrendStatus(productId: number): void {
+    this.trendSub?.unsubscribe();
     this.loadingTrend = true;
-    this.publicApiService.getProductTrendStatus(productId).pipe(takeUntil(this.destroy$)).subscribe({
+    this.trendSub = this.publicApiService.getProductTrendStatus(productId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (status) => {
         this.trendStatus = status;
         this.loadingTrend = false;
       },
-      error: (err) => {
-        console.error('Error loading trend status:', err);
+      error: () => {
         this.loadingTrend = false;
       }
     });
   }
 
   private loadRecommendations(id: number): void {
+    this.recommendationsSub?.unsubscribe();
     this.recommendations = [];
     this.loadingRecommendations = true;
-    this.publicApiService.getRecommendations(id).pipe(takeUntil(this.destroy$)).subscribe({
+    this.recommendationsSub = this.publicApiService.getRecommendations(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: (recs) => {
         this.recommendations = recs || [];
         this.loadingRecommendations = false;
       },
-      error: (err) => {
-        console.error('Error al cargar recomendaciones:', err);
+      error: () => {
         this.recommendations = [];
         this.loadingRecommendations = false;
       }
     });
   }
 
-
+  /**
+   * Atributos dinámicos ordenados por displayOrder y filtrados de valores vacíos.
+   */
+  get sortedAttributes(): PublicProductAttribute[] {
+    if (!this.product?.attributes?.length) return [];
+    return this.product.attributes
+      .filter(a => a && a.name && a.value != null && String(a.value).trim() !== '')
+      .slice()
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  }
 
   /**
-   * Devuelve true si hay al menos una especificación técnica que mostrar
-   * (campos fijos o atributos dinámicos). Controla la visibilidad de la
-   * columna de ficha técnica.
+   * Construye la lista completa y ordenada de especificaciones reales del producto
+   * (Categoría, Marca, Modelo, SKU, Disponibilidad, Peso, Dimensiones y Atributos dinámicos).
+   */
+  get technicalSpecs(): TechnicalSpecItem[] {
+    if (!this.product) return [];
+    const specs: TechnicalSpecItem[] = [];
+
+    if (this.product.category?.name) {
+      specs.push({
+        label: 'Categoría',
+        value: this.product.category.name,
+        icon: 'category'
+      });
+    }
+
+    if (this.product.brand?.name) {
+      specs.push({
+        label: 'Marca',
+        value: this.product.brand.name,
+        icon: 'verified'
+      });
+    }
+
+    if (this.product.model && this.product.model.trim()) {
+      specs.push({
+        label: 'Modelo',
+        value: this.product.model.trim(),
+        icon: 'piano'
+      });
+    }
+
+    if (this.product.sku && this.product.sku.trim()) {
+      specs.push({
+        label: 'Código / SKU',
+        value: this.product.sku.trim(),
+        icon: 'qr_code_2',
+        isCode: true
+      });
+    }
+
+    specs.push({
+      label: 'Disponibilidad',
+      value: this.inStock
+        ? (this.product.stock <= 5
+            ? `¡Últimas ${this.product.stock} pieza${this.product.stock === 1 ? '' : 's'}!`
+            : `En existencia (${this.product.stock} disponibles)`)
+        : 'Agotado temporalmente',
+      icon: 'inventory_2',
+      isStatus: true,
+      inStock: this.inStock
+    });
+
+    if (this.product.weight != null && this.product.weight > 0) {
+      specs.push({
+        label: 'Peso aproximado',
+        value: `${this.product.weight} kg`,
+        icon: 'scale'
+      });
+    }
+
+    if (this.product.dimensions && this.product.dimensions.trim()) {
+      specs.push({
+        label: 'Dimensiones',
+        value: this.product.dimensions.trim(),
+        icon: 'straighten'
+      });
+    }
+
+    for (const attr of this.sortedAttributes) {
+      specs.push({
+        label: attr.name,
+        value: String(attr.value).trim(),
+        icon: 'tune'
+      });
+    }
+
+    return specs;
+  }
+
+  /**
+   * Indica si el producto cuenta con especificaciones físicas o dinámicas adicionales
+   * además de Categoría, SKU y Disponibilidad.
+   */
+  get hasExtendedPhysicalOrCustomSpecs(): boolean {
+    if (!this.product) return false;
+    return Boolean(
+      this.product.brand?.name ||
+      (this.product.model && this.product.model.trim()) ||
+      (this.product.weight != null && this.product.weight > 0) ||
+      (this.product.dimensions && this.product.dimensions.trim()) ||
+      this.sortedAttributes.length > 0
+    );
+  }
+
+  /**
+   * Compatibilidad con template: siempre que exista el producto, la sección de
+   * ficha técnica se muestra con sus campos reales disponibles.
    */
   get hasSpecs(): boolean {
-    if (!this.product) return false;
-    return !!(
-      this.product.brand?.name ||
-      this.product.model ||
-      this.product.weight != null ||
-      this.product.dimensions ||
-      this.product.attributes?.length
-    );
+    return this.technicalSpecs.length > 0;
   }
 }

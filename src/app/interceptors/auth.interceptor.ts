@@ -41,6 +41,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/brands',
     '/api/public',
     '/api/alexa',
+    '/api/reviews/product',
+    '/api/reviews/statistics',
     '/actuator/health'
   ];
   const isPublicEndpoint = publicEndpoints.some(url => req.url.includes(url));
@@ -51,17 +53,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isPublicRequest = isPublicUrl || isMarkedAsPublic || isPublicEndpoint;
 
   // Rutas del frontend (UI) donde no se debe interrumpir la navegación por un 401 sin token
-  const publicFrontendRoutes = ['/catalogo', '/producto', '/inicio', '/login', '/register', '/'];
+  const publicFrontendRoutes = ['/catalogo', '/producto', '/inicio', '/home', '/busqueda', '/ayuda', '/informacion', '/terminos', '/privacidad', '/login', '/register', '/'];
   const isPublicFrontendRoute = publicFrontendRoutes.some(route => router.url.startsWith(route) && router.url !== '/');
   const isRootRoute = router.url === '/';
 
   const token = localStorage.getItem('token');
 
   let authReq = req;
-  // NO enviar el JWT a dominios externos (ej. Iconify)
+  // NO enviar el JWT a dominios externos ni a endpoints públicos de solo lectura (/api/public/, /actuator/health)
+  // Esto evita consultas innecesarias de sesión en BD y permite caché limpio en el Service Worker.
   const isExternalApi = req.url.includes('api.iconify.design');
+  const isAnonymousPublicReadOnly =
+    (req.method === 'GET' || req.method === 'HEAD') &&
+    (req.url.includes('/api/public/') || req.url.includes('/actuator/health'));
   
-  if (token && !isExternalApi) {
+  if (token && !isExternalApi && !isAnonymousPublicReadOnly) {
     authReq = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -72,17 +78,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError(error => {
       if (error.status === 401) {
-        // Condiciones para redirigir a login:
-        // 1. Había un token (sesión expirada real)
-        // 2. O el endpoint solicitado es claramente privado (no está en publicEndpoints)
-        // 3. Y no estamos ya en una ruta pública del frontend sin token
-        const shouldRedirect = token || (!isPublicEndpoint && !(isPublicFrontendRoute || isRootRoute));
+        // Nunca cerrar sesión ni redirigir a login si el fallo ocurre en un endpoint público (ej. reseñas públicas)
+        if (!isPublicRequest) {
+          const shouldRedirect = token || !(isPublicFrontendRoute || isRootRoute);
 
-        if (shouldRedirect) {
-          authService.logout();
-          router.navigate(['/login'], {
-            queryParams: { reason: 'session_expired' }
-          });
+          if (shouldRedirect) {
+            authService.logout();
+            router.navigate(['/login'], {
+              queryParams: { reason: 'session_expired' }
+            });
+          }
         }
       }
 

@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, skip, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { PublicApiService } from '../../services/public-api.service';
@@ -49,6 +49,7 @@ export class CatalogoComponent implements OnInit, OnDestroy {
 
   productos: PublicProduct[] = [];
   loading = true;
+  serverWaking = false;
   error: string | null = null;
 
   // Control de filtros móvil
@@ -66,9 +67,11 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     { value: 'name_asc',   label: 'Nombre: A → Z'         },
   ];
 
-  // Para búsqueda con debounce
+  // Para búsqueda con debounce y control de peticiones en vuelo
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+  private loadProductsSub?: Subscription;
+  private wakingTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private router: Router,
@@ -91,7 +94,7 @@ export class CatalogoComponent implements OnInit, OnDestroy {
       this.isLoggedIn = !!user;
     });
 
-    // Cargar categorías con productos activos para el sidebar
+    // Cargar categorías con productos activos para el sidebar (deduplicadas y cacheadas en memoria)
     this.publicApiService.getActiveCategories(true).pipe(takeUntil(this.destroy$)).subscribe({
       next: (cats) => this.categorias = cats,
       error: () => {}
@@ -99,12 +102,12 @@ export class CatalogoComponent implements OnInit, OnDestroy {
 
     // Leer filtro de categoría y búsqueda desde query params
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      const catId = params['categoryId'] ? +params['categoryId'] : null;
+      const catId = params['categoryId'] ? +params['categoryId'] : (params['category'] ? +params['category'] : null);
       if (catId) {
         this.categoriaSeleccionada = [catId];
       }
       const busqueda = params['busqueda'];
-      if (busqueda) {
+      if (busqueda !== undefined) {
         this.searchQuery = busqueda;
       }
       this.loadProducts();
@@ -125,8 +128,12 @@ export class CatalogoComponent implements OnInit, OnDestroy {
       this.cartItemCount = count;
     });
 
-    // Al restablecer la conexión, recargar automáticamente si había error o faltaban categorías
-    this.connectivityService.isOnline$.pipe(distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(online => {
+    // Al restablecer la conexión (skip(1) evita disparo duplicado en la emisión inicial del BehaviorSubject)
+    this.connectivityService.isOnline$.pipe(
+      distinctUntilChanged(),
+      skip(1),
+      takeUntil(this.destroy$)
+    ).subscribe(online => {
       if (online) {
         if (this.error || this.productos.length === 0) {
           this.loadProducts();
@@ -141,10 +148,30 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     });
   }
 
+  private clearWakingTimer(): void {
+    if (this.wakingTimer) {
+      clearTimeout(this.wakingTimer);
+      this.wakingTimer = null;
+    }
+    this.serverWaking = false;
+  }
+
   loadProducts(): void {
+    this.loadProductsSub?.unsubscribe();
+    this.clearWakingTimer();
+
     this.loading = true;
     this.error = null;
-    this.publicApiService.getCatalog({
+
+    if (this.connectivityService.isOnline) {
+      this.wakingTimer = setTimeout(() => {
+        if (this.loading && this.connectivityService.isOnline) {
+          this.serverWaking = true;
+        }
+      }, 3200);
+    }
+
+    this.loadProductsSub = this.publicApiService.getCatalog({
       keyword:    this.searchQuery.trim() || undefined,
       categoryId: this.categoriaSeleccionada.length === 1 ? this.categoriaSeleccionada[0] : undefined,
       brandId:    this.marcaSeleccionada.length === 1 ? this.marcaSeleccionada[0] : undefined,
@@ -153,6 +180,7 @@ export class CatalogoComponent implements OnInit, OnDestroy {
       size:       this.tamanioPagina
     }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (page: SpringPage<PublicProduct>) => {
+        this.clearWakingTimer();
         this.productos = page.content;
         this.totalProductos = page.totalElements;
         this.totalPaginas = page.totalPages;
@@ -169,6 +197,7 @@ export class CatalogoComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
+        this.clearWakingTimer();
         if (!this.connectivityService.isOnline || err?.status === 0 || err?.error?.offline) {
           this.error = 'No hay información guardada para esta consulta. Conéctate a Internet para actualizar el catálogo.';
         } else {
@@ -177,6 +206,16 @@ export class CatalogoComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  readonly fallbackImageUrl =
+    "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23FAF8F5'/%3E%3Ccircle cx='200' cy='180' r='54' fill='%23722F37' fill-opacity='0.08'/%3E%3Cpath d='M212 145v58.5a19.5 19.5 0 1 1-11-17.55V132h29v13h-18z' fill='%23722F37' fill-opacity='0.45'/%3E%3Ctext x='200' y='272' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='600' fill='%2364748B'%3ECasa de M%C3%BAsica Castillo%3C/text%3E%3C/svg%3E";
+
+  onProductImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src !== this.fallbackImageUrl) {
+      img.src = this.fallbackImageUrl;
+    }
   }
 
   // Alias para compatibilidad con el template existente
@@ -393,6 +432,8 @@ export class CatalogoComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     document.body.style.overflow = '';
+    this.clearWakingTimer();
+    this.loadProductsSub?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
   }

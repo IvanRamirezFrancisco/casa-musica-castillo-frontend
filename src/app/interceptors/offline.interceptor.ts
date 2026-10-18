@@ -63,9 +63,23 @@ function isPublicStorefrontGet(req: { method: string; url: string; headers: { ha
  *    Si el navegador tiene red pero el backend devuelve 5xx o fallo de red, actualiza ConnectivityService
  *    para informar al usuario con claridad sin confundirlo con una caída de su propio Internet.
  */
+/**
+ * Endpoints secundarios/complementarios cuyo fallo o latencia NO debe activar
+ * el banner global "El servidor está tardando en responder", ya que la vista
+ * principal se degrada con elegancia de forma independiente.
+ */
+function isNonCriticalSecondaryRequest(url: string): boolean {
+  return (
+    url.includes('/trend-status') ||
+    url.includes('/recommendations') ||
+    url.includes('/api/reviews/product/')
+  );
+}
+
 export const offlineInterceptor: HttpInterceptorFn = (req, next) => {
   const connectivity = inject(ConnectivityService);
   const backendReq = isBackendRequest(req.url);
+  const nonCritical = isNonCriticalSecondaryRequest(req.url);
 
   if (!connectivity.isOnline && backendReq) {
     // Si es una petición pública GET, dejamos que el Service Worker la resuelva desde su caché
@@ -91,12 +105,12 @@ export const offlineInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     tap(event => {
-      if (backendReq && event instanceof HttpResponse) {
+      if (backendReq && !nonCritical && event instanceof HttpResponse) {
         connectivity.reportServerRecovered();
       }
     }),
     catchError((err: unknown) => {
-      if (backendReq && err instanceof HttpErrorResponse) {
+      if (backendReq && !nonCritical && err instanceof HttpErrorResponse) {
         if (connectivity.isOnline && (err.status === 0 || err.status === 502 || err.status === 503 || err.status === 504)) {
           connectivity.reportServerUnavailable();
         }
@@ -105,4 +119,3 @@ export const offlineInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
-

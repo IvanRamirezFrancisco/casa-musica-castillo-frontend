@@ -45,8 +45,7 @@
                   <input type="checkbox" class="sr-only"
                          [checked]="categoriaSeleccionada.includes(cat.id)"
                          (change)="toggleFiltroCategoria(cat.id)">
-                  <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors duration-150"
-                        (click)="toggleFiltroCategoria(cat.id)">
+                  <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors duration-150">
                     {{ cat.name }}
                   </span>
                 </label>
@@ -69,8 +68,7 @@
                   <input type="checkbox" class="sr-only"
                          [checked]="marcaSeleccionada.includes(marca.id)"
                          (change)="toggleFiltroMarca(marca.id)">
-                  <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors duration-150"
-                        (click)="toggleFiltroMarca(marca.id)">
+                  <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors duration-150">
                     {{ marca.name }}
                   </span>
                 </label>
@@ -199,6 +197,18 @@
           </button>
         </div>
 
+        <!-- AVISO DE SERVIDOR DESPERTANDO (COLD START RENDER) -->
+        <div *ngIf="loading && serverWaking"
+             class="mb-5 p-4 bg-[#FAF6F0] border border-[#C5A059]/40 rounded-2xl flex items-center gap-3.5 text-slate-800 shadow-sm">
+          <div class="w-9 h-9 rounded-xl bg-[#722F37]/10 text-[#722F37] flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-xl animate-spin">sync</span>
+          </div>
+          <div class="text-xs sm:text-sm">
+            <p class="font-bold text-[#722F37]">Conectando con Casa de Música Castillo...</p>
+            <p class="text-slate-600">El servidor está despertando. Tus instrumentos y accesorios aparecerán automáticamente en unos segundos.</p>
+          </div>
+        </div>
+
         <!-- LOADING (skeleton) -->
         <div *ngIf="loading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
           <div *ngFor="let i of [1,2,3,4,5,6,7,8,9]"
@@ -270,6 +280,8 @@
               <img *ngIf="producto.imageUrl"
                    [src]="producto.imageUrl"
                    [alt]="producto.name"
+                   loading="lazy"
+                   (error)="onProductImageError($event)"
                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out">
               <div *ngIf="!producto.imageUrl"
                    class="w-full h-full flex items-center justify-center">
@@ -321,7 +333,11 @@
             <div class="flex flex-col flex-1 p-4">
 
               <h3 class="text-sm font-semibold text-slate-800 line-clamp-2 leading-snug mb-1.5 group-hover:text-red-700 transition-colors duration-150">
-                {{ producto.name }}
+                <a [routerLink]="['/producto', producto.id]"
+                   (click)="$event.stopPropagation()"
+                   class="hover:underline focus:outline-none">
+                  {{ producto.name }}
+                </a>
               </h3>
 
               <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
@@ -474,7 +490,7 @@
             <span *ngIf="categoriaSeleccionada.includes(cat.id)" class="material-symbols-outlined text-white text-[10px]">check</span>
           </span>
           <input type="checkbox" class="sr-only" [checked]="categoriaSeleccionada.includes(cat.id)" (change)="toggleFiltroCategoria(cat.id)">
-          <span class="text-sm text-slate-600" (click)="toggleFiltroCategoria(cat.id)">{{ cat.name }}</span>
+          <span class="text-sm text-slate-600">{{ cat.name }}</span>
         </label>
       </div>
     </div>
@@ -487,7 +503,7 @@
             <span *ngIf="marcaSeleccionada.includes(marca.id)" class="material-symbols-outlined text-white text-[10px]">check</span>
           </span>
           <input type="checkbox" class="sr-only" [checked]="marcaSeleccionada.includes(marca.id)" (change)="toggleFiltroMarca(marca.id)">
-          <span class="text-sm text-slate-600" (click)="toggleFiltroMarca(marca.id)">{{ marca.name }}</span>
+          <span class="text-sm text-slate-600">{{ marca.name }}</span>
         </label>
       </div>
     </div>

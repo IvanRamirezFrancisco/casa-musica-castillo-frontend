@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
@@ -20,14 +20,15 @@ import { RouterModule, Router } from '@angular/router';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './product-reviews.component.html'
 })
-export class ProductReviewsComponent implements OnInit, OnDestroy {
+export class ProductReviewsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() product!: PublicProduct;
 
   private destroy$ = new Subject<void>();
+  private initializedProductId: number | null = null;
 
   // Estado
   isLoggedIn = false;
-  loading = true;
+  loading = false;
   error: string | null = null;
   
   // Datos
@@ -58,15 +59,60 @@ export class ProductReviewsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.newReview.productId = this.product.id;
-    
     this.authService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
       this.isLoggedIn = !!user;
-      this.checkEligibility();
+      if (this.product?.id) {
+        this.checkEligibility();
+      }
     });
 
-    this.loadStatistics();
-    this.loadReviews();
+    if (this.product?.id) {
+      this.initForProduct(this.product);
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['product'] && this.product?.id && this.product.id !== this.initializedProductId) {
+      this.initForProduct(this.product);
+      if (this.isLoggedIn) {
+        this.checkEligibility();
+      }
+    }
+  }
+
+  private initForProduct(product: PublicProduct): void {
+    this.initializedProductId = product.id;
+    this.newReview.productId = product.id;
+    this.showReviewForm = false;
+    this.error = null;
+    this.reviews = [];
+    this.currentPage = 0;
+    this.hasMore = false;
+    this.totalReviews = product.reviewCount ?? 0;
+
+    // Sembrar estadísticas base desde el DTO del producto inmediatamente (0 ms)
+    this.statistics = {
+      productId: product.id,
+      averageRating: product.averageRating ?? 0,
+      totalReviews: product.reviewCount ?? 0,
+      verifiedPurchaseCount: 0,
+      fiveStarCount: 0,
+      fourStarCount: 0,
+      threeStarCount: 0,
+      twoStarCount: 0,
+      oneStarCount: 0,
+      ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      recommendationPercentage: 0
+    };
+
+    // Si el producto tiene 0 reseñas registradas o estamos sin conexión, evitamos llamadas HTTP innecesarias
+    const isOnline = typeof navigator === 'undefined' ? true : navigator.onLine;
+    if ((product.reviewCount ?? 0) > 0 && isOnline) {
+      this.loadStatistics();
+      this.loadReviews();
+    } else {
+      this.loading = false;
+    }
   }
 
   ngOnDestroy(): void {
@@ -77,19 +123,21 @@ export class ProductReviewsComponent implements OnInit, OnDestroy {
   // --- Carga de datos ---
   
   loadStatistics(): void {
+    if (!this.product?.id) return;
     this.reviewService.getProductStatistics(this.product.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (stats) => {
           this.statistics = stats;
         },
-        error: (err) => {
-          console.error('Error cargando estadísticas', err);
+        error: () => {
+          // Degradación silenciosa: se conserva el resumen sembrado desde product
         }
       });
   }
 
   loadReviews(append = false): void {
+    if (!this.product?.id) return;
     if (!append) {
       this.loading = true;
       this.currentPage = 0;
@@ -108,9 +156,9 @@ export class ProductReviewsComponent implements OnInit, OnDestroy {
           this.hasMore = this.reviews.length < this.totalReviews;
           this.loading = false;
         },
-        error: (err) => {
-          console.error('Error cargando reseñas', err);
-          this.error = 'No se pudieron cargar las reseñas.';
+        error: () => {
+          // Degradación silenciosa sin bloquear el detalle de producto
+          this.error = null;
           this.loading = false;
         }
       });

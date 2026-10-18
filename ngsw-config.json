@@ -20,7 +20,8 @@
           "/media/*.woff2",
           "/assets/icons/icon-72x72.png",
           "/assets/icons/icon-192x192.png",
-          "/assets/icons/icon-512x512.png"
+          "/assets/icons/icon-512x512.png",
+          "/assets/image.png"
         ],
         "urls": [
           "/index.html"
@@ -86,7 +87,7 @@
         "strategy": "freshness",
         "maxSize": 40,
         "maxAge": "8h",
-        "timeout": "4s"
+        "timeout": "5s"
       }
     },
     {
@@ -104,9 +105,9 @@
       ],
       "cacheConfig": {
         "strategy": "freshness",
-        "maxSize": 50,
+        "maxSize": 80,
         "maxAge": "24h",
-        "timeout": "4s"
+        "timeout": "5s"
       }
     },
     {
