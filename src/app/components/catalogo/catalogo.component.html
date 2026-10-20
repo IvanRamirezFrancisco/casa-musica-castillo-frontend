@@ -111,7 +111,7 @@
       <div class="flex-1 min-w-0">
 
         <!-- Toolbar -->
-        <div class="flex flex-wrap items-center gap-3 mb-5">
+        <div class="flex flex-wrap items-center gap-3 mb-4">
 
           <!-- Ocultar / Mostrar filtros (desktop) -->
           <button (click)="toggleFiltrosVisibles()"
@@ -136,16 +136,70 @@
             </span>
           </button>
 
-          <div class="flex-1"></div>
+          <!-- Buscador integrado en catálogo con Micrófono (Voz) -->
+          <div class="relative flex-1 min-w-[220px] max-w-md">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">
+              search
+            </span>
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (input)="performSearch()"
+              (keyup.enter)="submitCatalogSearch()"
+              [placeholder]="isVoiceListening ? 'Escuchando tu voz...' : 'Filtrar por instrumento, marca, modelo o SKU...'"
+              maxlength="100"
+              aria-label="Filtrar catálogo por texto o voz"
+              class="w-full pl-10 pr-20 py-2 rounded-xl border text-sm text-slate-800 bg-white outline-none transition-all duration-200"
+              [ngClass]="isVoiceListening
+                ? 'border-red-500 ring-2 ring-red-100 bg-red-50/20'
+                : 'border-slate-200 focus:border-[#722F37] focus:ring-2 focus:ring-[#722F37]/15'"
+            />
+            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+              <button
+                *ngIf="searchQuery.length > 0"
+                type="button"
+                (click)="clearCatalogSearch()"
+                aria-label="Limpiar filtro de búsqueda"
+                title="Limpiar búsqueda"
+                class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <span class="material-symbols-outlined text-base">close</span>
+              </button>
+              <button
+                type="button"
+                (click)="toggleCatalogVoiceSearch()"
+                [attr.aria-label]="catalogVoiceAriaLabel"
+                [attr.aria-pressed]="voiceSupported ? isVoiceListening : null"
+                [attr.aria-disabled]="!voiceSupported"
+                [title]="catalogVoiceAriaLabel"
+                class="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                [ngClass]="!voiceSupported
+                  ? 'text-slate-300 cursor-not-allowed'
+                  : (isVoiceListening
+                    ? 'bg-red-600 text-white animate-pulse'
+                    : 'text-[#722F37] hover:bg-[#722F37]/10')"
+              >
+                <span class="material-symbols-outlined text-lg">
+                  {{ isVoiceListening ? 'stop_circle' : 'mic' }}
+                </span>
+              </button>
+            </div>
+          </div>
 
-          <!-- Contador -->
-          <p class="text-sm text-slate-500">
+          <div class="hidden xl:block flex-1"></div>
+
+          <!-- Contador: corresponde exactamente a búsqueda + filtros activos -->
+          <p class="text-sm text-slate-500" *ngIf="!loading && !error" aria-live="polite">
             <span class="font-semibold text-slate-800">{{ totalProductos }}</span>
             producto{{ totalProductos !== 1 ? 's' : '' }} encontrado{{ totalProductos !== 1 ? 's' : '' }}
           </p>
+          <p class="text-sm text-slate-500" *ngIf="loading" role="status" aria-live="polite">
+            <span class="material-symbols-outlined text-base align-middle animate-spin">progress_activity</span>
+            {{ searchQuery.trim().length >= 2 ? 'Buscando «' + searchQuery.trim() + '»…' : 'Cargando productos…' }}
+          </p>
 
           <!-- Ordenar por -->
-          <div class="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm hover:border-red-300 hover:shadow-sm transition-all duration-200 cursor-pointer">
+          <div class="flex items-center gap-2 pl-4 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:border-red-300 hover:shadow-sm transition-all duration-200 cursor-pointer">
             <span class="text-slate-500 text-sm font-medium whitespace-nowrap">Ordenar por:</span>
             <select [ngModel]="sortBy"
                     (change)="onSortSelect($any($event.target).value)"
@@ -157,8 +211,48 @@
 
         </div>
 
+        <!-- Banner de estado de voz en catálogo -->
+        <div *ngIf="voiceState.status !== 'IDLE' && voiceState.sourceId === voiceSourceId"
+             class="mb-4 px-4 py-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs sm:text-sm"
+             [ngClass]="isVoiceListening
+               ? 'bg-red-50 border-red-200 text-red-800'
+               : (voiceState.status === 'RECOGNIZED' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800')"
+             role="status"
+             aria-live="polite">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-base">
+              {{ isVoiceListening ? 'graphic_eq' : (voiceState.status === 'RECOGNIZED' ? 'check_circle' : 'mic_off') }}
+            </span>
+            <span class="font-medium">{{ voiceState.message }}</span>
+          </div>
+          <button *ngIf="isVoiceListening"
+                  type="button"
+                  (click)="stopCatalogVoiceSearch()"
+                  class="px-3 py-1 rounded-full bg-white border border-red-300 text-red-700 text-xs font-bold hover:bg-red-600 hover:text-white transition-colors">
+            Detener
+          </button>
+        </div>
+
+        <!-- Aviso de coincidencia aproximada / corrección tipográfica -->
+        <div *ngIf="!loading && suggestedSearchTerm && productos.length > 0"
+             class="mb-4 px-4 py-2.5 rounded-xl bg-[#FAF6F0] border border-[#722F37]/20 flex items-center gap-2 text-xs sm:text-sm text-[#722F37]"
+             role="status">
+          <span class="material-symbols-outlined text-base">auto_fix_high</span>
+          <span>
+            Mostrando resultados o coincidencias aproximadas para
+            <strong class="font-bold">«{{ suggestedSearchTerm }}»</strong>
+          </span>
+        </div>
+
         <!-- Chips de filtros activos -->
-        <div *ngIf="contadorFiltrosActivos() > 0" class="flex flex-wrap gap-2 mb-5">
+        <div *ngIf="contadorFiltrosActivos() > 0 || searchQuery.trim().length > 0" class="flex flex-wrap gap-2 mb-5">
+          <span *ngIf="searchQuery.trim().length > 0"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#722F37]/10 text-[#722F37] text-xs font-medium border border-[#722F37]/20">
+            Búsqueda: "{{ searchQuery.trim() }}"
+            <button (click)="clearCatalogSearch()" class="hover:text-[#5a2029] transition-colors duration-150" aria-label="Quitar búsqueda">
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+          </span>
           <span *ngFor="let catId of categoriaSeleccionada"
                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-medium border border-red-100">
             {{ getNombreCategoria(catId) }}

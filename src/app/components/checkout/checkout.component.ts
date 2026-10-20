@@ -17,6 +17,11 @@ import { OrderService } from '../../services/order.service';
 import { CartValidationResponse, CartValidationError } from '../../models/cart.model';
 import { CheckoutRequest, PaymentMethodType, PricePreviewResponse, PricePreviewRequest } from '../../models/order.model';
 import { AuthService } from '../../services/auth.service';
+import {
+  LocationService,
+  ResolvedAddress,
+  StoreLocationInfo,
+} from '../../services/location.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -47,6 +52,22 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   generalError = '';
   userDataLoadStatus: 'NONE' | 'PARTIAL' | 'COMPLETE' = 'NONE';
 
+  // Geolocalización aplicada al negocio (Envío a domicilio y Recolección en tienda)
+  geolocationSupported = false;
+  addressEntryMode: 'MANUAL' | 'GEOLOCATION' = 'MANUAL';
+  isDetectingLocation = false;
+  detectedShippingAddress: ResolvedAddress | null = null;
+  addressConfirmedFromGeo = false;
+  shippingGeoError: string | null = null;
+
+  isCalculatingStoreDistance = false;
+  storeDistanceKm: number | null = null;
+  storeDistanceError: string | null = null;
+
+  get storeInfo(): StoreLocationInfo {
+    return this.locationService.storeInfo;
+  }
+
   pricePreviewResult: PricePreviewResponse | null = null;
   isLoadingPreview = false;
   private previewSubject = new Subject<PricePreviewRequest>();
@@ -75,10 +96,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private orderService: OrderService,
     private authService: AuthService,
+    private locationService: LocationService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    this.geolocationSupported = this.locationService.isSupported();
     this.buildForm();
     this.setupPricePreview();
     this.subscribeToCart();
@@ -138,7 +161,135 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Solicita explícitamente la ubicación actual del usuario para sugerir su dirección de envío.
+   * Nunca se ejecuta al cargar la vista; requiere clic explícito del usuario.
+   */
+  async requestCurrentLocationForShipping(): Promise<void> {
+    this.addressEntryMode = 'GEOLOCATION';
+    this.shippingGeoError = null;
+    this.addressConfirmedFromGeo = false;
+
+    if (!this.geolocationSupported) {
+      this.shippingGeoError =
+        'Tu navegador no soporta geolocalización. Puedes ingresar tu dirección manualmente.';
+      this.addressEntryMode = 'MANUAL';
+      return;
+    }
+
+    this.isDetectingLocation = true;
+    try {
+      const coords = await this.locationService.getCurrentPosition();
+      const resolved = await this.locationService.reverseGeocode(
+        coords.latitude,
+        coords.longitude
+      );
+      this.detectedShippingAddress = resolved;
+      this.storeDistanceKm = resolved.distanceToStoreKm;
+      this.isDetectingLocation = false;
+    } catch (error) {
+      this.isDetectingLocation = false;
+      this.detectedShippingAddress = null;
+      this.addressEntryMode = 'MANUAL';
+      this.shippingGeoError = this.locationService.mapGeolocationError(error);
+    } finally {
+      this.locationService.clearTemporaryLocation();
+    }
+  }
+
+  /**
+   * Confirma la dirección detectada y rellena los campos sugeridos en el formulario
+   * sin sobrescribir número exterior, número interior, referencias ni datos de contacto.
+   */
+  confirmDetectedShippingAddress(): void {
+    if (!this.detectedShippingAddress) {
+      return;
+    }
+    const shipping = this.checkoutForm.get('shippingAddress') as FormGroup;
+    if (!shipping) {
+      return;
+    }
+
+    const d = this.detectedShippingAddress;
+    if (d.street) {
+      shipping.get('street')?.setValue(d.street);
+      shipping.get('street')?.markAsDirty();
+    }
+    if (d.neighborhood) {
+      shipping.get('neighborhood')?.setValue(d.neighborhood);
+      shipping.get('neighborhood')?.markAsDirty();
+    }
+    if (d.postalCode) {
+      shipping.get('zipCode')?.setValue(d.postalCode);
+      shipping.get('zipCode')?.markAsDirty();
+    }
+    if (d.city) {
+      shipping.get('city')?.setValue(d.city);
+      shipping.get('city')?.markAsDirty();
+    }
+    if (d.state) {
+      shipping.get('state')?.setValue(d.state);
+      shipping.get('state')?.markAsDirty();
+    }
+
+    this.addressConfirmedFromGeo = true;
+    this.detectedShippingAddress = null;
+    this.addressEntryMode = 'MANUAL';
+    this.triggerPricePreview();
+
+    setTimeout(() => {
+      const extInput = document.getElementById('exteriorNumber') as HTMLInputElement | null;
+      const streetInput = document.getElementById('street') as HTMLInputElement | null;
+      if (streetInput && !streetInput.value) {
+        streetInput.focus();
+      } else if (extInput && !extInput.value) {
+        extInput.focus();
+      }
+    }, 60);
+  }
+
+  /**
+   * Descarta la sugerencia de ubicación detectada y enfoca el formulario manual.
+   */
+  selectManualAddressMode(): void {
+    this.addressEntryMode = 'MANUAL';
+    this.detectedShippingAddress = null;
+    this.shippingGeoError = null;
+  }
+
+  /**
+   * Calcula la distancia desde la ubicación actual del usuario hasta la sucursal de Casa de Música Castillo
+   * cuando se selecciona "Recoger en tienda". Nunca modifica la dirección de envío.
+   */
+  async calculateDistanceForStorePickup(): Promise<void> {
+    this.storeDistanceError = null;
+    if (!this.geolocationSupported) {
+      this.storeDistanceError =
+        'La geolocalización no está disponible en este navegador.';
+      return;
+    }
+
+    this.isCalculatingStoreDistance = true;
+    try {
+      const coords = await this.locationService.getCurrentPosition();
+      this.storeDistanceKm = this.locationService.calculateDistanceKm(
+        coords.latitude,
+        coords.longitude,
+        this.storeInfo.latitude,
+        this.storeInfo.longitude
+      );
+      this.isCalculatingStoreDistance = false;
+    } catch (error) {
+      this.isCalculatingStoreDistance = false;
+      this.storeDistanceError = this.locationService.mapGeolocationError(error);
+    } finally {
+      // Privacidad: solo se conserva la distancia; las coordenadas no se guardan.
+      this.locationService.clearTemporaryLocation();
+    }
+  }
+
   ngOnDestroy(): void {
+    this.locationService.clearTemporaryLocation();
     this.subs.forEach(s => s.unsubscribe());
   }
 
@@ -574,6 +725,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     this.orderService.createOrder(request).subscribe({
       next: (order) => {
+        this.locationService.clearTemporaryLocation();
         if (request.paymentMethod === 'MERCADO_PAGO') {
           this.processMercadoPago(order.id);
         } else {

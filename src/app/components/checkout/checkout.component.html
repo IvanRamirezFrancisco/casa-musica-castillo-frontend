@@ -145,15 +145,85 @@
           <div class="form-card" *ngIf="checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">
             <div class="form-card-header">
               <div class="card-header-icon">
-                <span class="material-icons">person_add</span>
+                <span class="material-icons">storefront</span>
               </div>
               <div>
-                <h2 class="card-title">Personas Autorizadas</h2>
-                <p class="card-subtitle">¿Quién puede recoger este pedido en la tienda?</p>
+                <h2 class="card-title">Sucursal de Recolección y Personas Autorizadas</h2>
+                <p class="card-subtitle">Consulta la ubicación de nuestra tienda y registra quién recogerá el pedido.</p>
               </div>
             </div>
-            
-            <div class="form-card-body" formArrayName="authorizedPersons">
+
+            <div class="form-card-body">
+              <!-- Tarjeta de información de la sucursal Casa de Música Castillo + Distancia opcional -->
+              <div class="store-pickup-location-card">
+                <div class="store-pickup-main">
+                  <div class="store-pickup-badge">
+                    <span class="material-icons">location_on</span>
+                  </div>
+                  <div class="store-pickup-details">
+                    <h3 class="store-pickup-name">{{ storeInfo.name }}</h3>
+                    <p class="store-pickup-address">
+                      {{ storeInfo.streetAddress }}, {{ storeInfo.cityStateZip }}
+                    </p>
+                    <p class="store-pickup-schedule" *ngIf="storeInfo.schedule">
+                      <span class="material-icons">schedule</span>
+                      {{ storeInfo.schedule }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="store-pickup-actions">
+                  <button
+                    type="button"
+                    class="geo-action-btn primary"
+                    (click)="calculateDistanceForStorePickup()"
+                    [disabled]="isCalculatingStoreDistance"
+                    aria-label="Calcular distancia desde mi ubicación a la tienda"
+                  >
+                    <span class="material-icons" *ngIf="!isCalculatingStoreDistance">near_me</span>
+                    <span class="spinner spinner-sm" *ngIf="isCalculatingStoreDistance"></span>
+                    <span>
+                      {{ isCalculatingStoreDistance ? 'Calculando distancia...' : 'Calcular distancia desde mi ubicación' }}
+                    </span>
+                  </button>
+
+                  <a
+                    [href]="storeInfo.mapsDirectionsUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="geo-action-btn secondary"
+                    aria-label="Ver cómo llegar a Casa de Música Castillo en Google Maps"
+                  >
+                    <span class="material-icons">directions</span>
+                    <span>Cómo llegar</span>
+                  </a>
+                </div>
+
+                <!-- Resultado de distancia calculada -->
+                <div
+                  *ngIf="storeDistanceKm !== null && !storeDistanceError"
+                  class="store-distance-result"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span class="material-icons">straighten</span>
+                  <span>
+                    Distancia aproximada en línea recta: <strong>{{ storeDistanceKm }} km</strong> hasta nuestra sucursal en Huejutla de Reyes. Para la ruta real usa «Cómo llegar».
+                  </span>
+                </div>
+
+                <!-- Error no intrusivo si se niega permiso en recolección -->
+                <div
+                  *ngIf="storeDistanceError"
+                  class="geo-feedback-alert warning"
+                  role="status"
+                >
+                  <span class="material-icons">location_disabled</span>
+                  <span>{{ storeDistanceError }}</span>
+                </div>
+              </div>
+
+              <div formArrayName="authorizedPersons">
               <div class="alert alert-info" style="margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; background-color: rgba(var(--primary-color-rgb), 0.1); border-radius: 8px; color: var(--primary-color);">
                 <span class="material-icons" style="font-size: 20px;">info</span>
                 <p class="text-sm mb-0">Solo las personas registradas podrán recoger el pedido presentando identificación oficial y el código de recolección.</p>
@@ -217,6 +287,7 @@
               <button type="button" class="btn-add-person mt-3" style="width: 100%; padding: 0.75rem; background: transparent; border: 2px dashed #6c757d; color: #6c757d; border-radius: 12px; cursor: not-allowed; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled *ngIf="authorizedPersons.length >= 3">
                 <span class="material-icons">person_off</span> Máximo 3 personas autorizadas
               </button>
+              </div>
             </div>
           </div>
           
@@ -318,14 +389,146 @@
                 </span>
               </div>
 
-              <!-- Ayuda Dirección -->
-              <div class="address-helper-card">
-                <div class="address-helper-icon">
-                  <i class="fas fa-location-dot"></i>
+              <!-- Selector de origen de dirección: Ubicación actual vs Manual -->
+              <div class="address-origin-selector">
+                <div class="address-origin-header">
+                  <div class="address-helper-icon">
+                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                  </div>
+                  <div class="address-helper-content">
+                    <span class="address-helper-title">¿Cómo prefieres indicar tu dirección de entrega?</span>
+                    <span class="address-helper-text">
+                      Usa tu ubicación actual para sugerir calle, colonia y código postal, o escríbela manualmente.
+                    </span>
+                  </div>
                 </div>
-                <div class="address-helper-content">
-                  <span class="address-helper-title">Completa tu dirección de envío</span>
-                  <span class="address-helper-text">Estos datos se usarán solo para entregar tu pedido.</span>
+
+                <div class="address-origin-buttons">
+                  <button
+                    type="button"
+                    class="origin-option-btn"
+                    [class.active]="addressEntryMode === 'GEOLOCATION' || isDetectingLocation"
+                    (click)="requestCurrentLocationForShipping()"
+                    [disabled]="isDetectingLocation"
+                    aria-label="Usar mi ubicación actual para sugerir dirección de envío"
+                  >
+                    <span class="material-icons" *ngIf="!isDetectingLocation">my_location</span>
+                    <span class="spinner spinner-sm" *ngIf="isDetectingLocation"></span>
+                    <span>
+                      {{ isDetectingLocation ? 'Obteniendo ubicación...' : 'Usar mi ubicación actual' }}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="origin-option-btn"
+                    [class.active]="addressEntryMode === 'MANUAL' && !isDetectingLocation"
+                    (click)="selectManualAddressMode()"
+                    aria-label="Ingresar dirección de envío manualmente"
+                  >
+                    <span class="material-icons">edit_location_alt</span>
+                    <span>Ingresar dirección manualmente</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tarjeta de Revisión de Ubicación Detectada (Nunca confirma sin revisión del usuario) -->
+              <div
+                *ngIf="detectedShippingAddress && !isDetectingLocation"
+                class="geo-review-card"
+                role="region"
+                aria-label="Revisar ubicación detectada"
+              >
+                <div class="geo-review-header">
+                  <div class="geo-review-title-wrap">
+                    <span class="material-icons geo-pin-icon">where_to_vote</span>
+                    <div>
+                      <h4 class="geo-review-title">Revisar ubicación detectada</h4>
+                      <p class="geo-review-subtitle">
+                        Confirma si los datos sugeridos coinciden con tu domicilio. Podrás editar cualquier campo y completar tu número exterior.
+                      </p>
+                    </div>
+                  </div>
+                  <span class="geo-distance-pill" *ngIf="detectedShippingAddress.distanceToStoreKm">
+                    A {{ detectedShippingAddress.distanceToStoreKm }} km de la tienda
+                  </span>
+                </div>
+
+                <div class="geo-feedback-alert warning" role="status" *ngIf="!detectedShippingAddress.reverseGeocodeResolved">
+                  <span class="material-icons">info</span>
+                  <span>{{ detectedShippingAddress.displayAddress }} Completa tu dirección manualmente.</span>
+                </div>
+
+                <div class="geo-review-grid" *ngIf="detectedShippingAddress.reverseGeocodeResolved">
+                  <div class="geo-review-field">
+                    <span class="geo-field-label">Calle sugerida</span>
+                    <span class="geo-field-val">
+                      {{ detectedShippingAddress.street || 'Completar manualmente' }}
+                    </span>
+                  </div>
+                  <div class="geo-review-field">
+                    <span class="geo-field-label">Colonia / Localidad</span>
+                    <span class="geo-field-val">
+                      {{ detectedShippingAddress.neighborhood || 'Completar manualmente' }}
+                    </span>
+                  </div>
+                  <div class="geo-review-field">
+                    <span class="geo-field-label">Código Postal</span>
+                    <span class="geo-field-val">
+                      {{ detectedShippingAddress.postalCode || 'Completar manualmente' }}
+                    </span>
+                  </div>
+                  <div class="geo-review-field">
+                    <span class="geo-field-label">Municipio y Estado</span>
+                    <span class="geo-field-val">
+                      {{ (detectedShippingAddress.city || '—') + (detectedShippingAddress.state ? ', ' + detectedShippingAddress.state : '') }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="geo-review-actions">
+                  <button
+                    *ngIf="detectedShippingAddress.reverseGeocodeResolved"
+                    type="button"
+                    class="geo-confirm-btn"
+                    (click)="confirmDetectedShippingAddress()"
+                  >
+                    <span class="material-icons">check_circle</span>
+                    <span>Confirmar dirección sugerida</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="geo-manual-btn"
+                    (click)="selectManualAddressMode()"
+                  >
+                    <span class="material-icons">edit</span>
+                    <span>{{ detectedShippingAddress.reverseGeocodeResolved ? 'Ingresar manualmente' : 'Completar dirección manualmente' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Confirmación discreta cuando se aplicó la dirección sugerida -->
+              <div
+                *ngIf="addressConfirmedFromGeo && !detectedShippingAddress"
+                class="geo-feedback-alert success"
+                role="status"
+              >
+                <span class="material-icons">check_circle</span>
+                <span>
+                  Ubicación aplicada como sugerencia. Verifica los datos y completa tu <strong>número exterior</strong> y <strong>referencias</strong>.
+                </span>
+              </div>
+
+              <!-- Mensaje amigable no bloqueante si falla geolocalización o se niega permiso -->
+              <div
+                *ngIf="shippingGeoError"
+                class="geo-feedback-alert warning"
+                role="status"
+                aria-live="polite"
+              >
+                <span class="material-icons">location_off</span>
+                <div class="geo-feedback-body">
+                  <span>{{ shippingGeoError }}</span>
                 </div>
               </div>
 

@@ -1035,3 +1035,376 @@
     color: var(--wine);
     font-size: 1.1rem;
 }
+
+/* ── Geolocalización en Checkout (Envío a domicilio y Recolección en tienda) ── */
+.store-pickup-location-card {
+  background: linear-gradient(135deg, #fdfbf7 0%, #ffffff 100%);
+  border: 1.5px solid rgba(114, 47, 55, 0.18);
+  border-left: 4px solid var(--wine);
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.store-pickup-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.store-pickup-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: var(--wine-tint);
+  color: var(--wine);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.store-pickup-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.store-pickup-name {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 0.25rem;
+}
+
+.store-pickup-address {
+  font-size: 0.85rem;
+  color: var(--gray-700);
+  margin: 0 0 0.35rem;
+  line-height: 1.4;
+}
+
+.store-pickup-schedule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  margin: 0;
+}
+
+.store-pickup-schedule .material-icons {
+  font-size: 0.95rem;
+  color: var(--wine);
+}
+
+.store-pickup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.geo-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+
+.geo-action-btn .material-icons {
+  font-size: 1.05rem;
+}
+
+.geo-action-btn.primary {
+  background-color: var(--wine);
+  color: #ffffff;
+  border: 1px solid var(--wine);
+}
+
+.geo-action-btn.primary:hover:not(:disabled) {
+  background-color: var(--wine-dark);
+}
+
+.geo-action-btn.primary:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.geo-action-btn.secondary {
+  background-color: #ffffff;
+  color: var(--wine);
+  border: 1px solid rgba(114, 47, 55, 0.28);
+}
+
+.geo-action-btn.secondary:hover {
+  background-color: var(--wine-tint);
+  border-color: var(--wine);
+}
+
+.store-distance-result {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding: 0.65rem 0.9rem;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  color: #065f46;
+  font-size: 0.84rem;
+}
+
+.store-distance-result .material-icons {
+  font-size: 1.15rem;
+  color: #059669;
+}
+
+/* Selector de Origen de Dirección */
+.address-origin-selector {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid var(--wine);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 18px 0;
+}
+
+.address-origin-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 12px;
+}
+
+.address-origin-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.65rem;
+}
+
+.origin-option-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.95rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.origin-option-btn .material-icons {
+  font-size: 1.1rem;
+  color: var(--wine);
+}
+
+.origin-option-btn:hover:not(:disabled) {
+  border-color: var(--wine);
+  background-color: var(--wine-tint);
+  color: var(--wine);
+}
+
+.origin-option-btn.active {
+  border-color: var(--wine);
+  background-color: var(--wine-tint);
+  color: var(--wine);
+  box-shadow: 0 2px 6px rgba(114, 47, 55, 0.1);
+}
+
+/* Tarjeta de revisión de ubicación detectada */
+.geo-review-card {
+  background-color: #fffdf9;
+  border: 1.5px solid #e9d5a1;
+  border-left: 4px solid var(--wine);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 14px rgba(114, 47, 55, 0.06);
+  animation: fadeInDown 0.22s ease-out;
+}
+
+.geo-review-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.geo-review-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.geo-pin-icon {
+  color: var(--wine);
+  font-size: 1.35rem;
+  margin-top: 0.1rem;
+}
+
+.geo-review-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 0.2rem;
+}
+
+.geo-review-subtitle {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.geo-distance-pill {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: var(--wine);
+  background-color: var(--wine-tint);
+  border: 1px solid rgba(114, 47, 55, 0.2);
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.geo-review-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.65rem;
+  padding: 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  margin-bottom: 0.9rem;
+}
+
+.geo-review-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.geo-field-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-400);
+}
+
+.geo-field-val {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.geo-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.geo-confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: var(--wine);
+  border: 1px solid var(--wine);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.geo-confirm-btn:hover {
+  background-color: var(--wine-dark);
+}
+
+.geo-confirm-btn .material-icons,
+.geo-manual-btn .material-icons {
+  font-size: 1rem;
+}
+
+.geo-manual-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  background-color: #ffffff;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.geo-manual-btn:hover {
+  border-color: var(--gray-400);
+  background-color: var(--gray-50);
+}
+
+.geo-feedback-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.95rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin-bottom: 1.15rem;
+}
+
+.geo-feedback-alert .material-icons {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+.geo-feedback-alert.success {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.geo-feedback-alert.warning {
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+@media (max-width: 640px) {
+  .store-pickup-actions,
+  .geo-review-actions {
+    flex-direction: column;
+  }
+
+  .geo-action-btn,
+  .geo-confirm-btn,
+  .geo-manual-btn {
+    width: 100%;
+  }
+}

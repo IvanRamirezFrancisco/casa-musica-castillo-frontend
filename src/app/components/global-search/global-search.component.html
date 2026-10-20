@@ -1,177 +1,437 @@
-<div class="global-search-container">
-  <!-- Input de búsqueda -->
-  <div class="search-box">
-    <span class="material-symbols-outlined search-icon">search</span>
-    
+<div class="global-search-container" role="search">
+  <!-- Barra principal: [ 🔍 ] [ Input ] [ 🎤 ] [ ✕ ] -->
+  <div
+    class="search-input-wrapper"
+    [class.focused]="showDropdown"
+    [class.voice-listening]="isVoiceListening"
+  >
+    <i class="fas fa-search search-icon" aria-hidden="true"></i>
+
     <input
       #searchInput
-      id="global-search-input"
       type="text"
+      [id]="inputId"
       class="search-input"
-      placeholder="Buscar productos e instrumentos..."
+      [placeholder]="isVoiceListening ? 'Escuchando tu voz...' : placeholder"
       [(ngModel)]="searchQuery"
       (input)="onSearchInput($event)"
-      (focus)="openDropdown()"
-      (blur)="notifySearchActive()"
-      (keydown)="onKeyDown($event)"
+      (focus)="onSearchFocus()"
       autocomplete="off"
+      spellcheck="false"
+      maxlength="100"
       role="combobox"
-      [attr.aria-expanded]="showDropdown"
+      aria-autocomplete="list"
       aria-haspopup="listbox"
-      aria-controls="search-dropdown-list"
-      [attr.aria-activedescendant]="activeIndex >= 0 ? 'search-option-' + activeIndex : null"
-    >
-    
-    <!-- Botón limpiar -->
-    <button 
-      *ngIf="searchQuery.length > 0"
-      class="clear-btn"
-      (click)="clearSearch()"
-      type="button"
-    >
-      <span class="material-symbols-outlined">close</span>
-    </button>
+      [attr.aria-expanded]="showDropdown"
+      [attr.aria-controls]="listboxId"
+      [attr.aria-activedescendant]="activeDescendantId"
+      aria-label="Buscar instrumentos, marcas o modelos en Casa de Música Castillo"
+    />
 
-    <!-- Indicador de carga -->
-    <div *ngIf="isSearching" class="loading-indicator">
-      <span class="material-symbols-outlined spinning">progress_activity</span>
+    <div class="search-actions">
+      <!-- Indicador de carga discreto -->
+      <span
+        *ngIf="isLoading"
+        class="loading-spinner"
+        role="status"
+        aria-live="polite"
+        aria-label="Buscando productos"
+      >
+        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+      </span>
+
+      <!-- Botón de limpiar [ ✕ ]: limpia SOLO el término de búsqueda -->
+      <button
+        *ngIf="searchQuery.length > 0"
+        type="button"
+        class="action-btn clear-btn"
+        (click)="clearSearch()"
+        aria-label="Limpiar búsqueda"
+        title="Limpiar búsqueda"
+      >
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+
+      <!-- Botón de búsqueda por voz [ 🎤 ]: siempre visible; deshabilitado si el navegador no lo admite -->
+      <button
+        type="button"
+        class="action-btn voice-btn"
+        [class.listening]="isVoiceListening"
+        [class.voice-unsupported]="!voiceSupported"
+        (click)="toggleVoiceSearch($event)"
+        [attr.aria-label]="voiceButtonAriaLabel"
+        [attr.aria-pressed]="voiceSupported ? isVoiceListening : null"
+        [attr.aria-disabled]="!voiceSupported"
+        [title]="voiceButtonAriaLabel"
+      >
+        <i
+          class="fas"
+          [ngClass]="isVoiceListening ? 'fa-stop-circle' : 'fa-microphone'"
+          aria-hidden="true"
+        ></i>
+        <span *ngIf="isVoiceListening" class="voice-pulse-ring" aria-hidden="true"></span>
+      </button>
     </div>
   </div>
 
-  <!-- Región ARIA-live oculta para anunciar estados -->
-  <div class="sr-only" aria-live="polite" aria-atomic="true">
-    <span *ngIf="isSearching">Buscando productos...</span>
-    <span *ngIf="noResults && hasSearched">No encontramos productos para {{ searchQuery }}</span>
-    <span *ngIf="totalResults > 0">{{ totalResults }} resultados encontrados. Use flechas arriba y abajo para navegar.</span>
-  </div>
-
-  <!-- Dropdown de resultados -->
-  <div *ngIf="showDropdown" class="search-dropdown" id="search-dropdown-list" role="listbox">
-    
-    <!-- Sugerencias de búsqueda (historial) -->
-    <div *ngIf="!hasSearched && searchSuggestions.length > 0" class="suggestions-section">
-      <div class="section-header">
-        <span class="material-symbols-outlined">history</span>
-        <span>Búsquedas recientes</span>
-      </div>
-      <div class="suggestions-list">
-        <button
-          *ngFor="let suggestion of searchSuggestions; let i = index"
-          id="search-option-{{ i }}"
-          class="suggestion-item"
-          [class.active-option]="i === activeIndex"
-          (click)="selectSuggestion(suggestion)"
-          role="option"
-          [attr.aria-selected]="i === activeIndex"
-        >
-          <span class="material-symbols-outlined">search</span>
-          <span>{{ suggestion }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Estado: Cargando -->
-    <div *ngIf="isSearching && hasSearched" class="loading-state">
-      <span class="material-symbols-outlined spinning">progress_activity</span>
-      <p>Buscando productos...</p>
-    </div>
-
-    <!-- Estado: Consulta corta (menor a dos caracteres) -->
-    <div *ngIf="!isSearching && !hasSearched && searchQuery.length > 0 && searchQuery.trim().length < 2" class="no-results-state">
-      <span class="material-symbols-outlined">info</span>
-      <h4>Escribe al menos 2 caracteres</h4>
-      <p>Continúa escribiendo para iniciar la búsqueda.</p>
-    </div>
-
-    <!-- Estado: Sin resultados -->
-    <div *ngIf="!isSearching && hasSearched && noResults" class="no-results-state">
-      <span class="material-symbols-outlined">search_off</span>
-      <h4>No se encontraron resultados</h4>
-      <p>No encontramos productos para "{{ searchQuery }}"</p>
-      <div class="suggestions-help">
-        <p><strong>Sugerencias:</strong></p>
-        <ul>
-          <li>Revisa la ortografía</li>
-          <li>Intenta con palabras más generales</li>
-          <li>Utiliza menos palabras</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Resultados de búsqueda -->
-    <div *ngIf="!isSearching && hasSearched && searchResults.length > 0" class="results-section">
-      
-      <!-- Header de resultados -->
-      <div class="results-header">
-        <span class="results-count">
-          <ng-container *ngIf="searchResults.length < totalResults">
-            Mostrando {{ searchResults.slice(0, 5).length }} de {{ totalResults }} resultados
-          </ng-container>
-          <ng-container *ngIf="searchResults.length >= totalResults">
-            {{ totalResults }} resultado{{ totalResults !== 1 ? 's' : '' }} encontrado{{ totalResults !== 1 ? 's' : '' }}
-          </ng-container>
+  <!-- Panel desplegable de autocompletado y estados -->
+  <div
+    *ngIf="showDropdown"
+    [id]="listboxId"
+    class="search-dropdown"
+    role="listbox"
+    aria-label="Sugerencias y resultados de búsqueda"
+  >
+    <!-- Banner de estado de Búsqueda por Voz (Micrófono) -->
+    <div
+      *ngIf="voiceState.status !== 'IDLE'"
+      class="voice-status-banner"
+      [ngClass]="'voice-status-' + voiceState.status.toLowerCase()"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="voice-status-content">
+        <span class="voice-wave-icon" *ngIf="isVoiceListening" aria-hidden="true">
+          <span></span><span></span><span></span>
         </span>
-        <span class="execution-time" *ngIf="executionTime > 0">
-          ({{ executionTime }}ms)
-        </span>
+        <i
+          *ngIf="!isVoiceListening && voiceState.status === 'RECOGNIZED'"
+          class="fas fa-check-circle text-emerald-600"
+          aria-hidden="true"
+        ></i>
+        <i
+          *ngIf="!isVoiceListening && voiceState.status !== 'RECOGNIZED'"
+          class="fas fa-microphone-slash text-amber-600"
+          aria-hidden="true"
+        ></i>
+        <span class="voice-status-text">{{ voiceState.message }}</span>
       </div>
 
-      <!-- Lista de productos -->
-      <div class="results-list">
-        <div
-          *ngFor="let product of searchResults.slice(0, 5); let i = index"
-          id="search-option-{{ i }}"
-          class="result-item"
-          [class.active-option]="i === activeIndex"
-          (click)="viewProductDetail(product)"
-          role="option"
-          [attr.aria-selected]="i === activeIndex"
-        >
-          <!-- Imagen -->
-          <div class="result-image">
-            <img 
-              *ngIf="product.imageUrl"
-              [src]="product.imageUrl" 
-              [alt]="product.name"
-            >
-            <div *ngIf="!product.imageUrl" class="image-placeholder">
-              <span class="material-symbols-outlined">music_note</span>
+      <button
+        *ngIf="isVoiceListening"
+        type="button"
+        class="voice-stop-action"
+        (click)="stopVoiceSearch($event)"
+        aria-label="Detener búsqueda por voz"
+      >
+        Detener
+      </button>
+    </div>
+
+    <!-- ESTADO 1: Esperando escritura (Búsquedas recientes o sugerencias populares) -->
+    <div *ngIf="searchQuery.trim().length < 2 && !isLoading" class="dropdown-section">
+      <ng-container *ngIf="recentSearches.length > 0; else popularBlock">
+        <div class="section-header-row">
+          <span class="section-header-title">
+            <i class="fas fa-history" aria-hidden="true"></i>
+            Búsquedas recientes
+          </span>
+          <button
+            type="button"
+            class="clear-history-btn"
+            (click)="clearHistory($event)"
+            aria-label="Borrar historial de búsquedas recientes"
+          >
+            Borrar historial
+          </button>
+        </div>
+
+        <div class="recent-list">
+          <div
+            *ngFor="let recent of recentSearches; let i = index"
+            [id]="getHistoryOptionId(i)"
+            class="recent-item"
+            [class.selected]="isOptionSelected(getHistoryOptionId(i))"
+            role="option"
+            [attr.aria-selected]="isOptionSelected(getHistoryOptionId(i))"
+            (mouseenter)="setHoveredOption(getHistoryOptionId(i))"
+            (click)="selectRecentSearch(recent)"
+          >
+            <div class="recent-item-left">
+              <i class="fas fa-clock recent-clock-icon" aria-hidden="true"></i>
+              <span class="recent-text">{{ recent }}</span>
             </div>
+            <button
+              type="button"
+              class="remove-recent-btn"
+              (click)="removeRecentSearch(recent, $event)"
+              [attr.aria-label]="'Eliminar ' + recent + ' del historial'"
+              title="Eliminar del historial"
+            >
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #popularBlock>
+        <div class="section-header-row">
+          <span class="section-header-title">
+            <i class="fas fa-compass" aria-hidden="true"></i>
+            Sugerencias rápidas
+          </span>
+        </div>
+        <div class="quick-tags-wrap">
+          <button
+            *ngFor="let sug of popularSuggestions; let i = index"
+            type="button"
+            [id]="getSuggestionOptionId(i)"
+            class="quick-tag-chip"
+            [class.selected]="isOptionSelected(getSuggestionOptionId(i))"
+            role="option"
+            [attr.aria-selected]="isOptionSelected(getSuggestionOptionId(i))"
+            (mouseenter)="setHoveredOption(getSuggestionOptionId(i))"
+            (click)="selectQuickQuery(sug)"
+          >
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <span>{{ sug }}</span>
+          </button>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- ESTADO 2: Buscando (Skeleton de carga) -->
+    <div
+      *ngIf="isLoading && searchQuery.trim().length >= 2"
+      class="dropdown-loading-state"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="skeleton-row" *ngFor="let sk of [1, 2, 3]">
+        <div class="skeleton-thumb"></div>
+        <div class="skeleton-lines">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line long"></div>
+        </div>
+        <div class="skeleton-price"></div>
+      </div>
+    </div>
+
+    <!-- Aviso de corrección tipográfica / coincidencia aproximada -->
+    <div
+      *ngIf="!isLoading && suggestedTerm && (searchResults.length > 0 || categoryMatches.length > 0 || brandMatches.length > 0)"
+      class="typo-suggestion-banner"
+      role="status"
+    >
+      <i class="fas fa-magic" aria-hidden="true"></i>
+      <span>
+        Mostrando coincidencias aproximadas para
+        <strong>«{{ suggestedTerm }}»</strong>
+      </span>
+    </div>
+
+    <!-- ESTADO 3: Resultados encontrados agrupados (Productos, Categorías, Marcas) -->
+    <div
+      *ngIf="!isLoading && (searchResults.length > 0 || categoryMatches.length > 0 || brandMatches.length > 0)"
+      class="grouped-results-wrapper"
+    >
+      <!-- GRUPO 1: PRODUCTOS -->
+      <div *ngIf="searchResults.length > 0" class="result-group">
+        <div class="group-title-bar">
+          <i class="fas fa-guitar" aria-hidden="true"></i>
+          <span>Productos</span>
+        </div>
+
+        <div
+          *ngFor="let product of searchResults; let i = index"
+          [id]="getProductOptionId(i)"
+          class="result-item"
+          [class.selected]="isOptionSelected(getProductOptionId(i))"
+          role="option"
+          [attr.aria-selected]="isOptionSelected(getProductOptionId(i))"
+          (mouseenter)="setHoveredOption(getProductOptionId(i))"
+          (click)="selectProduct(product)"
+        >
+          <div class="product-image">
+            <img
+              [src]="product.imageUrl || 'assets/placeholder-instrument.svg'"
+              [alt]="product.name"
+              loading="lazy"
+              (error)="onProductImageError($event)"
+            />
           </div>
 
-          <!-- Info -->
-          <div class="result-info">
-            <span class="result-category" *ngIf="product.category">{{ product.category.name }}</span>
-            <h4 class="result-name">
-              <ng-container *ngFor="let part of getHighlightedParts(product.name)">
-                <mark *ngIf="part.isMatch">{{ part.text }}</mark><ng-container *ngIf="!part.isMatch">{{ part.text }}</ng-container>
-              </ng-container>
-            </h4>
-            <div class="result-meta">
-              <span class="result-brand" *ngIf="product.brand">{{ product.brand.name }}</span>
-              <span *ngIf="product.averageRating" class="result-rating">
-                <span class="material-symbols-outlined">star</span>
-                {{ product.averageRating }}
+          <div class="product-info">
+            <div class="product-meta-top">
+              <span class="product-category" *ngIf="product.category">
+                {{ product.category.name }}
+              </span>
+              <span class="product-brand-pill" *ngIf="product.brand">
+                {{ product.brand.name }}
+              </span>
+              <span class="product-model-pill" *ngIf="product.model">
+                Mod. {{ product.model }}
               </span>
             </div>
+
+            <div class="product-name">
+              <ng-container
+                *ngFor="let part of getHighlightedParts(product.name, searchQuery)"
+              >
+                <mark *ngIf="part.isMatch" class="highlight">{{ part.text }}</mark>
+                <ng-container *ngIf="!part.isMatch">{{ part.text }}</ng-container>
+              </ng-container>
+            </div>
           </div>
 
-          <!-- Precio -->
-          <div class="result-price">
-            <span class="price-current">${{ product.discountPrice || product.price | number:'1.2-2' }}</span>
-            <span *ngIf="product.discountPrice && product.discountPrice < product.price" class="price-original">${{ product.price | number:'1.2-2' }}</span>
+          <div class="product-price-col">
+            <span class="current-price">
+              ${{ getDisplayPrice(product) | number: '1.2-2' }}
+            </span>
+            <span *ngIf="hasDiscount(product)" class="original-price">
+              ${{ product.price | number: '1.2-2' }}
+            </span>
+            <span
+              class="stock-indicator"
+              [class.in-stock]="product.stock > 0"
+              [class.out-stock]="product.stock <= 0"
+            >
+              {{ product.stock > 0 ? 'Disponible' : 'Agotado' }}
+            </span>
           </div>
         </div>
       </div>
 
-      <!-- Ver todos los resultados -->
-      <div class="view-all-footer">
-        <button class="btn-view-all" (click)="viewAllResults()">
-          Ver todos los resultados ({{ totalResults }})
-          <span class="material-symbols-outlined">arrow_forward</span>
+      <!-- GRUPO 2 y 3: CATEGORÍAS Y MARCAS -->
+      <div
+        *ngIf="categoryMatches.length > 0 || brandMatches.length > 0"
+        class="taxonomy-groups-grid"
+      >
+        <!-- CATEGORÍAS -->
+        <div *ngIf="categoryMatches.length > 0" class="result-group taxonomy-col">
+          <div class="group-title-bar">
+            <i class="fas fa-layer-group" aria-hidden="true"></i>
+            <span>Categorías</span>
+          </div>
+          <div class="taxonomy-list">
+            <button
+              *ngFor="let cat of categoryMatches; let i = index"
+              type="button"
+              [id]="getCategoryOptionId(i)"
+              class="taxonomy-item"
+              [class.selected]="isOptionSelected(getCategoryOptionId(i))"
+              role="option"
+              [attr.aria-selected]="isOptionSelected(getCategoryOptionId(i))"
+              (mouseenter)="setHoveredOption(getCategoryOptionId(i))"
+              (click)="selectCategory(cat)"
+            >
+              <span class="taxonomy-name">{{ cat.name }}</span>
+              <i class="fas fa-chevron-right taxonomy-arrow" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- MARCAS -->
+        <div *ngIf="brandMatches.length > 0" class="result-group taxonomy-col">
+          <div class="group-title-bar">
+            <i class="fas fa-award" aria-hidden="true"></i>
+            <span>Marcas</span>
+          </div>
+          <div class="taxonomy-list">
+            <button
+              *ngFor="let brand of brandMatches; let i = index"
+              type="button"
+              [id]="getBrandOptionId(i)"
+              class="taxonomy-item"
+              [class.selected]="isOptionSelected(getBrandOptionId(i))"
+              role="option"
+              [attr.aria-selected]="isOptionSelected(getBrandOptionId(i))"
+              (mouseenter)="setHoveredOption(getBrandOptionId(i))"
+              (click)="selectBrand(brand)"
+            >
+              <span class="taxonomy-name">{{ brand.name }}</span>
+              <i class="fas fa-chevron-right taxonomy-arrow" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA FINAL: Ver todos los resultados -->
+      <div class="dropdown-footer">
+        <button
+          type="button"
+          [id]="viewAllOptionId"
+          class="view-all-btn"
+          [class.selected]="isOptionSelected(viewAllOptionId)"
+          role="option"
+          [attr.aria-selected]="isOptionSelected(viewAllOptionId)"
+          (mouseenter)="setHoveredOption(viewAllOptionId)"
+          (click)="viewAllResults()"
+        >
+          <span>
+            Ver todos los resultados para
+            <strong>"{{ searchQuery.trim() }}"</strong>
+            <ng-container *ngIf="totalResults > 0">
+              ({{ totalResults }})
+            </ng-container>
+          </span>
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
         </button>
       </div>
     </div>
 
+    <!-- ESTADO 4: Sin resultados -->
+    <div *ngIf="!isLoading && noResults" class="state-feedback-box" role="status">
+      <div class="state-icon-circle neutral">
+        <i class="fas fa-search" aria-hidden="true"></i>
+      </div>
+      <p class="state-title">
+        No encontramos resultados para "{{ searchQuery.trim() }}"
+      </p>
+      <p class="state-subtitle">
+        Verifica la ortografía o prueba con el nombre del instrumento, marca o modelo:
+      </p>
+      <div class="quick-tags-wrap centered">
+        <button
+          *ngFor="let sug of popularSuggestions"
+          type="button"
+          class="quick-tag-chip"
+          (click)="selectQuickQuery(sug)"
+        >
+          {{ sug }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ESTADO 5: Modo sin conexión (Offline) -->
+    <div
+      *ngIf="!isLoading && isOfflineState"
+      class="state-feedback-box warning"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="state-icon-circle amber">
+        <i class="fas fa-wifi-slash" aria-hidden="true"></i>
+      </div>
+      <p class="state-title">Necesitas conexión para realizar una nueva búsqueda</p>
+      <p class="state-subtitle">
+        Revisa tu conexión a internet e inténtalo nuevamente.
+      </p>
+      <button type="button" class="retry-search-btn" (click)="retrySearch()">
+        <i class="fas fa-redo" aria-hidden="true"></i>
+        Reintentar
+      </button>
+    </div>
+
+    <!-- ESTADO 6 y 7: Backend temporalmente no disponible / Error -->
+    <div
+      *ngIf="!isLoading && (isServerUnavailable || hasSearchError)"
+      class="state-feedback-box error"
+      role="alert"
+    >
+      <div class="state-icon-circle red">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+      </div>
+      <p class="state-title">
+        El buscador no está disponible temporalmente
+      </p>
+      <p class="state-subtitle">
+        No pudimos conectar con el catálogo en este momento. Puedes intentar de nuevo.
+      </p>
+      <button type="button" class="retry-search-btn" (click)="retrySearch()">
+        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        Reintentar búsqueda
+      </button>
+    </div>
   </div>
 </div>

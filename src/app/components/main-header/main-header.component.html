@@ -106,7 +106,11 @@
 
     <!-- Fila inferior exclusiva para la búsqueda móvil -->
     <div class="mobile-search-row" *ngIf="isMobileSearchOpen">
-      <app-global-search (searchActiveChange)="onSearchActiveChange($event)"></app-global-search>
+      <app-global-search
+        [autoFocus]="true"
+        (searchActiveChange)="onSearchActiveChange($event)"
+        (searchExecuted)="closeMobileSearch()"
+      ></app-global-search>
     </div>
   </div>
 
