@@ -21,6 +21,8 @@
           "/assets/icons/icon-72x72.png",
           "/assets/icons/icon-192x192.png",
           "/assets/icons/icon-512x512.png",
+          "/assets/icons/maskable-icon-192x192.png",
+          "/assets/icons/maskable-icon-512x512.png",
           "/assets/image.png"
         ],
         "urls": [
