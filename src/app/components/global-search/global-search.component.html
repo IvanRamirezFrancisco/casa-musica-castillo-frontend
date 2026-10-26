@@ -279,7 +279,7 @@
                       }
                     </div>
                     <div class="product-name">
-                      @for (part of getHighlightedParts(product.name, searchQuery); track part) {
+                      @for (part of getHighlightedParts(product.name, searchQuery); track $index) {
                         @if (part.isMatch) {
                           <mark class="highlight">{{ part.text }}</mark>
                         }
