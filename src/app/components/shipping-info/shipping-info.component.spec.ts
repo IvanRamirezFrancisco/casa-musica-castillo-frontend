@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ShippingInfoComponent } from './shipping-info.component';
@@ -8,6 +9,7 @@ describe('ShippingInfoComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideRouter([])],
       imports: [ShippingInfoComponent]
     })
     .compileComponents();
