@@ -49,3 +49,6 @@ Thumbs.db
 /.agents/
 /.agents/**
 /frontend-repomix.xml
+
+# Local authentication validation reports (may contain synthetic test payloads)
+auth-*.log

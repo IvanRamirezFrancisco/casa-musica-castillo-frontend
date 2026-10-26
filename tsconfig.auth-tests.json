@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/services/auth-challenge.spec.ts",
+    "src/app/components/login/login-auth-contract.spec.ts",
+    "src/app/services/password-reset-auth-compat.spec.ts",
+    "src/app/interceptors/sanitization-functional.interceptor.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

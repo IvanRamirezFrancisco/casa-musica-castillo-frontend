@@ -66,8 +66,8 @@ function sanitizeObject(obj: any, sanitizationService: SanitizationService): any
     Object.keys(obj).forEach(key => {
       // No sanitizar campos sensibles como tokens, passwords, etc.
       const skipSanitization = [
-        'accessToken', 'refreshToken', 'token', 'password', 'hash',
-        'signature', 'secret', 'key', 'id', 'uuid', 'timestamp'
+        'accesstoken', 'refreshtoken', 'token', 'password', 'hash',
+        'preauthchallenge', 'signature', 'secret', 'key', 'id', 'uuid', 'timestamp'
       ];
       
       if (skipSanitization.includes(key.toLowerCase())) {
