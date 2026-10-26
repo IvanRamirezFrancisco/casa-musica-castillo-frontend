@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -32,6 +32,7 @@ interface RecentOrder {
   standalone: true,
   imports: [CommonModule, RouterModule, AdminInventoryPredictionComponent],
   templateUrl: './admin-dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-dashboard.component.css'
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {

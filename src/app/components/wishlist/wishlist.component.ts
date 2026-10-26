@@ -1,7 +1,8 @@
 import {
   Component,
   OnInit,
-  OnDestroy
+  OnDestroy,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -18,6 +19,7 @@ type SortOption = 'date' | 'price_asc' | 'price_desc' | 'name';
   standalone: true,
   imports: [CommonModule, RouterModule, CurrencyPipe, DatePipe],
   templateUrl: './wishlist.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./wishlist.component.css']
 })
 export class WishlistComponent implements OnInit, OnDestroy {

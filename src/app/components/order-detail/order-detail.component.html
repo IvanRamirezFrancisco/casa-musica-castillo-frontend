@@ -13,8 +13,12 @@
       <div class="header-row">
         <h1 class="page-title">
           <span class="material-icons">receipt_long</span>
-          <span *ngIf="order">Pedido #{{ order.orderNumber }}</span>
-          <span *ngIf="!order && isLoading">Cargando...</span>
+          @if (order) {
+            <span>Pedido #{{ order.orderNumber }}</span>
+          }
+          @if (!order && isLoading) {
+            <span>Cargando...</span>
+          }
         </h1>
         <a routerLink="/orders/my" class="btn-back">
           <span class="material-icons">arrow_back</span>Mis Pedidos
@@ -26,658 +30,764 @@
   <div class="container detail-body">
 
     <!-- LOADING -->
-    <div class="state-center" *ngIf="isLoading">
-      <div class="spinner-large"></div>
-      <p>Cargando detalles del pedido...</p>
-    </div>
+    @if (isLoading) {
+      <div class="state-center">
+        <div class="spinner-large"></div>
+        <p>Cargando detalles del pedido...</p>
+      </div>
+    }
 
     <!-- ERROR -->
-    <div class="state-center" *ngIf="!isLoading && error">
-      <span class="material-icons state-icon error-icon">error_outline</span>
-      <h2>{{ error }}</h2>
-      <a routerLink="/orders/my" class="btn-primary">Ver mis pedidos</a>
-    </div>
+    @if (!isLoading && error) {
+      <div class="state-center">
+        <span class="material-icons state-icon error-icon">error_outline</span>
+        <h2>{{ error }}</h2>
+        <a routerLink="/orders/my" class="btn-primary">Ver mis pedidos</a>
+      </div>
+    }
 
     <!-- DETALLE -->
-    <div *ngIf="!isLoading && !error && order">
-
-      <!-- ALERTA CANCELADO -->
-      <div class="alert-cancelled" *ngIf="order.status === 'CANCELLED'">
-        <span class="material-icons">cancel</span>
-        <div class="cancelled-info">
-          <strong>Pedido cancelado</strong>
-          <span *ngIf="order.cancelledAt"> el {{ formatDate(order.cancelledAt) }}</span>
-          <span *ngIf="order.cancelSource"> · {{ getCancelSourceLabel(order.cancelSource) }}</span>
-          <p *ngIf="order.cancellationReason" class="cancel-reason">
-            Motivo: {{ order.cancellationReason }}
-          </p>
-        </div>
-      </div>
-
-      <div class="detail-grid">
-
-        <!-- COLUMNA IZQUIERDA -->
-        <div class="detail-main">
-
-          <!-- INFORMACIÓN DEL PEDIDO -->
-          <div class="detail-card">
-            <div class="card-header">
-              <span class="material-icons">info</span>
-              <h2>Información del Pedido</h2>
-            </div>
-            <div class="card-body info-grid">
-              <div class="info-item">
-                <span class="info-label">Número de pedido</span>
-                <span class="info-value"># {{ order.orderNumber }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Fecha</span>
-                <span class="info-value">{{ formatDate(order.createdAt) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Estado del pedido</span>
-                <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
-                  {{ getStatusLabel(order.status) }}
-                </span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Estado de pago</span>
-                <span class="info-value">{{ getPaymentLabel(order.paymentStatus) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Estado de envío</span>
-                <span class="info-value">{{ getShippingLabel(order.shippingStatus) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Método de entrega</span>
-                <span class="info-value">{{ getDeliveryTypeLabel(order.deliveryType) }}</span>
-              </div>
-              <div class="info-item" *ngIf="order.paymentMethod">
-                <span class="info-label">Método de pago</span>
-                <span class="info-value">{{ getPaymentMethodLabel(order.paymentMethod || '') }}</span>
-              </div>
-              <div class="info-item" *ngIf="order.trackingNumber">
-                <span class="info-label">Número de seguimiento</span>
-                <span class="info-value tracking">{{ order.trackingNumber }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- CÓDIGO DE RECOLECCIÓN (PICKUP) -->
-          <div class="detail-card" *ngIf="order.deliveryType === 'PICKUP_STORE'">
-            <div class="card-header">
-              <span class="material-icons">storefront</span>
-              <h2>Recolección en Tienda</h2>
-            </div>
-            <div class="card-body text-center py-4">
-              
-              <!-- ESTADO: PAGO PENDIENTE O NOT_APPLICABLE -->
-              <div *ngIf="order.paymentStatus !== 'PAID' || order.pickupStatus === 'WAITING_PAYMENT' || order.pickupStatus === 'NOT_APPLICABLE'">
-                <div *ngIf="order.status !== 'CANCELLED' && order.status !== 'COMPLETED'" class="alert alert-warning text-left mb-3">
-                  <span class="material-icons text-yellow-600">info</span>
-                  <p class="mb-0 text-yellow-800">Tu código de recolección se generará cuando el pago sea confirmado.</p>
-                </div>
-              </div>
-
-              <!-- ESTADO: PAGADO, EN PREPARACIÓN -->
-              <div *ngIf="order.pickupStatus === 'PAID_WAITING_PREPARATION'">
-                <div class="alert alert-info text-left mb-3">
-                  <span class="material-icons text-blue-600">inventory</span>
-                  <div>
-                    <p class="mb-1 text-blue-800 font-bold">Pago confirmado. Estamos preparando tu pedido para recolección en tienda.</p>
-                    <p class="mb-0 text-blue-700 text-sm">Te avisaremos cuando esté listo para recoger.</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- ESTADO: CANCELADO -->
-              <div *ngIf="order.pickupStatus === 'CANCELLED' || (order.status === 'CANCELLED' && order.pickupStatus !== 'PICKED_UP')">
-                <div class="alert alert-danger text-left mb-3" style="background-color: #fee2e2; border: 1px solid #f87171;">
-                  <span class="material-icons text-red-600">cancel</span>
-                  <p class="mb-0 text-red-800 font-bold">La recolección fue cancelada porque la orden ya no está activa.</p>
-                </div>
-              </div>
-
-              <!-- ESTADO: LISTO PARA RECOGER -->
-              <div *ngIf="order.pickupStatus === 'READY_FOR_PICKUP'">
-                <div class="alert alert-success text-left mb-3">
-                  <span class="material-icons text-green-600">check_circle</span>
-                  <p class="mb-0 text-green-800 font-bold">¡Tu pedido está listo para recoger!</p>
-                </div>
-
-                <div *ngIf="loadingPickupCode" class="state-center py-2">
-                  <div class="spinner-large" style="width: 24px; height: 24px; border-width: 3px;"></div>
-                  <p class="text-sm mt-2">Cargando código de recolección...</p>
-                </div>
-                
-                <div *ngIf="!loadingPickupCode && pickupCodeError" class="text-red-600 text-sm mb-3">
-                  {{ pickupCodeError }}
-                </div>
-                
-                <div *ngIf="!loadingPickupCode && pickupCode" class="bg-gray-50 border border-gray-200 rounded-lg p-4 inline-block mx-auto mb-4">
-                  <p class="text-sm text-gray-600 mb-2">Muestra este código al recoger tu pedido en tienda.</p>
-                  <div class="text-3xl font-mono font-bold tracking-widest text-[#722f37]">{{ pickupCode }}</div>
-                  <p class="text-xs text-gray-500 mt-2">Válido junto con una identificación oficial de la persona autorizada.</p>
-                </div>
-              </div>
-
-              <!-- ESTADO: RECOLECTADO -->
-              <div *ngIf="order.pickupStatus === 'PICKED_UP'">
-                <div class="alert alert-success text-left mb-3">
-                  <span class="material-icons text-green-600">done_all</span>
-                  <div>
-                    <p class="mb-1 text-green-800 font-bold">Pedido recolectado en tienda.</p>
-                    <p class="mb-0 text-sm text-green-700" *ngIf="order.pickedUpAt">
-                      Entregado el {{ order.pickedUpAt | date:'medium' }} <span *ngIf="order.pickedUpByName">a {{ order.pickedUpByName }}</span>.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- FALLBACK: ESTADO DESCONOCIDO O NULL -->
-              <div *ngIf="!order.pickupStatus && order.status !== 'CANCELLED' && order.status !== 'COMPLETED'">
-                 <div class="alert alert-secondary text-left mb-3" style="background-color: #f3f4f6; border: 1px solid #d1d5db;">
-                  <span class="material-icons text-gray-600">hourglass_empty</span>
-                  <p class="mb-0 text-gray-800">Estamos preparando la información de recolección de tu pedido.</p>
-                 </div>
-              </div>
-
-              <!-- INFORMACIÓN COMPARTIDA DE TIENDA Y PERSONAS AUTORIZADAS (Visible antes de recoger) -->
-              <div *ngIf="order.pickupStatus !== 'PICKED_UP' && order.status !== 'CANCELLED'">
-                <div class="text-left bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm mb-3">
-                  <p class="font-bold mb-1">Dirección de la tienda:</p>
-                  <p class="mb-2 text-gray-700">Av. Principal #123, Col. Centro, CP 00000</p>
-                  <p class="font-bold mb-1">Horario de atención:</p>
-                  <p class="text-gray-700">Lunes a Viernes: 9:00 AM - 6:00 PM<br>Sábados: 10:00 AM - 2:00 PM</p>
-                </div>
-                
-                <div class="text-left" *ngIf="order.authorizedPersons && order.authorizedPersons.length > 0">
-                  <p class="font-bold mb-2 text-sm">Personas autorizadas para recoger:</p>
-                  <ul class="list-disc pl-5 text-sm text-gray-700 mb-2">
-                    <li *ngFor="let person of order.authorizedPersons">
-                      {{ person.fullName }}
-                      <span *ngIf="person.isPrimary" class="badge badge-primary text-xs ml-1">Principal</span>
-                    </li>
-                  </ul>
-                  <p class="text-xs text-gray-500 italic flex items-start gap-1">
-                    <span class="material-icons" style="font-size: 14px;">badge</span>
-                    Cuando tu pedido esté listo, la persona que recoja deberá presentar una identificación oficial vigente.
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- DIRECCIÓN -->
-          <div class="detail-card" *ngIf="order.deliveryType !== 'PICKUP_STORE'">
-            <div class="card-header">
-              <span class="material-icons">location_on</span>
-              <h2>Dirección</h2>
-            </div>
-            <div class="card-body">
-              <div class="address-section" *ngIf="order.shippingAddress">
-                <h3 class="address-title">Dirección de envío</h3>
-                <p class="address-text">{{ order.shippingAddress }}</p>
-              </div>
-              <div class="address-section" *ngIf="order.billingAddress && order.billingAddress !== order.shippingAddress">
-                <h3 class="address-title">Dirección de facturación</h3>
-                <p class="address-text">{{ order.billingAddress }}</p>
-              </div>
-              <p class="same-address-note" *ngIf="order.billingAddress === order.shippingAddress">
-                <span class="material-icons">check_circle</span>
-                La dirección de facturación es la misma que la de envío.
-              </p>
-            </div>
-          </div>
-
-          <!-- INSTRUCCIONES DE TRANSFERENCIA -->
-          <div class="detail-card bank-transfer-card" *ngIf="order.paymentMethod === 'BANK_TRANSFER' || order.paymentMethod === 'TRANSFER'">
-            <div class="card-header bank-header">
-              <span class="material-icons">account_balance</span>
-              <h2>Datos y Comprobante de Pago</h2>
-            </div>
-            <div class="card-body">
-              <!-- Cargando instrucciones -->
-              <div *ngIf="loadingInstructions" class="state-center py-4">
-                <div class="spinner-large" style="width: 24px; height: 24px; border-width: 3px;"></div>
-                <p class="text-sm mt-2">Cargando datos bancarios...</p>
-              </div>
-
-              <!-- Información de transferencia -->
-              <div *ngIf="!loadingInstructions">
-                <p class="bank-intro" *ngIf="order.paymentStatus === 'PENDING' && !order.hasPaymentProof">
-                  Después de realizar tu transferencia, sube tu comprobante en esta misma sección.<br>
-                  Tu pedido quedará pendiente hasta que el negocio confirme el pago.
+    @if (!isLoading && !error && order) {
+      <div>
+        <!-- ALERTA CANCELADO -->
+        @if (order.status === 'CANCELLED') {
+          <div class="alert-cancelled">
+            <span class="material-icons">cancel</span>
+            <div class="cancelled-info">
+              <strong>Pedido cancelado</strong>
+              @if (order.cancelledAt) {
+                <span> el {{ formatDate(order.cancelledAt) }}</span>
+              }
+              @if (order.cancelSource) {
+                <span> · {{ getCancelSourceLabel(order.cancelSource) }}</span>
+              }
+              @if (order.cancellationReason) {
+                <p class="cancel-reason">
+                  Motivo: {{ order.cancellationReason }}
                 </p>
-                
-                <div class="bank-details-box" *ngIf="paymentInstructions?.configured">
-                  <div class="bank-row">
-                    <span class="bank-label">Banco:</span>
-                    <span class="bank-value">{{ paymentInstructions?.bankName }}</span>
-                  </div>
-                  <div class="bank-row">
-                    <span class="bank-label">Titular:</span>
-                    <span class="bank-value">{{ paymentInstructions?.accountHolder }}</span>
-                  </div>
-                  <div class="bank-row">
-                    <span class="bank-label">CLABE:</span>
-                    <span class="bank-value highlight flex items-center gap-2">
-                      {{ paymentInstructions?.clabe }}
-                      <button (click)="copyToClipboard(paymentInstructions?.clabe, 'CLABE')" title="Copiar CLABE" class="text-gray-500 hover:text-[#722f37] transition-colors border-none bg-transparent cursor-pointer">
-                        <span class="material-icons" style="font-size: 1rem;">content_copy</span>
-                      </button>
-                    </span>
-                  </div>
-                  <div class="bank-row" *ngIf="paymentInstructions?.accountNumber">
-                    <span class="bank-label">Cuenta:</span>
-                    <span class="bank-value">{{ paymentInstructions?.accountNumber }}</span>
-                  </div>
-                  <div class="bank-row">
-                    <span class="bank-label">Concepto de pago:</span>
-                    <span class="bank-value highlight flex items-center gap-2">
-                      {{ paymentInstructions?.concept }}
-                      <button (click)="copyToClipboard(paymentInstructions?.concept, 'Concepto')" title="Copiar Concepto" class="text-gray-500 hover:text-[#722f37] transition-colors border-none bg-transparent cursor-pointer">
-                        <span class="material-icons" style="font-size: 1rem;">content_copy</span>
-                      </button>
-                    </span>
-                  </div>
-                  <div class="bank-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                      <span class="bank-label">Monto total a transferir:</span>
-                      <span class="bank-value highlight-price flex items-center gap-2">
-                        ${{ paymentInstructions?.amount | number:'1.2-2' }}
-                        <button (click)="copyToClipboard(paymentInstructions?.amount, 'Total')" title="Copiar Total" class="text-gray-500 hover:text-[#16a34a] transition-colors border-none bg-transparent cursor-pointer">
-                          <span class="material-icons" style="font-size: 1rem;">content_copy</span>
-                        </button>
-                      </span>
-                    </div>
-                    <div class="w-full text-xs text-blue-800 bg-blue-50 p-2 rounded border border-blue-200 flex items-start gap-1.5">
-                      <span class="material-icons text-[14px] mt-0.5">info</span>
-                      <p class="m-0 leading-relaxed">Este monto ya incluye productos, IVA y envío. Usa este monto exacto al realizar tu transferencia.</p>
-                    </div>
-                  </div>
-                  <div class="mt-2 text-sm text-gray-600" *ngIf="paymentInstructions?.referenceInstructions">
-                    <strong>Instrucciones de referencia:</strong> {{ paymentInstructions?.referenceInstructions }}
-                  </div>
-                  <div class="mt-1 text-sm text-gray-600 italic" *ngIf="paymentInstructions?.additionalInstructions">
-                    {{ paymentInstructions?.additionalInstructions }}
-                  </div>
-                </div>
-
-                <div class="bank-details-box bg-red-50 border-red-200" *ngIf="paymentInstructions && !paymentInstructions.configured">
-                  <p class="text-red-700 text-sm font-medium mb-0">
-                    <span class="material-icons align-middle mr-1 text-red-600" style="font-size: 1.1rem;">error_outline</span>
-                    Los datos bancarios aún no han sido configurados por el negocio.<br>
-                    Comunícate con la tienda para completar tu pago.
-                  </p>
-                </div>
-              </div>
-              
-
-              <!-- ESTADO CANCELADO -->
-              <div *ngIf="order.status === 'CANCELLED'" class="proof-alert cancelled">
-                <span class="material-icons">cancel</span> Este pedido fue cancelado. No se pueden subir comprobantes.
-              </div>
-
-              <!-- ESTADO PAGADO -->
-              <div *ngIf="order.paymentStatus === 'PAID'" class="proof-alert success">
-                <span class="material-icons">check_circle</span> Pago confirmado.
-              </div>
-
-              <!-- SECCIÓN COMPROBANTE -->
-              <div class="proof-section" *ngIf="order.status !== 'CANCELLED' && order.paymentStatus !== 'PAID'">
-
-                <!-- FORMULARIO SUBIR (SIN COMPROBANTE O RECHAZADO) -->
-                <div *ngIf="!order.hasPaymentProof || order.paymentProofStatus === 'REJECTED'">
-                  <div *ngIf="order.paymentProofStatus === 'REJECTED'" class="proof-alert error">
-                    <span class="material-icons">error</span> Tu comprobante anterior fue rechazado. Puedes subir uno nuevo.
-                    <br><strong>Motivo:</strong> {{ order.paymentProofRejectionReason }}
-                  </div>
-
-                  <div *ngIf="paymentInstructions?.isPaymentDeadlineExpired" class="proof-alert error deadline-expired flex flex-col gap-2">
-                    <div>
-                      <span class="material-icons align-middle">timer_off</span> Orden expirada por falta de pago. El plazo para subir tu comprobante venció el {{ paymentInstructions?.paymentDeadline }}. Puedes generar una nueva orden si aún deseas comprar estos productos.
-                    </div>
-                    <button class="btn-secondary self-start mt-2" routerLink="/productos">Volver al catálogo</button>
-                  </div>
-
-                  <div *ngIf="paymentInstructions?.paymentDeadline && !paymentInstructions?.isPaymentDeadlineExpired" 
-                       class="deadline-warning p-3 rounded border"
-                       [ngClass]="{'border-red-400 bg-red-50 text-red-800': isAlmostExpired, 'border-amber-200 bg-amber-50 text-amber-800': !isAlmostExpired}">
-                    <div><strong>Atención:</strong> Puedes subir tu comprobante hasta el <strong>{{ paymentInstructions?.paymentDeadline }}</strong>.</div>
-                    <div *ngIf="remainingTimeText" class="mt-1 font-medium" [class.text-red-700]="isAlmostExpired">
-                      Tiempo restante: {{ remainingTimeText }}
-                    </div>
-                    <div *ngIf="isAlmostExpired" class="mt-1 font-bold text-red-700">
-                      Tu plazo para subir comprobante está por vencer.
-                    </div>
-                  </div>
-
-                  <form *ngIf="!paymentInstructions?.isPaymentDeadlineExpired" [formGroup]="proofForm" (ngSubmit)="submitProof()" class="proof-form">
-                    <div class="form-group file-group">
-                      <label for="proofFile">Seleccionar comprobante (JPG, PNG o PDF) <span class="required">*</span></label>
-                      <input type="file" id="proofFile" (change)="onFileSelected($event)" accept=".jpg,.jpeg,.png,.pdf">
-                      <small>Tamaño máximo: 5 MB.</small>
-                    </div>
-
-                    <div class="form-row">
-                      <div class="form-group">
-                        <label for="bankName">Banco emisor (Opcional)</label>
-                        <input type="text" id="bankName" formControlName="bankName" placeholder="Ej. BBVA">
-                      </div>
-                      <div class="form-group">
-                        <label for="referenceNumber">No. de referencia (Opcional)</label>
-                        <input type="text" id="referenceNumber" formControlName="referenceNumber" placeholder="Referencia o folio">
-                      </div>
-                    </div>
-
-                    <div class="form-row">
-                      <div class="form-group">
-                        <label for="amountDeclared">Monto transferido (Opcional)</label>
-                        <input type="number" id="amountDeclared" formControlName="amountDeclared" step="0.01" min="0">
-                      </div>
-                      <div class="form-group">
-                        <label for="transferDate">Fecha de transferencia (Opcional)</label>
-                        <input type="date" id="transferDate" formControlName="transferDate"
-                               [min]="minTransferDate" [max]="maxTransferDate"
-                               [class.invalid-field]="transferDateError">
-                        <small class="help-text text-gray-500" *ngIf="!transferDateError">La fecha de transferencia debe ser la fecha real en que hiciste el pago. Si pagarás después, deja este campo vacío o vuelve cuando ya hayas realizado la transferencia.</small>
-                        <small class="error-text text-red-600" *ngIf="transferDateError">{{ transferDateError }}</small>
-                      </div>
-                    </div>
-
-                    <div class="form-group">
-                      <label for="notes">Notas adicionales (Opcional)</label>
-                      <textarea id="notes" formControlName="notes" rows="2"></textarea>
-                    </div>
-
-                    <div *ngIf="uploadError" class="error-msg">{{ uploadError }}</div>
-
-                    <button type="submit" class="btn-primary" [disabled]="!selectedFile || isUploading || proofForm.invalid">
-                      <span class="spinner-sm" *ngIf="isUploading"></span>
-                      {{ isUploading ? 'Subiendo...' : 'Subir Comprobante' }}
-                    </button>
-                  </form>
-                </div>
-
-                <!-- EN REVISIÓN -->
-                <div *ngIf="order.hasPaymentProof && order.paymentProofStatus === 'PENDING_REVIEW'" class="proof-alert warning">
-                  <span class="material-icons">schedule</span> Comprobante en revisión. Lo enviaste dentro del plazo y está pendiente de validación por el negocio.
-                  <div class="proof-actions">
-                    <button class="btn-secondary" (click)="viewProof()">Ver comprobante enviado</button>
-                  </div>
-                </div>
-
-                <!-- APROBADO (Edge case si hasPaymentProof=true pero paymentStatus!=PAID aún por lag) -->
-                <div *ngIf="order.hasPaymentProof && order.paymentProofStatus === 'APPROVED'" class="proof-alert success">
-                  <span class="material-icons">check_circle</span> Comprobante aprobado.
-                  <div class="proof-actions">
-                    <button class="btn-secondary" (click)="viewProof()">Ver comprobante</button>
-                  </div>
-                </div>
-
-              </div> <!-- fin sección comprobante -->
-              
-              <p class="bank-footer" *ngIf="!order.hasPaymentProof">
+              }
+            </div>
+          </div>
+        }
+        <div class="detail-grid">
+          <!-- COLUMNA IZQUIERDA -->
+          <div class="detail-main">
+            <!-- INFORMACIÓN DEL PEDIDO -->
+            <div class="detail-card">
+              <div class="card-header">
                 <span class="material-icons">info</span>
-                Asegúrate de que la imagen o PDF sea legible para evitar retrasos en tu envío.
-              </p>
-            </div>
-          </div>
-
-          <!-- PAGO CON MERCADO PAGO -->
-          <div class="detail-card mercado-pago-card" *ngIf="order.paymentMethod === 'MERCADO_PAGO' && order.status !== 'CANCELLED' && order.paymentStatus !== 'PAID'">
-            <div class="card-header" style="background-color: #009ee3; color: white;">
-              <i class="fa-solid fa-handshake"></i>
-              <h2 style="color: white; margin-left: 8px;">Mercado Pago Checkout Pro</h2>
-            </div>
-            <div class="card-body text-center" style="padding: 2rem;">
-              <p class="mb-4 text-gray-700">Has elegido Mercado Pago como método de pago. Al hacer clic en el botón a continuación, serás redirigido a la plataforma segura de Mercado Pago para completar tu compra.</p>
-              
-              <button 
-                (click)="payWithMercadoPago()" 
-                [disabled]="isPayingWithMP"
-                class="btn-primary"
-                style="background-color: #009ee3; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; display: inline-flex; items-align: center; gap: 8px;">
-                <span *ngIf="isPayingWithMP" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                <i class="fa-solid fa-credit-card" *ngIf="!isPayingWithMP"></i>
-                {{ isPayingWithMP ? 'Iniciando...' : 'Pagar con Mercado Pago' }}
-              </button>
-              
-              <div class="mt-4 text-sm text-gray-500">
-                <i class="fa-solid fa-lock"></i> Pagos procesados de forma segura.
+                <h2>Información del Pedido</h2>
+              </div>
+              <div class="card-body info-grid">
+                <div class="info-item">
+                  <span class="info-label">Número de pedido</span>
+                  <span class="info-value"># {{ order.orderNumber }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Fecha</span>
+                  <span class="info-value">{{ formatDate(order.createdAt) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Estado del pedido</span>
+                  <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Estado de pago</span>
+                  <span class="info-value">{{ getPaymentLabel(order.paymentStatus) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Estado de envío</span>
+                  <span class="info-value">{{ getShippingLabel(order.shippingStatus) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Método de entrega</span>
+                  <span class="info-value">{{ getDeliveryTypeLabel(order.deliveryType) }}</span>
+                </div>
+                @if (order.paymentMethod) {
+                  <div class="info-item">
+                    <span class="info-label">Método de pago</span>
+                    <span class="info-value">{{ getPaymentMethodLabel(order.paymentMethod || '') }}</span>
+                  </div>
+                }
+                @if (order.trackingNumber) {
+                  <div class="info-item">
+                    <span class="info-label">Número de seguimiento</span>
+                    <span class="info-value tracking">{{ order.trackingNumber }}</span>
+                  </div>
+                }
               </div>
             </div>
-          </div>
-
-          <!-- TIMELINE CLIENTE -->
-          <div class="detail-card">
-            <div class="card-header">
-              <span class="material-icons">history</span>
-              <h2>Estado de tu pedido</h2>
-            </div>
-            <div class="card-body">
-              <div *ngIf="loadingTimeline" class="flex justify-center p-4">
-                <div class="w-6 h-6 border-2 border-gray-200 border-t-[#800020] rounded-full animate-spin"></div>
+            <!-- CÓDIGO DE RECOLECCIÓN (PICKUP) -->
+            @if (order.deliveryType === 'PICKUP_STORE') {
+              <div class="detail-card">
+                <div class="card-header">
+                  <span class="material-icons">storefront</span>
+                  <h2>Recolección en Tienda</h2>
+                </div>
+                <div class="card-body text-center py-4">
+                  <!-- ESTADO: PAGO PENDIENTE O NOT_APPLICABLE -->
+                  @if (order.paymentStatus !== 'PAID' || order.pickupStatus === 'WAITING_PAYMENT' || order.pickupStatus === 'NOT_APPLICABLE') {
+                    <div>
+                      @if (order.status !== 'CANCELLED' && order.status !== 'COMPLETED') {
+                        <div class="alert alert-warning text-left mb-3">
+                          <span class="material-icons text-yellow-600">info</span>
+                          <p class="mb-0 text-yellow-800">Tu código de recolección se generará cuando el pago sea confirmado.</p>
+                        </div>
+                      }
+                    </div>
+                  }
+                  <!-- ESTADO: PAGADO, EN PREPARACIÓN -->
+                  @if (order.pickupStatus === 'PAID_WAITING_PREPARATION') {
+                    <div>
+                      <div class="alert alert-info text-left mb-3">
+                        <span class="material-icons text-blue-600">inventory</span>
+                        <div>
+                          <p class="mb-1 text-blue-800 font-bold">Pago confirmado. Estamos preparando tu pedido para recolección en tienda.</p>
+                          <p class="mb-0 text-blue-700 text-sm">Te avisaremos cuando esté listo para recoger.</p>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  <!-- ESTADO: CANCELADO -->
+                  @if (order.pickupStatus === 'CANCELLED' || (order.status === 'CANCELLED' && order.pickupStatus !== 'PICKED_UP')) {
+                    <div>
+                      <div class="alert alert-danger text-left mb-3" style="background-color: #fee2e2; border: 1px solid #f87171;">
+                        <span class="material-icons text-red-600">cancel</span>
+                        <p class="mb-0 text-red-800 font-bold">La recolección fue cancelada porque la orden ya no está activa.</p>
+                      </div>
+                    </div>
+                  }
+                  <!-- ESTADO: LISTO PARA RECOGER -->
+                  @if (order.pickupStatus === 'READY_FOR_PICKUP') {
+                    <div>
+                      <div class="alert alert-success text-left mb-3">
+                        <span class="material-icons text-green-600">check_circle</span>
+                        <p class="mb-0 text-green-800 font-bold">¡Tu pedido está listo para recoger!</p>
+                      </div>
+                      @if (loadingPickupCode) {
+                        <div class="state-center py-2">
+                          <div class="spinner-large" style="width: 24px; height: 24px; border-width: 3px;"></div>
+                          <p class="text-sm mt-2">Cargando código de recolección...</p>
+                        </div>
+                      }
+                      @if (!loadingPickupCode && pickupCodeError) {
+                        <div class="text-red-600 text-sm mb-3">
+                          {{ pickupCodeError }}
+                        </div>
+                      }
+                      @if (!loadingPickupCode && pickupCode) {
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 inline-block mx-auto mb-4">
+                          <p class="text-sm text-gray-600 mb-2">Muestra este código al recoger tu pedido en tienda.</p>
+                          <div class="text-3xl font-mono font-bold tracking-widest text-[#722f37]">{{ pickupCode }}</div>
+                          <p class="text-xs text-gray-500 mt-2">Válido junto con una identificación oficial de la persona autorizada.</p>
+                        </div>
+                      }
+                    </div>
+                  }
+                  <!-- ESTADO: RECOLECTADO -->
+                  @if (order.pickupStatus === 'PICKED_UP') {
+                    <div>
+                      <div class="alert alert-success text-left mb-3">
+                        <span class="material-icons text-green-600">done_all</span>
+                        <div>
+                          <p class="mb-1 text-green-800 font-bold">Pedido recolectado en tienda.</p>
+                          @if (order.pickedUpAt) {
+                            <p class="mb-0 text-sm text-green-700">
+                              Entregado el {{ order.pickedUpAt | date:'medium' }} @if (order.pickedUpByName) {
+                              <span>a {{ order.pickedUpByName }}</span>
+                              }.
+                            </p>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  <!-- FALLBACK: ESTADO DESCONOCIDO O NULL -->
+                  @if (!order.pickupStatus && order.status !== 'CANCELLED' && order.status !== 'COMPLETED') {
+                    <div>
+                      <div class="alert alert-secondary text-left mb-3" style="background-color: #f3f4f6; border: 1px solid #d1d5db;">
+                        <span class="material-icons text-gray-600">hourglass_empty</span>
+                        <p class="mb-0 text-gray-800">Estamos preparando la información de recolección de tu pedido.</p>
+                      </div>
+                    </div>
+                  }
+                  <!-- INFORMACIÓN COMPARTIDA DE TIENDA Y PERSONAS AUTORIZADAS (Visible antes de recoger) -->
+                  @if (order.pickupStatus !== 'PICKED_UP' && order.status !== 'CANCELLED') {
+                    <div>
+                      <div class="text-left bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm mb-3">
+                        <p class="font-bold mb-1">Dirección de la tienda:</p>
+                        <p class="mb-2 text-gray-700">Av. Principal #123, Col. Centro, CP 00000</p>
+                        <p class="font-bold mb-1">Horario de atención:</p>
+                        <p class="text-gray-700">Lunes a Viernes: 9:00 AM - 6:00 PM<br>Sábados: 10:00 AM - 2:00 PM</p>
+                      </div>
+                      @if (order.authorizedPersons && order.authorizedPersons.length > 0) {
+                        <div class="text-left">
+                          <p class="font-bold mb-2 text-sm">Personas autorizadas para recoger:</p>
+                          <ul class="list-disc pl-5 text-sm text-gray-700 mb-2">
+                            @for (person of order.authorizedPersons; track person) {
+                              <li>
+                                {{ person.fullName }}
+                                @if (person.isPrimary) {
+                                  <span class="badge badge-primary text-xs ml-1">Principal</span>
+                                }
+                              </li>
+                            }
+                          </ul>
+                          <p class="text-xs text-gray-500 italic flex items-start gap-1">
+                            <span class="material-icons" style="font-size: 14px;">badge</span>
+                            Cuando tu pedido esté listo, la persona que recoja deberá presentar una identificación oficial vigente.
+                          </p>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
               </div>
-              <div *ngIf="!loadingTimeline && timelineError" class="text-sm text-gray-500 italic text-center py-4">
-                {{ timelineError }}
+            }
+            <!-- DIRECCIÓN -->
+            @if (order.deliveryType !== 'PICKUP_STORE') {
+              <div class="detail-card">
+                <div class="card-header">
+                  <span class="material-icons">location_on</span>
+                  <h2>Dirección</h2>
+                </div>
+                <div class="card-body">
+                  @if (order.shippingAddress) {
+                    <div class="address-section">
+                      <h3 class="address-title">Dirección de envío</h3>
+                      <p class="address-text">{{ order.shippingAddress }}</p>
+                    </div>
+                  }
+                  @if (order.billingAddress && order.billingAddress !== order.shippingAddress) {
+                    <div class="address-section">
+                      <h3 class="address-title">Dirección de facturación</h3>
+                      <p class="address-text">{{ order.billingAddress }}</p>
+                    </div>
+                  }
+                  @if (order.billingAddress === order.shippingAddress) {
+                    <p class="same-address-note">
+                      <span class="material-icons">check_circle</span>
+                      La dirección de facturación es la misma que la de envío.
+                    </p>
+                  }
+                </div>
               </div>
-              <div *ngIf="!loadingTimeline && !timelineError && timeline.length === 0" class="text-sm text-gray-500 italic text-center py-4">
-                Aún no hay eventos registrados para esta orden.
-              </div>
-              <div *ngIf="!loadingTimeline && !timelineError && timeline.length > 0" class="relative pl-6 sm:pl-8">
-                <!-- Línea central -->
-                <div class="absolute left-2.5 sm:left-3.5 top-2 bottom-0 w-0.5 bg-gray-200"></div>
-                
-                <div *ngFor="let event of timeline" class="relative mb-6 last:mb-0">
-                  <div class="absolute -left-6 sm:-left-8 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 bg-white">
-                    <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center {{ getTimelineColorClass(event.eventType) }}">
-                      <span class="material-icons text-[12px] sm:text-[14px]">{{ getTimelineIcon(event.eventType) }}</span>
+            }
+            <!-- INSTRUCCIONES DE TRANSFERENCIA -->
+            @if (order.paymentMethod === 'BANK_TRANSFER' || order.paymentMethod === 'TRANSFER') {
+              <div class="detail-card bank-transfer-card">
+                <div class="card-header bank-header">
+                  <span class="material-icons">account_balance</span>
+                  <h2>Datos y Comprobante de Pago</h2>
+                </div>
+                <div class="card-body">
+                  <!-- Cargando instrucciones -->
+                  @if (loadingInstructions) {
+                    <div class="state-center py-4">
+                      <div class="spinner-large" style="width: 24px; height: 24px; border-width: 3px;"></div>
+                      <p class="text-sm mt-2">Cargando datos bancarios...</p>
+                    </div>
+                  }
+                  <!-- Información de transferencia -->
+                  @if (!loadingInstructions) {
+                    <div>
+                      @if (order.paymentStatus === 'PENDING' && !order.hasPaymentProof) {
+                        <p class="bank-intro">
+                          Después de realizar tu transferencia, sube tu comprobante en esta misma sección.<br>
+                          Tu pedido quedará pendiente hasta que el negocio confirme el pago.
+                        </p>
+                      }
+                      @if (paymentInstructions?.configured) {
+                        <div class="bank-details-box">
+                          <div class="bank-row">
+                            <span class="bank-label">Banco:</span>
+                            <span class="bank-value">{{ paymentInstructions?.bankName }}</span>
+                          </div>
+                          <div class="bank-row">
+                            <span class="bank-label">Titular:</span>
+                            <span class="bank-value">{{ paymentInstructions?.accountHolder }}</span>
+                          </div>
+                          <div class="bank-row">
+                            <span class="bank-label">CLABE:</span>
+                            <span class="bank-value highlight flex items-center gap-2">
+                              {{ paymentInstructions?.clabe }}
+                              <button (click)="copyToClipboard($safeNavigationMigration(paymentInstructions?.clabe), 'CLABE')" title="Copiar CLABE" class="text-gray-500 hover:text-[#722f37] transition-colors border-none bg-transparent cursor-pointer">
+                                <span class="material-icons" style="font-size: 1rem;">content_copy</span>
+                              </button>
+                            </span>
+                          </div>
+                          @if (paymentInstructions?.accountNumber) {
+                            <div class="bank-row">
+                              <span class="bank-label">Cuenta:</span>
+                              <span class="bank-value">{{ paymentInstructions?.accountNumber }}</span>
+                            </div>
+                          }
+                          <div class="bank-row">
+                            <span class="bank-label">Concepto de pago:</span>
+                            <span class="bank-value highlight flex items-center gap-2">
+                              {{ paymentInstructions?.concept }}
+                              <button (click)="copyToClipboard($safeNavigationMigration(paymentInstructions?.concept), 'Concepto')" title="Copiar Concepto" class="text-gray-500 hover:text-[#722f37] transition-colors border-none bg-transparent cursor-pointer">
+                                <span class="material-icons" style="font-size: 1rem;">content_copy</span>
+                              </button>
+                            </span>
+                          </div>
+                          <div class="bank-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                              <span class="bank-label">Monto total a transferir:</span>
+                              <span class="bank-value highlight-price flex items-center gap-2">
+                                ${{ $safeNavigationMigration(paymentInstructions?.amount) | number:'1.2-2' }}
+                                <button (click)="copyToClipboard($safeNavigationMigration(paymentInstructions?.amount), 'Total')" title="Copiar Total" class="text-gray-500 hover:text-[#16a34a] transition-colors border-none bg-transparent cursor-pointer">
+                                  <span class="material-icons" style="font-size: 1rem;">content_copy</span>
+                                </button>
+                              </span>
+                            </div>
+                            <div class="w-full text-xs text-blue-800 bg-blue-50 p-2 rounded border border-blue-200 flex items-start gap-1.5">
+                              <span class="material-icons text-[14px] mt-0.5">info</span>
+                              <p class="m-0 leading-relaxed">Este monto ya incluye productos, IVA y envío. Usa este monto exacto al realizar tu transferencia.</p>
+                            </div>
+                          </div>
+                          @if (paymentInstructions?.referenceInstructions) {
+                            <div class="mt-2 text-sm text-gray-600">
+                              <strong>Instrucciones de referencia:</strong> {{ paymentInstructions?.referenceInstructions }}
+                            </div>
+                          }
+                          @if (paymentInstructions?.additionalInstructions) {
+                            <div class="mt-1 text-sm text-gray-600 italic">
+                              {{ paymentInstructions?.additionalInstructions }}
+                            </div>
+                          }
+                        </div>
+                      }
+                      @if (paymentInstructions && !paymentInstructions.configured) {
+                        <div class="bank-details-box bg-red-50 border-red-200">
+                          <p class="text-red-700 text-sm font-medium mb-0">
+                            <span class="material-icons align-middle mr-1 text-red-600" style="font-size: 1.1rem;">error_outline</span>
+                            Los datos bancarios aún no han sido configurados por el negocio.<br>
+                            Comunícate con la tienda para completar tu pago.
+                          </p>
+                        </div>
+                      }
+                    </div>
+                  }
+                  <!-- ESTADO CANCELADO -->
+                  @if (order.status === 'CANCELLED') {
+                    <div class="proof-alert cancelled">
+                      <span class="material-icons">cancel</span> Este pedido fue cancelado. No se pueden subir comprobantes.
+                    </div>
+                  }
+                  <!-- ESTADO PAGADO -->
+                  @if (order.paymentStatus === 'PAID') {
+                    <div class="proof-alert success">
+                      <span class="material-icons">check_circle</span> Pago confirmado.
+                    </div>
+                  }
+                  <!-- SECCIÓN COMPROBANTE -->
+                  @if (order.status !== 'CANCELLED' && order.paymentStatus !== 'PAID') {
+                    <div class="proof-section">
+                      <!-- FORMULARIO SUBIR (SIN COMPROBANTE O RECHAZADO) -->
+                      @if (!order.hasPaymentProof || order.paymentProofStatus === 'REJECTED') {
+                        <div>
+                          @if (order.paymentProofStatus === 'REJECTED') {
+                            <div class="proof-alert error">
+                              <span class="material-icons">error</span> Tu comprobante anterior fue rechazado. Puedes subir uno nuevo.
+                              <br><strong>Motivo:</strong> {{ order.paymentProofRejectionReason }}
+                            </div>
+                          }
+                          @if (paymentInstructions?.isPaymentDeadlineExpired) {
+                            <div class="proof-alert error deadline-expired flex flex-col gap-2">
+                              <div>
+                                <span class="material-icons align-middle">timer_off</span> Orden expirada por falta de pago. El plazo para subir tu comprobante venció el {{ paymentInstructions?.paymentDeadline }}. Puedes generar una nueva orden si aún deseas comprar estos productos.
+                              </div>
+                              <button class="btn-secondary self-start mt-2" routerLink="/productos">Volver al catálogo</button>
+                            </div>
+                          }
+                          @if (paymentInstructions?.paymentDeadline && !paymentInstructions?.isPaymentDeadlineExpired) {
+                            <div
+                              class="deadline-warning p-3 rounded border"
+                              [ngClass]="{'border-red-400 bg-red-50 text-red-800': isAlmostExpired, 'border-amber-200 bg-amber-50 text-amber-800': !isAlmostExpired}">
+                              <div><strong>Atención:</strong> Puedes subir tu comprobante hasta el <strong>{{ paymentInstructions?.paymentDeadline }}</strong>.</div>
+                              @if (remainingTimeText) {
+                                <div class="mt-1 font-medium" [class.text-red-700]="isAlmostExpired">
+                                  Tiempo restante: {{ remainingTimeText }}
+                                </div>
+                              }
+                              @if (isAlmostExpired) {
+                                <div class="mt-1 font-bold text-red-700">
+                                  Tu plazo para subir comprobante está por vencer.
+                                </div>
+                              }
+                            </div>
+                          }
+                          @if (!paymentInstructions?.isPaymentDeadlineExpired) {
+                            <form [formGroup]="proofForm" (ngSubmit)="submitProof()" class="proof-form">
+                              <div class="form-group file-group">
+                                <label for="proofFile">Seleccionar comprobante (JPG, PNG o PDF) <span class="required">*</span></label>
+                                <input type="file" id="proofFile" (change)="onFileSelected($event)" accept=".jpg,.jpeg,.png,.pdf">
+                                <small>Tamaño máximo: 5 MB.</small>
+                              </div>
+                              <div class="form-row">
+                                <div class="form-group">
+                                  <label for="bankName">Banco emisor (Opcional)</label>
+                                  <input type="text" id="bankName" formControlName="bankName" placeholder="Ej. BBVA">
+                                </div>
+                                <div class="form-group">
+                                  <label for="referenceNumber">No. de referencia (Opcional)</label>
+                                  <input type="text" id="referenceNumber" formControlName="referenceNumber" placeholder="Referencia o folio">
+                                </div>
+                              </div>
+                              <div class="form-row">
+                                <div class="form-group">
+                                  <label for="amountDeclared">Monto transferido (Opcional)</label>
+                                  <input type="number" id="amountDeclared" formControlName="amountDeclared" step="0.01" min="0">
+                                </div>
+                                <div class="form-group">
+                                  <label for="transferDate">Fecha de transferencia (Opcional)</label>
+                                  <input type="date" id="transferDate" formControlName="transferDate"
+                                    [min]="minTransferDate" [max]="maxTransferDate"
+                                    [class.invalid-field]="transferDateError">
+                                    @if (!transferDateError) {
+                                      <small class="help-text text-gray-500">La fecha de transferencia debe ser la fecha real en que hiciste el pago. Si pagarás después, deja este campo vacío o vuelve cuando ya hayas realizado la transferencia.</small>
+                                    }
+                                    @if (transferDateError) {
+                                      <small class="error-text text-red-600">{{ transferDateError }}</small>
+                                    }
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label for="notes">Notas adicionales (Opcional)</label>
+                                  <textarea id="notes" formControlName="notes" rows="2"></textarea>
+                                </div>
+                                @if (uploadError) {
+                                  <div class="error-msg">{{ uploadError }}</div>
+                                }
+                                <button type="submit" class="btn-primary" [disabled]="!selectedFile || isUploading || proofForm.invalid">
+                                  @if (isUploading) {
+                                    <span class="spinner-sm"></span>
+                                  }
+                                  {{ isUploading ? 'Subiendo...' : 'Subir Comprobante' }}
+                                </button>
+                              </form>
+                            }
+                          </div>
+                        }
+                        <!-- EN REVISIÓN -->
+                        @if (order.hasPaymentProof && order.paymentProofStatus === 'PENDING_REVIEW') {
+                          <div class="proof-alert warning">
+                            <span class="material-icons">schedule</span> Comprobante en revisión. Lo enviaste dentro del plazo y está pendiente de validación por el negocio.
+                            <div class="proof-actions">
+                              <button class="btn-secondary" (click)="viewProof()">Ver comprobante enviado</button>
+                            </div>
+                          </div>
+                        }
+                        <!-- APROBADO (Edge case si hasPaymentProof=true pero paymentStatus!=PAID aún por lag) -->
+                        @if (order.hasPaymentProof && order.paymentProofStatus === 'APPROVED') {
+                          <div class="proof-alert success">
+                            <span class="material-icons">check_circle</span> Comprobante aprobado.
+                            <div class="proof-actions">
+                              <button class="btn-secondary" (click)="viewProof()">Ver comprobante</button>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                      } <!-- fin sección comprobante -->
+                      @if (!order.hasPaymentProof) {
+                        <p class="bank-footer">
+                          <span class="material-icons">info</span>
+                          Asegúrate de que la imagen o PDF sea legible para evitar retrasos en tu envío.
+                        </p>
+                      }
                     </div>
                   </div>
-                  <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm ml-1 sm:ml-2">
-                    <div class="flex justify-between items-start mb-1 gap-2 flex-wrap">
-                      <span class="font-bold text-gray-800 text-sm">{{ event.title }}</span>
-                      <span class="text-xs text-gray-500 font-medium whitespace-nowrap">{{ formatDate(event.createdAt) }}</span>
+                }
+                <!-- PAGO CON MERCADO PAGO -->
+                @if (order.paymentMethod === 'MERCADO_PAGO' && order.status !== 'CANCELLED' && order.paymentStatus !== 'PAID') {
+                  <div class="detail-card mercado-pago-card">
+                    <div class="card-header" style="background-color: #009ee3; color: white;">
+                      <i class="fa-solid fa-handshake"></i>
+                      <h2 style="color: white; margin-left: 8px;">Mercado Pago Checkout Pro</h2>
                     </div>
-                    <p class="text-sm text-gray-600 leading-relaxed mb-0" *ngIf="event.description">{{ event.description }}</p>
+                    <div class="card-body text-center" style="padding: 2rem;">
+                      <p class="mb-4 text-gray-700">Has elegido Mercado Pago como método de pago. Al hacer clic en el botón a continuación, serás redirigido a la plataforma segura de Mercado Pago para completar tu compra.</p>
+                      <button
+                        (click)="payWithMercadoPago()"
+                        [disabled]="isPayingWithMP"
+                        class="btn-primary"
+                        style="background-color: #009ee3; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; display: inline-flex; items-align: center; gap: 8px;">
+                        @if (isPayingWithMP) {
+                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        }
+                        @if (!isPayingWithMP) {
+                          <i class="fa-solid fa-credit-card"></i>
+                        }
+                        {{ isPayingWithMP ? 'Iniciando...' : 'Pagar con Mercado Pago' }}
+                      </button>
+                      <div class="mt-4 text-sm text-gray-500">
+                        <i class="fa-solid fa-lock"></i> Pagos procesados de forma segura.
+                      </div>
+                    </div>
+                  </div>
+                }
+                <!-- TIMELINE CLIENTE -->
+                <div class="detail-card">
+                  <div class="card-header">
+                    <span class="material-icons">history</span>
+                    <h2>Estado de tu pedido</h2>
+                  </div>
+                  <div class="card-body">
+                    @if (loadingTimeline) {
+                      <div class="flex justify-center p-4">
+                        <div class="w-6 h-6 border-2 border-gray-200 border-t-[#800020] rounded-full animate-spin"></div>
+                      </div>
+                    }
+                    @if (!loadingTimeline && timelineError) {
+                      <div class="text-sm text-gray-500 italic text-center py-4">
+                        {{ timelineError }}
+                      </div>
+                    }
+                    @if (!loadingTimeline && !timelineError && timeline.length === 0) {
+                      <div class="text-sm text-gray-500 italic text-center py-4">
+                        Aún no hay eventos registrados para esta orden.
+                      </div>
+                    }
+                    @if (!loadingTimeline && !timelineError && timeline.length > 0) {
+                      <div class="relative pl-6 sm:pl-8">
+                        <!-- Línea central -->
+                        <div class="absolute left-2.5 sm:left-3.5 top-2 bottom-0 w-0.5 bg-gray-200"></div>
+                        @for (event of timeline; track event) {
+                          <div class="relative mb-6 last:mb-0">
+                            <div class="absolute -left-6 sm:-left-8 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 bg-white">
+                              <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center {{ getTimelineColorClass(event.eventType) }}">
+                                <span class="material-icons text-[12px] sm:text-[14px]">{{ getTimelineIcon(event.eventType) }}</span>
+                              </div>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm ml-1 sm:ml-2">
+                              <div class="flex justify-between items-start mb-1 gap-2 flex-wrap">
+                                <span class="font-bold text-gray-800 text-sm">{{ event.title }}</span>
+                                <span class="text-xs text-gray-500 font-medium whitespace-nowrap">{{ formatDate(event.createdAt) }}</span>
+                              </div>
+                              @if (event.description) {
+                                <p class="text-sm text-gray-600 leading-relaxed mb-0">{{ event.description }}</p>
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- NOTAS -->
-          <div class="detail-card" *ngIf="order.customerNotes || order.notes">
-            <div class="card-header">
-              <span class="material-icons">notes</span>
-              <h2>Notas del pedido</h2>
-            </div>
-            <div class="card-body">
-              <p class="notes-text">{{ order.customerNotes || order.notes }}</p>
-            </div>
-          </div>
-
-          <!-- PRODUCTOS -->
-          <div class="detail-card">
-            <div class="card-header">
-              <span class="material-icons">inventory_2</span>
-              <h2>Productos ({{ order.totalItems }})</h2>
-            </div>
-            <div class="card-body no-padding">
-              <div class="product-row" *ngFor="let item of order.items">
-                <div class="product-image-wrapper">
-                  <img
-                    [src]="item.productImage || '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png'"
-                    [alt]="item.productName"
-                    class="product-image"
-                    (error)="onImageError($event)"
-                  >
+                <!-- NOTAS -->
+                @if (order.customerNotes || order.notes) {
+                  <div class="detail-card">
+                    <div class="card-header">
+                      <span class="material-icons">notes</span>
+                      <h2>Notas del pedido</h2>
+                    </div>
+                    <div class="card-body">
+                      <p class="notes-text">{{ order.customerNotes || order.notes }}</p>
+                    </div>
+                  </div>
+                }
+                <!-- PRODUCTOS -->
+                <div class="detail-card">
+                  <div class="card-header">
+                    <span class="material-icons">inventory_2</span>
+                    <h2>Productos ({{ order.totalItems }})</h2>
+                  </div>
+                  <div class="card-body no-padding">
+                    @for (item of order.items; track item) {
+                      <div class="product-row">
+                        <div class="product-image-wrapper">
+                          <img
+                            [src]="item.productImage || '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png'"
+                            [alt]="item.productName"
+                            class="product-image"
+                            (error)="onImageError($event)"
+                            >
+                          </div>
+                          <div class="product-info">
+                            <span class="product-name">{{ item.productName }}</span>
+                            @if (item.productSku) {
+                              <span class="product-sku">SKU: {{ item.productSku }}</span>
+                            }
+                            <span class="product-qty">Cantidad: {{ item.quantity }}</span>
+                          </div>
+                          <div class="product-pricing" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <span class="product-unit-price text-gray-500 text-xs">Precio unitario: ${{ item.price | number:'1.2-2' }}</span>
+                            <span class="product-unit-price text-gray-500 text-xs sm:hidden">Cantidad: {{ item.quantity }}</span>
+                            <span class="product-subtotal font-bold text-sm">Subtotal: ${{ item.subtotal | number:'1.2-2' }}</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <!-- ACCIÓN: CANCELAR -->
+                  @if (canClientCancel()) {
+                    <div class="cancel-action">
+                      <button class="btn-cancel-order" (click)="openCancelModal()">
+                        <span class="material-icons">cancel</span>Solicitar Cancelación
+                      </button>
+                      <p class="cancel-hint">Solo puedes cancelar pedidos pendientes o confirmados.</p>
+                    </div>
+                  }
                 </div>
-                <div class="product-info">
-                  <span class="product-name">{{ item.productName }}</span>
-                  <span class="product-sku" *ngIf="item.productSku">SKU: {{ item.productSku }}</span>
-                  <span class="product-qty">Cantidad: {{ item.quantity }}</span>
+                <!-- COLUMNA DERECHA: TOTALES -->
+                <aside class="detail-sidebar">
+                  <div class="totals-card">
+                    <div class="card-header">
+                      <span class="material-icons">receipt</span>
+                      <h2>Resumen del pedido</h2>
+                    </div>
+                    <div class="card-body">
+                      <div class="total-row">
+                        <span>Subtotal de productos</span>
+                        <span>${{ order.subtotal | number:'1.2-2' }}</span>
+                      </div>
+                      <div class="total-row">
+                        <span>IVA</span>
+                        <span>${{ order.tax | number:'1.2-2' }}</span>
+                      </div>
+                      @if (order.shipping > 0) {
+                        <div class="total-row">
+                          <span>Envío</span>
+                          <span>${{ order.shipping | number:'1.2-2' }}</span>
+                        </div>
+                      }
+                      @if (order.discount > 0) {
+                        <div class="total-row discount-row">
+                          <span>Descuento</span>
+                          <span>-${{ order.discount | number:'1.2-2' }}</span>
+                        </div>
+                      }
+                      <div class="total-divider"></div>
+                      <div class="total-row grand-total">
+                        <span>Total a pagar</span>
+                        <span>${{ order.total | number:'1.2-2' }}</span>
+                      </div>
+                      <p class="text-xs text-gray-500 text-center mt-3 italic">Monto final que pagarás por este pedido.</p>
+                    </div>
+                  </div>
+                  <div class="sidebar-actions">
+                    <a routerLink="/orders/my" class="btn-outline">
+                      <span class="material-icons">list</span>Ver todos mis pedidos
+                    </a>
+                    <a routerLink="/catalogo" class="btn-outline">
+                      <span class="material-icons">shopping_bag</span>Seguir comprando
+                    </a>
+                  </div>
+                </aside>
+              </div>
+            </div>
+            }<!-- /order detail -->
+
+          </div><!-- /container -->
+        </div><!-- /detail-page -->
+
+        <!-- MODAL CANCELACIÓN -->
+        @if (showCancelModal) {
+          <div class="modal-overlay" (click)="closeCancelModal()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <span class="material-icons modal-icon warning-icon">warning_amber</span>
+                <h3>¿Cancelar pedido?</h3>
+              </div>
+              <div class="modal-body">
+                <p>Esta acción no se puede deshacer. El stock de los productos será restaurado automáticamente.</p>
+                <div class="modal-form-group">
+                  <label for="cancelReason">Motivo de cancelación (opcional)</label>
+                  <textarea
+                    id="cancelReason"
+                    [(ngModel)]="cancelReason"
+                    class="modal-textarea"
+                    placeholder="Ej: Ya no necesito el producto, me equivoqué en el pedido..."
+                    rows="3"
+                    maxlength="500"
+                  ></textarea>
                 </div>
-                <div class="product-pricing" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-                  <span class="product-unit-price text-gray-500 text-xs">Precio unitario: ${{ item.price | number:'1.2-2' }}</span>
-                  <span class="product-unit-price text-gray-500 text-xs sm:hidden">Cantidad: {{ item.quantity }}</span>
-                  <span class="product-subtotal font-bold text-sm">Subtotal: ${{ item.subtotal | number:'1.2-2' }}</span>
+                @if (cancelError) {
+                  <div class="modal-error">
+                    <span class="material-icons">error</span>{{ cancelError }}
+                  </div>
+                }
+              </div>
+              <div class="modal-footer">
+                <button class="btn-modal-cancel" (click)="closeCancelModal()" [disabled]="isCancelling">
+                  No, mantener pedido
+                </button>
+                <button class="btn-modal-confirm" (click)="confirmCancel()" [disabled]="isCancelling">
+                  @if (isCancelling) {
+                    <span class="spinner-sm"></span>
+                  }
+                  @if (!isCancelling) {
+                    <span class="material-icons">cancel</span>
+                  }
+                  {{ isCancelling ? 'Cancelando...' : 'Sí, cancelar pedido' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- VISOR PROFESIONAL DE COMPROBANTE -->
+        @if (showProofPreviewModal) {
+          <div class="modal-overlay visor-overlay" (click)="closeProofPreview()">
+            <div class="modal-content visor-modal" (click)="$event.stopPropagation()">
+              <div class="visor-header">
+                <div class="visor-title-group">
+                  <span class="material-icons visor-icon">visibility</span>
+                  <div class="visor-title-text">
+                    <h3>Comprobante enviado</h3>
+                    <span class="visor-subtitle">Pedido #{{ proofPreviewOrderNumber }}</span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ACCIÓN: CANCELAR -->
-          <div class="cancel-action" *ngIf="canClientCancel()">
-            <button class="btn-cancel-order" (click)="openCancelModal()">
-              <span class="material-icons">cancel</span>Solicitar Cancelación
-            </button>
-            <p class="cancel-hint">Solo puedes cancelar pedidos pendientes o confirmados.</p>
-          </div>
-
-        </div>
-
-        <!-- COLUMNA DERECHA: TOTALES -->
-        <aside class="detail-sidebar">
-          <div class="totals-card">
-            <div class="card-header">
-              <span class="material-icons">receipt</span>
-              <h2>Resumen del pedido</h2>
-            </div>
-            <div class="card-body">
-              <div class="total-row">
-                <span>Subtotal de productos</span>
-                <span>${{ order.subtotal | number:'1.2-2' }}</span>
-              </div>
-              <div class="total-row">
-                <span>IVA</span>
-                <span>${{ order.tax | number:'1.2-2' }}</span>
-              </div>
-              <div class="total-row" *ngIf="order.shipping > 0">
-                <span>Envío</span>
-                <span>${{ order.shipping | number:'1.2-2' }}</span>
-              </div>
-              <div class="total-row discount-row" *ngIf="order.discount > 0">
-                <span>Descuento</span>
-                <span>-${{ order.discount | number:'1.2-2' }}</span>
-              </div>
-              <div class="total-divider"></div>
-              <div class="total-row grand-total">
-                <span>Total a pagar</span>
-                <span>${{ order.total | number:'1.2-2' }}</span>
-              </div>
-              <p class="text-xs text-gray-500 text-center mt-3 italic">Monto final que pagarás por este pedido.</p>
-            </div>
-          </div>
-
-          <div class="sidebar-actions">
-            <a routerLink="/orders/my" class="btn-outline">
-              <span class="material-icons">list</span>Ver todos mis pedidos
-            </a>
-            <a routerLink="/catalogo" class="btn-outline">
-              <span class="material-icons">shopping_bag</span>Seguir comprando
-            </a>
-          </div>
-        </aside>
-
-      </div>
-
-    </div><!-- /order detail -->
-
-  </div><!-- /container -->
-</div><!-- /detail-page -->
-
-<!-- MODAL CANCELACIÓN -->
-<div class="modal-overlay" *ngIf="showCancelModal" (click)="closeCancelModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <span class="material-icons modal-icon warning-icon">warning_amber</span>
-      <h3>¿Cancelar pedido?</h3>
-    </div>
-    <div class="modal-body">
-      <p>Esta acción no se puede deshacer. El stock de los productos será restaurado automáticamente.</p>
-      <div class="modal-form-group">
-        <label for="cancelReason">Motivo de cancelación (opcional)</label>
-        <textarea
-          id="cancelReason"
-          [(ngModel)]="cancelReason"
-          class="modal-textarea"
-          placeholder="Ej: Ya no necesito el producto, me equivoqué en el pedido..."
-          rows="3"
-          maxlength="500"
-        ></textarea>
-      </div>
-      <div class="modal-error" *ngIf="cancelError">
-        <span class="material-icons">error</span>{{ cancelError }}
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-cancel" (click)="closeCancelModal()" [disabled]="isCancelling">
-        No, mantener pedido
-      </button>
-      <button class="btn-modal-confirm" (click)="confirmCancel()" [disabled]="isCancelling">
-        <span class="spinner-sm" *ngIf="isCancelling"></span>
-        <span class="material-icons" *ngIf="!isCancelling">cancel</span>
-        {{ isCancelling ? 'Cancelando...' : 'Sí, cancelar pedido' }}
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- VISOR PROFESIONAL DE COMPROBANTE -->
-<div class="modal-overlay visor-overlay" *ngIf="showProofPreviewModal" (click)="closeProofPreview()">
-  <div class="modal-content visor-modal" (click)="$event.stopPropagation()">
-    <div class="visor-header">
-      <div class="visor-title-group">
-        <span class="material-icons visor-icon">visibility</span>
-        <div class="visor-title-text">
-          <h3>Comprobante enviado</h3>
-          <span class="visor-subtitle">Pedido #{{ proofPreviewOrderNumber }}</span>
-        </div>
-      </div>
       <div class="visor-status badge" [ngClass]="{
         'badge-amber': proofPreviewStatus === 'PENDING_REVIEW',
         'badge-green': proofPreviewStatus === 'APPROVED',
         'badge-red': proofPreviewStatus === 'REJECTED'
       }">
-        {{ proofPreviewStatus === 'PENDING_REVIEW' ? 'EN REVISIÓN' : (proofPreviewStatus === 'APPROVED' ? 'APROBADO' : 'RECHAZADO') }}
-      </div>
-      <button class="btn-close" (click)="closeProofPreview()" aria-label="Cerrar visor"></button>
-    </div>
-    
-    <div class="visor-body">
-      <div class="visor-loading state-center" *ngIf="loadingProofPreview">
-        <div class="spinner-large"></div>
-        <p>Cargando comprobante...</p>
-      </div>
-      
-      <div class="visor-error state-center" *ngIf="!loadingProofPreview && proofPreviewError">
-        <span class="material-icons state-icon error-icon">error_outline</span>
-        <p>{{ proofPreviewError }}</p>
-      </div>
-
-      <div class="visor-content" *ngIf="!loadingProofPreview && !proofPreviewError && proofPreviewSafeUrl" style="display: flex; justify-content: center; align-items: center; min-height: 400px; width: 100%; background: #f9fafb;">
-        <canvas *ngIf="proofPreviewContentType === 'application/pdf'" #pdfCanvas class="visor-pdf-canvas" style="max-width: 100%; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></canvas>
-        <img *ngIf="proofPreviewContentType?.startsWith('image/')" [src]="proofPreviewSafeUrl" alt="Comprobante" class="visor-img" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
-      </div>
-    </div>
-    
-    <div class="visor-footer">
-      <div class="visor-filename">
-        <span class="material-icons">description</span>
-        {{ proofPreviewFilename }}
-      </div>
-      <div class="visor-actions">
-        <button (click)="openProofInNewTab()" [disabled]="!proofPreviewUrl" style="background-color: white; color: #722f37; border: 1px solid #722f37; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;" [style.opacity]="!proofPreviewUrl ? '0.5' : '1'">
-          <span class="material-icons" style="font-size: 18px;">open_in_new</span> Abrir
-        </button>
-        <button (click)="downloadProof()" [disabled]="!proofPreviewUrl" style="background-color: #722f37; color: white; border: none; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" [style.opacity]="!proofPreviewUrl ? '0.5' : '1'">
-          <span class="material-icons" style="font-size: 18px;">download</span> Descargar comprobante
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+                  {{ proofPreviewStatus === 'PENDING_REVIEW' ? 'EN REVISIÓN' : (proofPreviewStatus === 'APPROVED' ? 'APROBADO' : 'RECHAZADO') }}
+                </div>
+                <button class="btn-close" (click)="closeProofPreview()" aria-label="Cerrar visor"></button>
+              </div>
+              <div class="visor-body">
+                @if (loadingProofPreview) {
+                  <div class="visor-loading state-center">
+                    <div class="spinner-large"></div>
+                    <p>Cargando comprobante...</p>
+                  </div>
+                }
+                @if (!loadingProofPreview && proofPreviewError) {
+                  <div class="visor-error state-center">
+                    <span class="material-icons state-icon error-icon">error_outline</span>
+                    <p>{{ proofPreviewError }}</p>
+                  </div>
+                }
+                @if (!loadingProofPreview && !proofPreviewError && proofPreviewSafeUrl) {
+                  <div class="visor-content" style="display: flex; justify-content: center; align-items: center; min-height: 400px; width: 100%; background: #f9fafb;">
+                    @if (proofPreviewContentType === 'application/pdf') {
+                      <canvas #pdfCanvas class="visor-pdf-canvas" style="max-width: 100%; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></canvas>
+                    }
+                    @if (proofPreviewContentType?.startsWith('image/')) {
+                      <img [src]="proofPreviewSafeUrl" alt="Comprobante" class="visor-img" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
+                    }
+                  </div>
+                }
+              </div>
+              <div class="visor-footer">
+                <div class="visor-filename">
+                  <span class="material-icons">description</span>
+                  {{ proofPreviewFilename }}
+                </div>
+                <div class="visor-actions">
+                  <button (click)="openProofInNewTab()" [disabled]="!proofPreviewUrl" style="background-color: white; color: #722f37; border: 1px solid #722f37; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;" [style.opacity]="!proofPreviewUrl ? '0.5' : '1'">
+                    <span class="material-icons" style="font-size: 18px;">open_in_new</span> Abrir
+                  </button>
+                  <button (click)="downloadProof()" [disabled]="!proofPreviewUrl" style="background-color: #722f37; color: white; border: none; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" [style.opacity]="!proofPreviewUrl ? '0.5' : '1'">
+                    <span class="material-icons" style="font-size: 18px;">download</span> Descargar comprobante
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }

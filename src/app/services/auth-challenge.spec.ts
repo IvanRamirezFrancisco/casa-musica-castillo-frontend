@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, provideHttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
@@ -28,7 +28,7 @@ describe('Official login and memory-only 2FA', () => {
   }
   beforeEach(() => {
     localStorage.clear(); sessionStorage.clear();
-    TestBed.configureTestingModule({providers: [AuthService, provideHttpClient(), provideHttpClientTesting(),
+    TestBed.configureTestingModule({providers: [AuthService, provideHttpClient(withXhr()), provideHttpClientTesting(),
       {provide: Router, useValue: {url: '/login', navigate: jasmine.createSpy('navigate')}},
       {provide: CartService, useValue: {loadCart: jasmine.createSpy('loadCart'), clearLocal: jasmine.createSpy('clearLocal')}},
       {provide: NotificationCenterService, useValue: {clearAll: jasmine.createSpy('clearAll')}}]});

@@ -1,7 +1,7 @@
 <div class="customers-wrapper">
 
   <!-- ═══════════════════════════════════════════════════
-       BARRA DE BÚSQUEDA Y FILTROS
+  BARRA DE BÚSQUEDA Y FILTROS
   ════════════════════════════════════════════════════ -->
   <div class="filters-bar">
     <!-- Buscador principal -->
@@ -15,559 +15,556 @@
         placeholder="Buscar por nombre, email, teléfono..."
         [(ngModel)]="searchTerm"
         (keyup.enter)="onSearch()"
-      />
-      <button *ngIf="searchTerm" class="search-clear" (click)="searchTerm = ''; onSearch()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+        />
+        @if (searchTerm) {
+          <button class="search-clear" (click)="searchTerm = ''; onSearch()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+            </svg>
+          </button>
+        }
+      </div>
+
+      <!-- Filtro: Estado (habilitado) -->
+      <div class="filter-group">
+        <label class="filter-label">Estado</label>
+        <select class="filter-select" [(ngModel)]="filterEnabled" (change)="applyFilters()">
+          <option [ngValue]="null">Todos</option>
+          <option [ngValue]="true">Activos</option>
+          <option [ngValue]="false">Inactivos</option>
+        </select>
+      </div>
+
+      <!-- Filtro: Cuenta (bloqueada / desbloqueada) -->
+      <div class="filter-group">
+        <label class="filter-label">Cuenta</label>
+        <select class="filter-select" [(ngModel)]="filterLocked" (change)="applyFilters()">
+          <option [ngValue]="null">Todas</option>
+          <option [ngValue]="false">Desbloqueada</option>
+          <option [ngValue]="true">Bloqueada</option>
+        </select>
+      </div>
+
+      <!-- Registros por página -->
+      <div class="filter-group">
+        <label class="filter-label">Mostrar</label>
+        <select class="filter-select" [(ngModel)]="pageSize" (change)="onPageSizeChange(pageSize)">
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="25">25</option>
+          <option [ngValue]="50">50</option>
+          <option [ngValue]="100">100</option>
+        </select>
+      </div>
+
+      <!-- Limpiar filtros -->
+      @if (searchTerm || filterEnabled !== null || filterLocked !== null) {
+        <button class="btn-clear-filters"
+          (click)="clearFilters()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+          </svg>
+          Limpiar
+        </button>
+      }
+
+      <button class="btn-search" (click)="onSearch()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
         </svg>
+        Buscar
       </button>
-    </div>
-
-    <!-- Filtro: Estado (habilitado) -->
-    <div class="filter-group">
-      <label class="filter-label">Estado</label>
-      <select class="filter-select" [(ngModel)]="filterEnabled" (change)="applyFilters()">
-        <option [ngValue]="null">Todos</option>
-        <option [ngValue]="true">Activos</option>
-        <option [ngValue]="false">Inactivos</option>
-      </select>
-    </div>
-
-    <!-- Filtro: Cuenta (bloqueada / desbloqueada) -->
-    <div class="filter-group">
-      <label class="filter-label">Cuenta</label>
-      <select class="filter-select" [(ngModel)]="filterLocked" (change)="applyFilters()">
-        <option [ngValue]="null">Todas</option>
-        <option [ngValue]="false">Desbloqueada</option>
-        <option [ngValue]="true">Bloqueada</option>
-      </select>
-    </div>
-
-    <!-- Registros por página -->
-    <div class="filter-group">
-      <label class="filter-label">Mostrar</label>
-      <select class="filter-select" [(ngModel)]="pageSize" (change)="onPageSizeChange(pageSize)">
-        <option [ngValue]="10">10</option>
-        <option [ngValue]="25">25</option>
-        <option [ngValue]="50">50</option>
-        <option [ngValue]="100">100</option>
-      </select>
-    </div>
-
-    <!-- Limpiar filtros -->
-    <button class="btn-clear-filters"
-            *ngIf="searchTerm || filterEnabled !== null || filterLocked !== null"
-            (click)="clearFilters()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
-      </svg>
-      Limpiar
-    </button>
-
-    <button class="btn-search" (click)="onSearch()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
-      </svg>
-      Buscar
-    </button>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       TARJETA DE TABLA
-  ════════════════════════════════════════════════════ -->
-  <div class="table-card">
-
-    <!-- ── Loading overlay ─────────────────────────────── -->
-    <div class="loading-overlay" *ngIf="loading">
-      <div class="spinner"></div>
-      <span>Cargando clientes...</span>
-    </div>
-
-    <!-- ── Tabla ───────────────────────────────────────── -->
-    <div class="table-responsive" [class.table-loading]="loading">
-      <table class="table table-sm table-hover align-middle mb-0">
-        <thead class="thead-customers">
-          <tr>
-            <th class="col-cliente">Cliente</th>
-            <th class="col-contacto">Contacto</th>
-            <th class="col-pedidos text-center">Pedidos</th>
-            <th class="col-gasto text-end">Total Gastado</th>
-            <th class="col-estado text-center">Acceso</th>
-            <th class="col-cuenta text-center">Seguridad</th>
-            <th class="col-registro">Registro</th>
-            <th class="col-acciones text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-
-          <!-- ── Sin resultados ─────────────────────────── -->
-          <tr *ngIf="!loading && customerList.length === 0">
-            <td colspan="8" class="empty-state">
-              <div class="empty-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="empty-icon" viewBox="0 0 16 16">
-                  <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/>
-                </svg>
-                <p class="empty-title">
-                  {{ searchTerm || filterEnabled !== null || filterLocked !== null
-                    ? 'No se encontraron clientes con los filtros aplicados'
-                    : 'No hay clientes registrados aún' }}
-                </p>
-                <button *ngIf="searchTerm || filterEnabled !== null || filterLocked !== null"
-                        class="btn-clear-empty" (click)="clearFilters()">
-                  Limpiar filtros
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- ── Filas de clientes ──────────────────────── -->
-          <tr *ngFor="let customer of customerList" class="customer-row"
-              [class.row-disabled]="!customer.enabled"
-              [class.row-locked]="!customer.accountNonLocked">
-
-            <!-- Columna: Cliente -->
-            <td class="col-cliente">
-              <div class="customer-info">
-                <div class="customer-avatar"
-                     [style.background]="getAvatarColor(customer.id)">
-                  {{ getInitials(customer.firstName, customer.lastName) }}
-                </div>
-                <div class="customer-meta">
-                  <span class="customer-name">
-                    {{ customer.firstName }} {{ customer.lastName }}
-                  </span>
-                  <span class="customer-id text-muted small">#{{ customer.id }}</span>
-                </div>
-              </div>
-            </td>
-
-            <!-- Columna: Contacto -->
-            <td class="col-contacto">
-              <div class="contact-info">
-                <span class="contact-email text-truncate" title="{{ customer.email }}">
-                  {{ customer.email }}
-                </span>
-                <span class="contact-phone text-muted small" *ngIf="customer.phone; else noPhone">
-                  {{ customer.phone }}
-                </span>
-                <ng-template #noPhone>
-                  <span class="contact-phone text-muted small fst-italic">Sin teléfono</span>
-                </ng-template>
-              </div>
-            </td>
-
-            <!-- Columna: Pedidos -->
-            <td class="col-pedidos text-center">
-              <span class="badge-orders"
-                    [class.badge-orders-zero]="customer.totalOrders === 0">
-                {{ customer.totalOrders }}
-              </span>
-            </td>
-
-            <!-- Columna: Total Gastado -->
-            <td class="col-gasto text-end">
-              <span class="amount-spent"
-                    [class.amount-zero]="customer.totalSpent === 0">
-                {{ customer.totalSpent | currency:'USD':'symbol':'1.2-2' }}
-              </span>
-            </td>
-
-            <!-- Columna: Estado (toggle habilitado) -->
-            <td class="col-estado text-center">
-              <div class="toggle-wrapper" *ngIf="authService.hasPermission('CUSTOMER_MANAGE'); else estadoReadOnly">
-                <label class="toggle-switch" title="{{ customer.enabled ? 'Activo — clic para desactivar' : 'Inactivo — clic para activar' }}">
-                  <input type="checkbox"
-                         [checked]="customer.enabled"
-                         (click)="$event.preventDefault(); toggleEnabled(customer)">
-                  <span class="toggle-slider"></span>
-                </label>
-                <span class="toggle-label"
-                      [class.label-active]="customer.enabled"
-                      [class.label-inactive]="!customer.enabled">
-                  {{ customer.enabled ? 'Activo' : 'Inactivo' }}
-                </span>
-              </div>
-              <ng-template #estadoReadOnly>
-                <span class="toggle-label"
-                      [class.label-active]="customer.enabled"
-                      [class.label-inactive]="!customer.enabled">
-                  {{ customer.enabled ? 'Activo' : 'Inactivo' }}
-                </span>
-              </ng-template>
-            </td>
-
-            <!-- Columna: Cuenta (toggle bloqueo) -->
-            <td class="col-cuenta text-center">
-              <div class="toggle-wrapper" *ngIf="authService.hasPermission('CUSTOMER_MANAGE'); else cuentaReadOnly">
-                <label class="toggle-switch toggle-lock" title="{{ customer.accountNonLocked ? 'Desbloqueada — clic para bloquear' : 'Bloqueada — clic para desbloquear' }}">
-                  <input type="checkbox"
-                         [checked]="customer.accountNonLocked"
-                         (click)="$event.preventDefault(); toggleLock(customer)">
-                  <span class="toggle-slider slider-lock"></span>
-                </label>
-                <span class="toggle-label"
-                      [class.label-unlocked]="customer.accountNonLocked"
-                      [class.label-locked]="!customer.accountNonLocked">
-                  {{ customer.accountNonLocked ? 'Normal' : 'Bloqueada' }}
-                </span>
-              </div>
-              <ng-template #cuentaReadOnly>
-                <span class="toggle-label"
-                      [class.label-unlocked]="customer.accountNonLocked"
-                      [class.label-locked]="!customer.accountNonLocked">
-                  {{ customer.accountNonLocked ? 'Normal' : 'Bloqueada' }}
-                </span>
-              </ng-template>
-            </td>
-
-            <!-- Columna: Registro -->
-            <td class="col-registro">
-              <span class="date-relative" title="{{ customer.createdAt }}">
-                {{ formatDate(customer.createdAt) }}
-              </span>
-            </td>
-
-            <!-- Columna: Acciones -->
-            <td class="col-acciones text-center">
-              <div class="actions-group">
-
-                <!-- Ver detalles del cliente -->
-                <button class="accion-btn btn-view"
-                        title="Ver detalles del cliente"
-                        (click)="abrirModalDetalles(customer)">
-                  <!-- Heroicon: eye -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
-                  </svg>
-                </button>
-
-              </div>
-            </td>
-
-          </tr>
-        </tbody>
-      </table>
     </div>
 
     <!-- ═══════════════════════════════════════════════════
-         FOOTER: INFO + PAGINACIÓN
+    TARJETA DE TABLA
     ════════════════════════════════════════════════════ -->
-    <div class="table-footer" *ngIf="!loading && customerList.length > 0">
+    <div class="table-card">
 
-      <div class="footer-info">
-        Mostrando
-        <span class="footer-count">{{ fromRecord }}</span>
-        –
-        <span class="footer-count">{{ toRecord }}</span>
-        de
-        <span class="footer-count">{{ totalElements }}</span>
-        clientes
-      </div>
-
-      <div class="pagination-wrapper" *ngIf="totalPages > 1">
-
-        <!-- Primera página -->
-        <button class="page-btn page-btn-nav"
-                [disabled]="currentPage === 0"
-                (click)="onPageChange(0)"
-                title="Primera página">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M11.854 3.646a.5.5 0 0 1 0 .708L8.207 8l3.647 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0M4.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 1 0v-13a.5.5 0 0 0-.5-.5"/>
-          </svg>
-        </button>
-
-        <!-- Página anterior -->
-        <button class="page-btn page-btn-nav"
-                [disabled]="currentPage === 0"
-                (click)="onPageChange(currentPage - 1)"
-                title="Página anterior">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
-          </svg>
-        </button>
-
-        <!-- Páginas numeradas -->
-        <button *ngFor="let p of getPageNumbers()"
-                class="page-btn"
-                [class.page-btn-active]="p === currentPage"
-                (click)="onPageChange(p)">
-          {{ p + 1 }}
-        </button>
-
-        <!-- Página siguiente -->
-        <button class="page-btn page-btn-nav"
-                [disabled]="currentPage >= totalPages - 1"
-                (click)="onPageChange(currentPage + 1)"
-                title="Página siguiente">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
-          </svg>
-        </button>
-
-        <!-- Última página -->
-        <button class="page-btn page-btn-nav"
-                [disabled]="currentPage >= totalPages - 1"
-                (click)="onPageChange(totalPages - 1)"
-                title="Última página">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M4.146 3.646a.5.5 0 0 0 0 .708L7.793 8l-3.647 3.646a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708 0M11.5 1a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-1 0v-13a.5.5 0 0 1 .5-.5"/>
-          </svg>
-        </button>
-
-      </div>
-    </div>
-    <!-- /footer -->
-
-  </div>
-  <!-- /table-card -->
-
-</div>
-<!-- /customers-wrapper -->
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     MODAL DE DETALLES DEL CLIENTE
-     Se muestra cuando clienteSeleccionado !== null.
-════════════════════════════════════════════════════════════════════════ -->
-<div *ngIf="clienteSeleccionado"
-     class="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-     role="dialog" aria-modal="true"
-     (click)="clienteSeleccionado = null">
-
-  <!-- Panel del modal — stopPropagation evita que el clic dentro cierre el modal -->
-  <div class="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-2xl overflow-hidden"
-       (click)="$event.stopPropagation()">
-
-    <!-- ── CABECERA ──────────────────────────────────────────────────── -->
-    <div class="flex items-center gap-3 bg-gradient-to-r from-[#800020] to-[#a0002a] px-5 py-3">
-
-      <!-- Avatar compacto -->
-      <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-inner"
-           [style.background]="getAvatarColor(clienteSeleccionado.id)">
-        {{ getInitials(clienteSeleccionado.firstName, clienteSeleccionado.lastName) }}
-      </div>
-
-      <!-- Nombre, email y badges -->
-      <div class="flex-1 min-w-0">
-        <h2 class="text-white font-semibold text-base leading-tight truncate">
-          {{ clienteSeleccionado.firstName }} {{ clienteSeleccionado.lastName }}
-        </h2>
-        <p class="text-white/75 text-xs truncate">{{ clienteSeleccionado.email }}</p>
-        <div class="flex flex-wrap gap-1.5 mt-1">
-          <!-- Badge estado cuenta -->
-          <span *ngIf="clienteSeleccionado.accountNonLocked"
-                class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Cuenta activa
-          </span>
-          <span *ngIf="!clienteSeleccionado.accountNonLocked"
-                class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Bloqueada
-          </span>
-          <!-- Badge habilitado -->
-          <span *ngIf="clienteSeleccionado.enabled"
-                class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
-            Activo
-          </span>
-          <span *ngIf="!clienteSeleccionado.enabled"
-                class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
-            Inactivo
-          </span>
+      <!-- ── Loading overlay ─────────────────────────────── -->
+      @if (loading) {
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <span>Cargando clientes...</span>
         </div>
+      }
+
+      <!-- ── Tabla ───────────────────────────────────────── -->
+      <div class="table-responsive" [class.table-loading]="loading">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="thead-customers">
+            <tr>
+              <th class="col-cliente">Cliente</th>
+              <th class="col-contacto">Contacto</th>
+              <th class="col-pedidos text-center">Pedidos</th>
+              <th class="col-gasto text-end">Total Gastado</th>
+              <th class="col-estado text-center">Acceso</th>
+              <th class="col-cuenta text-center">Seguridad</th>
+              <th class="col-registro">Registro</th>
+              <th class="col-acciones text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- ── Sin resultados ─────────────────────────── -->
+            @if (!loading && customerList.length === 0) {
+              <tr>
+                <td colspan="8" class="empty-state">
+                  <div class="empty-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="empty-icon" viewBox="0 0 16 16">
+                      <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/>
+                    </svg>
+                    <p class="empty-title">
+                      {{ searchTerm || filterEnabled !== null || filterLocked !== null
+                      ? 'No se encontraron clientes con los filtros aplicados'
+                      : 'No hay clientes registrados aún' }}
+                    </p>
+                    @if (searchTerm || filterEnabled !== null || filterLocked !== null) {
+                      <button
+                        class="btn-clear-empty" (click)="clearFilters()">
+                        Limpiar filtros
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+
+            <!-- ── Filas de clientes ──────────────────────── -->
+            @for (customer of customerList; track customer) {
+              <tr class="customer-row"
+                [class.row-disabled]="!customer.enabled"
+                [class.row-locked]="!customer.accountNonLocked">
+                <!-- Columna: Cliente -->
+                <td class="col-cliente">
+                  <div class="customer-info">
+                    <div class="customer-avatar"
+                      [style.background]="getAvatarColor(customer.id)">
+                      {{ getInitials(customer.firstName, customer.lastName) }}
+                    </div>
+                    <div class="customer-meta">
+                      <span class="customer-name">
+                        {{ customer.firstName }} {{ customer.lastName }}
+                      </span>
+                      <span class="customer-id text-muted small">#{{ customer.id }}</span>
+                    </div>
+                  </div>
+                </td>
+                <!-- Columna: Contacto -->
+                <td class="col-contacto">
+                  <div class="contact-info">
+                    <span class="contact-email text-truncate" title="{{ customer.email }}">
+                      {{ customer.email }}
+                    </span>
+                    @if (customer.phone) {
+                      <span class="contact-phone text-muted small">
+                        {{ customer.phone }}
+                      </span>
+                    } @else {
+                      <span class="contact-phone text-muted small fst-italic">Sin teléfono</span>
+                    }
+                  </div>
+                </td>
+                <!-- Columna: Pedidos -->
+                <td class="col-pedidos text-center">
+                  <span class="badge-orders"
+                    [class.badge-orders-zero]="customer.totalOrders === 0">
+                    {{ customer.totalOrders }}
+                  </span>
+                </td>
+                <!-- Columna: Total Gastado -->
+                <td class="col-gasto text-end">
+                  <span class="amount-spent"
+                    [class.amount-zero]="customer.totalSpent === 0">
+                    {{ customer.totalSpent | currency:'USD':'symbol':'1.2-2' }}
+                  </span>
+                </td>
+                <!-- Columna: Estado (toggle habilitado) -->
+                <td class="col-estado text-center">
+                  @if (authService.hasPermission('CUSTOMER_MANAGE')) {
+                    <div class="toggle-wrapper">
+                      <label class="toggle-switch" title="{{ customer.enabled ? 'Activo — clic para desactivar' : 'Inactivo — clic para activar' }}">
+                        <input type="checkbox"
+                          [checked]="customer.enabled"
+                          (click)="$event.preventDefault(); toggleEnabled(customer)">
+                          <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label"
+                          [class.label-active]="customer.enabled"
+                          [class.label-inactive]="!customer.enabled">
+                          {{ customer.enabled ? 'Activo' : 'Inactivo' }}
+                        </span>
+                      </div>
+                    } @else {
+                      <span class="toggle-label"
+                        [class.label-active]="customer.enabled"
+                        [class.label-inactive]="!customer.enabled">
+                        {{ customer.enabled ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    }
+                  </td>
+                  <!-- Columna: Cuenta (toggle bloqueo) -->
+                  <td class="col-cuenta text-center">
+                    @if (authService.hasPermission('CUSTOMER_MANAGE')) {
+                      <div class="toggle-wrapper">
+                        <label class="toggle-switch toggle-lock" title="{{ customer.accountNonLocked ? 'Desbloqueada — clic para bloquear' : 'Bloqueada — clic para desbloquear' }}">
+                          <input type="checkbox"
+                            [checked]="customer.accountNonLocked"
+                            (click)="$event.preventDefault(); toggleLock(customer)">
+                            <span class="toggle-slider slider-lock"></span>
+                          </label>
+                          <span class="toggle-label"
+                            [class.label-unlocked]="customer.accountNonLocked"
+                            [class.label-locked]="!customer.accountNonLocked">
+                            {{ customer.accountNonLocked ? 'Normal' : 'Bloqueada' }}
+                          </span>
+                        </div>
+                      } @else {
+                        <span class="toggle-label"
+                          [class.label-unlocked]="customer.accountNonLocked"
+                          [class.label-locked]="!customer.accountNonLocked">
+                          {{ customer.accountNonLocked ? 'Normal' : 'Bloqueada' }}
+                        </span>
+                      }
+                    </td>
+                    <!-- Columna: Registro -->
+                    <td class="col-registro">
+                      <span class="date-relative" title="{{ customer.createdAt }}">
+                        {{ formatDate(customer.createdAt) }}
+                      </span>
+                    </td>
+                    <!-- Columna: Acciones -->
+                    <td class="col-acciones text-center">
+                      <div class="actions-group">
+                        <!-- Ver detalles del cliente -->
+                        <button class="accion-btn btn-view"
+                          title="Ver detalles del cliente"
+                          (click)="abrirModalDetalles(customer)">
+                          <!-- Heroicon: eye -->
+                          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ═══════════════════════════════════════════════════
+          FOOTER: INFO + PAGINACIÓN
+          ════════════════════════════════════════════════════ -->
+          @if (!loading && customerList.length > 0) {
+            <div class="table-footer">
+              <div class="footer-info">
+                Mostrando
+                <span class="footer-count">{{ fromRecord }}</span>
+                –
+                <span class="footer-count">{{ toRecord }}</span>
+                de
+                <span class="footer-count">{{ totalElements }}</span>
+                clientes
+              </div>
+              @if (totalPages > 1) {
+                <div class="pagination-wrapper">
+                  <!-- Primera página -->
+                  <button class="page-btn page-btn-nav"
+                    [disabled]="currentPage === 0"
+                    (click)="onPageChange(0)"
+                    title="Primera página">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M11.854 3.646a.5.5 0 0 1 0 .708L8.207 8l3.647 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0M4.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 1 0v-13a.5.5 0 0 0-.5-.5"/>
+                    </svg>
+                  </button>
+                  <!-- Página anterior -->
+                  <button class="page-btn page-btn-nav"
+                    [disabled]="currentPage === 0"
+                    (click)="onPageChange(currentPage - 1)"
+                    title="Página anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+                    </svg>
+                  </button>
+                  <!-- Páginas numeradas -->
+                  @for (p of getPageNumbers(); track p) {
+                    <button
+                      class="page-btn"
+                      [class.page-btn-active]="p === currentPage"
+                      (click)="onPageChange(p)">
+                      {{ p + 1 }}
+                    </button>
+                  }
+                  <!-- Página siguiente -->
+                  <button class="page-btn page-btn-nav"
+                    [disabled]="currentPage >= totalPages - 1"
+                    (click)="onPageChange(currentPage + 1)"
+                    title="Página siguiente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                  </button>
+                  <!-- Última página -->
+                  <button class="page-btn page-btn-nav"
+                    [disabled]="currentPage >= totalPages - 1"
+                    (click)="onPageChange(totalPages - 1)"
+                    title="Última página">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M4.146 3.646a.5.5 0 0 0 0 .708L7.793 8l-3.647 3.646a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708 0M11.5 1a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-1 0v-13a.5.5 0 0 1 .5-.5"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          <!-- /footer -->
+
+        </div>
+        <!-- /table-card -->
+
       </div>
+      <!-- /customers-wrapper -->
 
-      <!-- Botón cerrar esquina -->
-      <button class="flex-shrink-0 text-white/70 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
-              title="Cerrar" (click)="clienteSeleccionado = null">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M18.364 5.636a1 1 0 0 0-1.414 0L12 10.586 7.05 5.636a1 1 0 0 0-1.414 1.414L10.586 12l-4.95 4.95a1 1 0 0 0 1.414 1.414L12 13.414l4.95 4.95a1 1 0 0 0 1.414-1.414L13.414 12l4.95-4.95a1 1 0 0 0 0-1.414z"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- ── BOTONES DE ACCIÓN (Seguridad + Recuperación) ────────────────── -->
-    <div class="px-6 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
-      <p class="text-xs text-gray-500">
-        Cliente <span class="font-mono text-gray-700">#{{ clienteSeleccionado.id }}</span>
-      </p>
-
-      <div class="flex flex-wrap items-center gap-2">
-
-        <!-- Botón seguridad: texto dinámico según estado de bloqueo -->
-        <button *ngIf="authService.hasPermission('CUSTOMER_MANAGE')"
-                class="inline-flex items-center gap-2 rounded-lg bg-[#800020] hover:bg-[#9B2335] text-white text-sm font-medium px-4 py-2 transition-colors shadow-sm"
-                (click)="resetFailedAttempts(clienteSeleccionado)"
+      <!-- ═══════════════════════════════════════════════════════════════════════
+      MODAL DE DETALLES DEL CLIENTE
+      Se muestra cuando clienteSeleccionado !== null.
+      ════════════════════════════════════════════════════════════════════════ -->
+      @if (clienteSeleccionado) {
+        <div
+          class="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          role="dialog" aria-modal="true"
+          (click)="clienteSeleccionado = null">
+          <!-- Panel del modal — stopPropagation evita que el clic dentro cierre el modal -->
+          <div class="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-2xl overflow-hidden"
+            (click)="$event.stopPropagation()">
+            <!-- ── CABECERA ──────────────────────────────────────────────────── -->
+            <div class="flex items-center gap-3 bg-gradient-to-r from-[#800020] to-[#a0002a] px-5 py-3">
+              <!-- Avatar compacto -->
+              <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-inner"
+                [style.background]="getAvatarColor(clienteSeleccionado.id)">
+                {{ getInitials(clienteSeleccionado.firstName, clienteSeleccionado.lastName) }}
+              </div>
+              <!-- Nombre, email y badges -->
+              <div class="flex-1 min-w-0">
+                <h2 class="text-white font-semibold text-base leading-tight truncate">
+                  {{ clienteSeleccionado.firstName }} {{ clienteSeleccionado.lastName }}
+                </h2>
+                <p class="text-white/75 text-xs truncate">{{ clienteSeleccionado.email }}</p>
+                <div class="flex flex-wrap gap-1.5 mt-1">
+                  <!-- Badge estado cuenta -->
+                  @if (clienteSeleccionado.accountNonLocked) {
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Cuenta activa
+                    </span>
+                  }
+                  @if (!clienteSeleccionado.accountNonLocked) {
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                      <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Bloqueada
+                    </span>
+                  }
+                  <!-- Badge habilitado -->
+                  @if (clienteSeleccionado.enabled) {
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
+                      Activo
+                    </span>
+                  }
+                  @if (!clienteSeleccionado.enabled) {
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+                      Inactivo
+                    </span>
+                  }
+                </div>
+              </div>
+              <!-- Botón cerrar esquina -->
+              <button class="flex-shrink-0 text-white/70 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                title="Cerrar" (click)="clienteSeleccionado = null">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.364 5.636a1 1 0 0 0-1.414 0L12 10.586 7.05 5.636a1 1 0 0 0-1.414 1.414L10.586 12l-4.95 4.95a1 1 0 0 0 1.414 1.414L12 13.414l4.95 4.95a1 1 0 0 0 1.414-1.414L13.414 12l4.95-4.95a1 1 0 0 0 0-1.414z"/>
+                </svg>
+              </button>
+            </div>
+            <!-- ── BOTONES DE ACCIÓN (Seguridad + Recuperación) ────────────────── -->
+            <div class="px-6 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
+              <p class="text-xs text-gray-500">
+                Cliente <span class="font-mono text-gray-700">#{{ clienteSeleccionado.id }}</span>
+              </p>
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Botón seguridad: texto dinámico según estado de bloqueo -->
+                @if (authService.hasPermission('CUSTOMER_MANAGE')) {
+                  <button
+                    class="inline-flex items-center gap-2 rounded-lg bg-[#800020] hover:bg-[#9B2335] text-white text-sm font-medium px-4 py-2 transition-colors shadow-sm"
+                    (click)="resetFailedAttempts(clienteSeleccionado)"
                 [title]="clienteSeleccionado.accountNonLocked
                           ? 'Resetear contadores de seguridad sin desbloquear'
                           : 'Desbloquear cuenta y limpiar intentos fallidos'">
           <i [class]="clienteSeleccionado.accountNonLocked
                         ? 'fa-solid fa-shield-halved text-sm'
                         : 'fa-solid fa-lock-open text-sm'"></i>
-          {{ clienteSeleccionado.accountNonLocked ? 'Resetear Intentos de Seguridad' : 'Desbloquear y Resetear Intentos' }}
-        </button>
-
-        <!-- Botón enviar enlace de recuperación de contraseña -->
-        <button *ngIf="authService.hasPermission('CUSTOMER_MANAGE')"
-                class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-600 text-sm font-medium px-4 py-2 transition-colors"
-                (click)="enviarRecuperacionPassword(clienteSeleccionado)"
-                title="Enviar enlace de restablecimiento de contraseña al email del cliente">
-          <i class="fa-solid fa-envelope text-sm"></i>
-          Enviar Enlace de Recuperación
-        </button>
-
-      </div>
-    </div>
-
-    <!-- ── CUERPO: GRID 2 COLUMNAS ──────────────────────────────────── -->
-    <div class="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
-
-      <!-- Columna 1: Información -->
-      <div class="px-6 py-5 space-y-4">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Información</h3>
-
-        <!-- Teléfono -->
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#800020" viewBox="0 0 24 24">
-              <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C11 21 3 13 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400">Teléfono</p>
-            <p class="text-sm font-medium text-gray-800">
-              {{ clienteSeleccionado.phone || '—' }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Fecha de registro -->
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#800020" viewBox="0 0 24 24">
-              <path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM5 7V6h14v1H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400">Fecha de registro</p>
-            <p class="text-sm font-medium text-gray-800">
-              {{ formatDate(clienteSeleccionado.createdAt) }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Total Gastado -->
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-[#800020]/10 flex items-center justify-center flex-shrink-0">
-            <i class="fa-solid fa-wallet text-[#800020] text-sm"></i>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400">Total gastado</p>
-            <p class="text-sm font-semibold text-[#800020]">
-              {{ clienteSeleccionado.totalSpent | currency:'USD':'symbol':'1.2-2' }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Último acceso -->
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#800020" viewBox="0 0 24 24">
-              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L11 13V7h1.5v5.25l4.5 2.67-.77 1.08z"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400">Último acceso</p>
-            <p class="text-sm font-medium text-gray-800">
-              {{ formatDate(clienteSeleccionado.lastLogin || clienteSeleccionado.createdAt) }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Columna 2: Historial de pedidos (datos reales) -->
-      <div class="px-6 py-5 flex flex-col gap-3">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400">
-          Últimos pedidos
-          <span class="ml-1 text-gray-300 font-normal normal-case">(últimos 5)</span>
-        </h3>
-
-        <!-- Estado: cargando -->
-        <div *ngIf="loadingPedidos" class="flex items-center justify-center py-6 gap-2 text-gray-400 text-xs">
-          <svg class="animate-spin w-4 h-4 text-[#800020]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-          </svg>
-          Cargando pedidos...
-        </div>
-
-        <!-- Estado: sin pedidos -->
-        <div *ngIf="!loadingPedidos && pedidosDelCliente.length === 0"
-             class="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-5 flex flex-col items-center justify-center text-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#cbd5e1" viewBox="0 0 24 24">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
-          </svg>
-          <p class="text-xs text-gray-400 font-medium">No hay pedidos recientes</p>
-        </div>
-
-        <!-- Lista de pedidos -->
-        <div *ngIf="!loadingPedidos && pedidosDelCliente.length > 0"
-             class="space-y-2">
-          <div *ngFor="let pedido of pedidosDelCliente"
-               class="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 hover:bg-gray-100 transition-colors">
-
-            <!-- Número y fecha -->
-            <div class="min-w-0 flex-1">
-              <p class="text-xs font-semibold text-gray-700 truncate">
-                #{{ pedido.orderNumber }}
-              </p>
-              <p class="text-xs text-gray-400 mt-0.5">
-                {{ formatDate(pedido.orderDate || pedido.createdAt) }}
-              </p>
+                    {{ clienteSeleccionado.accountNonLocked ? 'Resetear Intentos de Seguridad' : 'Desbloquear y Resetear Intentos' }}
+                  </button>
+                }
+                <!-- Botón enviar enlace de recuperación de contraseña -->
+                @if (authService.hasPermission('CUSTOMER_MANAGE')) {
+                  <button
+                    class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-600 text-sm font-medium px-4 py-2 transition-colors"
+                    (click)="enviarRecuperacionPassword(clienteSeleccionado)"
+                    title="Enviar enlace de restablecimiento de contraseña al email del cliente">
+                    <i class="fa-solid fa-envelope text-sm"></i>
+                    Enviar Enlace de Recuperación
+                  </button>
+                }
+              </div>
             </div>
-
-            <!-- Total y estado -->
-            <div class="flex flex-col items-end gap-1 flex-shrink-0 ml-3">
-              <span class="text-xs font-semibold text-[#800020]">
-                {{ pedido.total | currency:'USD':'symbol':'1.2-2' }}
-              </span>
-              <!-- Badge de estado -->
-              <span class="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium leading-tight"
+            <!-- ── CUERPO: GRID 2 COLUMNAS ──────────────────────────────────── -->
+            <div class="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+              <!-- Columna 1: Información -->
+              <div class="px-6 py-5 space-y-4">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Información</h3>
+                <!-- Teléfono -->
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#800020" viewBox="0 0 24 24">
+                      <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C11 21 3 13 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-400">Teléfono</p>
+                    <p class="text-sm font-medium text-gray-800">
+                      {{ clienteSeleccionado.phone || '—' }}
+                    </p>
+                  </div>
+                </div>
+                <!-- Fecha de registro -->
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#800020" viewBox="0 0 24 24">
+                      <path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM5 7V6h14v1H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-400">Fecha de registro</p>
+                    <p class="text-sm font-medium text-gray-800">
+                      {{ formatDate(clienteSeleccionado.createdAt) }}
+                    </p>
+                  </div>
+                </div>
+                <!-- Total Gastado -->
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-[#800020]/10 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-wallet text-[#800020] text-sm"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-400">Total gastado</p>
+                    <p class="text-sm font-semibold text-[#800020]">
+                      {{ clienteSeleccionado.totalSpent | currency:'USD':'symbol':'1.2-2' }}
+                    </p>
+                  </div>
+                </div>
+                <!-- Último acceso -->
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#800020" viewBox="0 0 24 24">
+                      <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L11 13V7h1.5v5.25l4.5 2.67-.77 1.08z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-400">Último acceso</p>
+                    <p class="text-sm font-medium text-gray-800">
+                      {{ formatDate(clienteSeleccionado.lastLogin || clienteSeleccionado.createdAt) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <!-- Columna 2: Historial de pedidos (datos reales) -->
+              <div class="px-6 py-5 flex flex-col gap-3">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Últimos pedidos
+                  <span class="ml-1 text-gray-300 font-normal normal-case">(últimos 5)</span>
+                </h3>
+                <!-- Estado: cargando -->
+                @if (loadingPedidos) {
+                  <div class="flex items-center justify-center py-6 gap-2 text-gray-400 text-xs">
+                    <svg class="animate-spin w-4 h-4 text-[#800020]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    Cargando pedidos...
+                  </div>
+                }
+                <!-- Estado: sin pedidos -->
+                @if (!loadingPedidos && pedidosDelCliente.length === 0) {
+                  <div
+                    class="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-5 flex flex-col items-center justify-center text-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#cbd5e1" viewBox="0 0 24 24">
+                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                    </svg>
+                    <p class="text-xs text-gray-400 font-medium">No hay pedidos recientes</p>
+                  </div>
+                }
+                <!-- Lista de pedidos -->
+                @if (!loadingPedidos && pedidosDelCliente.length > 0) {
+                  <div
+                    class="space-y-2">
+                    @for (pedido of pedidosDelCliente; track pedido) {
+                      <div
+                        class="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 hover:bg-gray-100 transition-colors">
+                        <!-- Número y fecha -->
+                        <div class="min-w-0 flex-1">
+                          <p class="text-xs font-semibold text-gray-700 truncate">
+                            #{{ pedido.orderNumber }}
+                          </p>
+                          <p class="text-xs text-gray-400 mt-0.5">
+                            {{ formatDate(pedido.orderDate || pedido.createdAt) }}
+                          </p>
+                        </div>
+                        <!-- Total y estado -->
+                        <div class="flex flex-col items-end gap-1 flex-shrink-0 ml-3">
+                          <span class="text-xs font-semibold text-[#800020]">
+                            {{ pedido.total | currency:'USD':'symbol':'1.2-2' }}
+                          </span>
+                          <!-- Badge de estado -->
+                          <span class="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium leading-tight"
                     [ngClass]="{
                       'bg-yellow-100 text-yellow-700': pedido.status === 'PENDING',
                       'bg-blue-100 text-blue-700':    pedido.status === 'CONFIRMED' || pedido.status === 'PROCESSING',
                       'bg-emerald-100 text-emerald-700': pedido.status === 'COMPLETED',
                       'bg-red-100 text-red-700':      pedido.status === 'CANCELLED'
                     }">
-                {{ pedido.statusDisplayName || pedido.status }}
-              </span>
+                            {{ pedido.statusDisplayName || pedido.status }}
+                          </span>
+                        </div>
+                      </div>
+                    }
+                    <!-- Enlace ver historial completo -->
+                    <button (click)="verHistorialCompleto(clienteSeleccionado)"
+                      class="w-full mt-1 flex items-center justify-center gap-1.5 text-xs text-[#800020] hover:text-[#9B2335] font-medium py-2 rounded-lg hover:bg-[#800020]/5 transition-colors border border-transparent hover:border-[#800020]/10">
+                      Ver historial completo de compras
+                      <i class="fa-solid fa-arrow-right-long text-[11px]"></i>
+                    </button>
+                  </div>
+                }
+                <!-- Direcciones guardadas placeholder -->
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mt-2">Direcciones</h3>
+                <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[80px]">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#cbd5e1" viewBox="0 0 24 24">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
+                  </svg>
+                  <p class="text-xs font-medium text-gray-400">Direcciones guardadas</p>
+                  <span class="text-xs text-gray-300 italic">Próximamente</span>
+                </div>
+              </div>
+            </div>
+            <!-- ── PIE DEL MODAL ──────────────────────────────────────────────── -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+              <button class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 text-sm font-medium px-5 py-2 transition-colors"
+                (click)="clienteSeleccionado = null">
+                Cerrar
+              </button>
             </div>
           </div>
-
-          <!-- Enlace ver historial completo -->
-          <button (click)="verHistorialCompleto(clienteSeleccionado)"
-                  class="w-full mt-1 flex items-center justify-center gap-1.5 text-xs text-[#800020] hover:text-[#9B2335] font-medium py-2 rounded-lg hover:bg-[#800020]/5 transition-colors border border-transparent hover:border-[#800020]/10">
-            Ver historial completo de compras
-            <i class="fa-solid fa-arrow-right-long text-[11px]"></i>
-          </button>
         </div>
-
-        <!-- Direcciones guardadas placeholder -->
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mt-2">Direcciones</h3>
-        <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[80px]">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#cbd5e1" viewBox="0 0 24 24">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
-          </svg>
-          <p class="text-xs font-medium text-gray-400">Direcciones guardadas</p>
-          <span class="text-xs text-gray-300 italic">Próximamente</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── PIE DEL MODAL ──────────────────────────────────────────────── -->
-    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
-      <button class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 text-sm font-medium px-5 py-2 transition-colors"
-              (click)="clienteSeleccionado = null">
-        Cerrar
-      </button>
-    </div>
-
-  </div>
-</div>
+      }

@@ -6,328 +6,363 @@
       <p class="subtitle">Gestiona y analiza carritos inactivos para recuperar ventas</p>
     </div>
     <div class="header-actions">
-      <button class="btn-export" (click)="exportToCSV()" *ngIf="abandonedCarts.length > 0">
-        <i class="icon-download"></i> Exportar CSV
-      </button>
+      @if (abandonedCarts.length > 0) {
+        <button class="btn-export" (click)="exportToCSV()">
+          <i class="icon-download"></i> Exportar CSV
+        </button>
+      }
     </div>
   </div>
 
   <!-- Stats Cards -->
-  <div class="stats-grid" *ngIf="!isLoading && abandonedCarts.length > 0">
-    <div class="stat-card">
-      <div class="stat-icon total-carts">🛒</div>
-      <div class="stat-content">
-        <div class="stat-value">{{ totalElements }}</div>
-        <div class="stat-label">Carritos Abandonados</div>
+  @if (!isLoading && abandonedCarts.length > 0) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon total-carts">🛒</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ totalElements }}</div>
+          <div class="stat-label">Carritos Abandonados</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon total-value">💰</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatCurrency(totalAbandonedValue) }}</div>
+          <div class="stat-label">Valor Total</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon avg-value">📊</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatCurrency(averageCartValue) }}</div>
+          <div class="stat-label">Promedio por Carrito</div>
+        </div>
       </div>
     </div>
-
-    <div class="stat-card">
-      <div class="stat-icon total-value">💰</div>
-      <div class="stat-content">
-        <div class="stat-value">{{ formatCurrency(totalAbandonedValue) }}</div>
-        <div class="stat-label">Valor Total</div>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon avg-value">📊</div>
-      <div class="stat-content">
-        <div class="stat-value">{{ formatCurrency(averageCartValue) }}</div>
-        <div class="stat-label">Promedio por Carrito</div>
-      </div>
-    </div>
-  </div>
+  }
 
   <!-- Filters -->
   <div class="filters-section">
     <div class="filter-group">
       <label for="minDaysFilter">Días mínimos:</label>
-      <input 
-        type="number" 
-        id="minDaysFilter" 
-        [(ngModel)]="minDaysFilter" 
+      <input
+        type="number"
+        id="minDaysFilter"
+        [(ngModel)]="minDaysFilter"
         class="filter-input"
         min="1"
         placeholder="1">
-    </div>
-
-    <div class="filter-group">
-      <label for="minValueFilter">Valor mínimo ($):</label>
-      <input 
-        type="number" 
-        id="minValueFilter" 
-        [(ngModel)]="minValueFilter" 
-        class="filter-input"
-        min="0"
-        placeholder="0">
-    </div>
-
-    <div class="filter-group">
-      <label for="sortByFilter">Ordenar por:</label>
-      <select id="sortByFilter" [(ngModel)]="sortByFilter" class="filter-select">
-        <option value="date">Más antiguo</option>
-        <option value="value">Mayor valor</option>
-        <option value="items">Más items</option>
-      </select>
-    </div>
-
-    <button class="btn-filter" (click)="applyFilters()">Aplicar Filtros</button>
-    <button class="btn-reset" (click)="resetFilters()">Limpiar</button>
-  </div>
-
-  <!-- Loading Spinner -->
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="spinner"></div>
-    <p>Cargando carritos abandonados...</p>
-  </div>
-
-  <!-- FASE 1: Banner de módulo pendiente de backend -->
-  <div *ngIf="error === 'PENDING_BACKEND'" class="pending-backend-banner">
-    <div class="pending-icon">🚧</div>
-    <div class="pending-content">
-      <h3>Módulo en desarrollo</h3>
-      <p>
-        El módulo de carritos abandonados requiere un endpoint de backend que aún no está implementado.<br>
-        <strong>GET /api/admin/carts/abandoned</strong> — pendiente de desarrollo en el servidor.
-      </p>
-      <p class="pending-note">
-        Esta funcionalidad estará disponible cuando el equipo de backend implemente el endpoint correspondiente.
-      </p>
-    </div>
-  </div>
-
-  <!-- Error Message (errores técnicos reales, distintos del pending) -->
-  <div *ngIf="error && error !== 'PENDING_BACKEND'" class="error-message">
-    <i class="icon-error"></i>
-    {{ error }}
-    <button class="btn-close-error" (click)="error = null">✕</button>
-  </div>
-
-  <!-- Carts Table -->
-  <div class="table-container" *ngIf="!isLoading && abandonedCarts.length > 0">
-    <table class="carts-table">
-      <thead>
-        <tr>
-          <th>ID Carrito</th>
-          <th>Usuario</th>
-          <th>Items</th>
-          <th>Valor Total</th>
-          <th>Tiempo Abandonado</th>
-          <th>Última Actividad</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let abandonedCart of abandonedCarts">
-          <td>
-            <span class="cart-id">#{{ abandonedCart.cart.id }}</span>
-          </td>
-          <td>
-            <div class="user-info">
-              <span class="user-id" *ngIf="abandonedCart.cart.userId">
-                ID: {{ abandonedCart.cart.userId }}
-              </span>
-              <span class="session-id" *ngIf="!abandonedCart.cart.userId && abandonedCart.cart.sessionId">
-                Sesión: {{ truncateText(abandonedCart.cart.sessionId, 12) }}
-              </span>
-              <span class="guest-badge" *ngIf="!abandonedCart.cart.userId">
-                <i class="icon-guest"></i> Invitado
-              </span>
-            </div>
-          </td>
-          <td>
-            <span class="item-count">{{ abandonedCart.itemCount }} items</span>
-          </td>
-          <td>
-            <span class="cart-value" [ngClass]="getValueClass(abandonedCart.totalValue)">
-              {{ formatCurrency(abandonedCart.totalValue) }}
-            </span>
-          </td>
-          <td>
-            <span class="days-badge" [ngClass]="getDaysClass(abandonedCart.daysSinceLastUpdate)">
-              {{ getDaysLabel(abandonedCart.daysSinceLastUpdate) }}
-            </span>
-          </td>
-          <td>
-            <span class="last-activity">
-              {{ formatDate(abandonedCart.cart.updatedAt) }}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <!-- View Details -->
-              <button 
-                class="btn-icon btn-view" 
-                (click)="openDetailsModal(abandonedCart)"
-                title="Ver detalles">
-                <i class="icon-eye"></i>
-              </button>
-
-              <!-- Send Reminder -->
-              <button 
-                *ngIf="abandonedCart.cart.userId"
-                class="btn-icon btn-email" 
-                (click)="sendReminderEmail(abandonedCart)"
-                title="Enviar recordatorio">
-                <i class="icon-email"></i>
-              </button>
-
-              <!-- Delete -->
-              <button 
-                class="btn-icon btn-delete" 
-                (click)="deleteCart(abandonedCart.cart.id)"
-                title="Eliminar carrito">
-                <i class="icon-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button 
-        class="btn-pagination" 
-        (click)="previousPage()" 
-        [disabled]="currentPage === 0">
-        Anterior
-      </button>
-      <span class="page-info">
-        Página {{ currentPage + 1 }} de {{ totalPages }} 
-        ({{ totalElements }} carritos)
-      </span>
-      <button 
-        class="btn-pagination" 
-        (click)="nextPage()" 
-        [disabled]="currentPage >= totalPages - 1">
-        Siguiente
-      </button>
-    </div>
-  </div>
-
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="!isLoading && abandonedCarts.length === 0">
-    <div class="empty-icon">🛒</div>
-    <h3>No hay carritos abandonados</h3>
-    <p>¡Genial! Todos los carritos están activos o se han completado.</p>
-    <button class="btn-primary" (click)="resetFilters()">Recargar</button>
-  </div>
-</div>
-
-<!-- Details Modal -->
-<div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
-  <div class="modal-content details-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Detalles del Carrito #{{ selectedCart?.cart?.id }}</h2>
-      <button class="btn-close" (click)="closeDetailsModal()">✕</button>
-    </div>
-
-    <div class="modal-body" *ngIf="selectedCart">
-      <!-- Cart Info -->
-      <div class="detail-section">
-        <h3>Información del Carrito</h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">ID Carrito:</span>
-            <span class="info-value">#{{ selectedCart.cart.id }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Usuario:</span>
-            <span class="info-value">
-              <span *ngIf="selectedCart.cart.userId">ID: {{ selectedCart.cart.userId }}</span>
-              <span *ngIf="!selectedCart.cart.userId" class="guest-text">
-                <i class="icon-guest"></i> Invitado (Sesión: {{ truncateText(selectedCart.cart.sessionId || '', 15) }})
-              </span>
-            </span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Estado:</span>
-            <span class="info-value">{{ selectedCart.cart.status }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Creado:</span>
-            <span class="info-value">{{ formatDate(selectedCart.cart.createdAt) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Última actividad:</span>
-            <span class="info-value">{{ formatDate(selectedCart.cart.updatedAt) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Tiempo abandonado:</span>
-            <span class="info-value days-badge" [ngClass]="getDaysClass(selectedCart.daysSinceLastUpdate)">
-              {{ getDaysLabel(selectedCart.daysSinceLastUpdate) }}
-            </span>
-          </div>
-        </div>
       </div>
 
-      <!-- Cart Items -->
-      <div class="detail-section">
-        <h3>Productos en el Carrito ({{ selectedCart.itemCount }})</h3>
-        <div class="cart-items-list">
-          <div *ngFor="let item of selectedCart.cart.items" class="cart-item-card">
-            <img 
-              [src]="getCartItemImage(item)" 
-              [alt]="item.productName" 
-              class="item-image">
-            <div class="item-info">
-              <h4 class="item-name">{{ item.productName }}</h4>
-              <p class="item-sku">SKU: {{ item.productSku }}</p>
-              <div class="item-details">
-                <span class="item-quantity">Cantidad: {{ item.quantity }}</span>
-                <span class="item-price">{{ formatCurrency(item.unitPrice) }} c/u</span>
+      <div class="filter-group">
+        <label for="minValueFilter">Valor mínimo ($):</label>
+        <input
+          type="number"
+          id="minValueFilter"
+          [(ngModel)]="minValueFilter"
+          class="filter-input"
+          min="0"
+          placeholder="0">
+        </div>
+
+        <div class="filter-group">
+          <label for="sortByFilter">Ordenar por:</label>
+          <select id="sortByFilter" [(ngModel)]="sortByFilter" class="filter-select">
+            <option value="date">Más antiguo</option>
+            <option value="value">Mayor valor</option>
+            <option value="items">Más items</option>
+          </select>
+        </div>
+
+        <button class="btn-filter" (click)="applyFilters()">Aplicar Filtros</button>
+        <button class="btn-reset" (click)="resetFilters()">Limpiar</button>
+      </div>
+
+      <!-- Loading Spinner -->
+      @if (isLoading) {
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Cargando carritos abandonados...</p>
+        </div>
+      }
+
+      <!-- FASE 1: Banner de módulo pendiente de backend -->
+      @if (error === 'PENDING_BACKEND') {
+        <div class="pending-backend-banner">
+          <div class="pending-icon">🚧</div>
+          <div class="pending-content">
+            <h3>Módulo en desarrollo</h3>
+            <p>
+              El módulo de carritos abandonados requiere un endpoint de backend que aún no está implementado.<br>
+              <strong>GET /api/admin/carts/abandoned</strong> — pendiente de desarrollo en el servidor.
+            </p>
+            <p class="pending-note">
+              Esta funcionalidad estará disponible cuando el equipo de backend implemente el endpoint correspondiente.
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- Error Message (errores técnicos reales, distintos del pending) -->
+      @if (error && error !== 'PENDING_BACKEND') {
+        <div class="error-message">
+          <i class="icon-error"></i>
+          {{ error }}
+          <button class="btn-close-error" (click)="error = null">✕</button>
+        </div>
+      }
+
+      <!-- Carts Table -->
+      @if (!isLoading && abandonedCarts.length > 0) {
+        <div class="table-container">
+          <table class="carts-table">
+            <thead>
+              <tr>
+                <th>ID Carrito</th>
+                <th>Usuario</th>
+                <th>Items</th>
+                <th>Valor Total</th>
+                <th>Tiempo Abandonado</th>
+                <th>Última Actividad</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (abandonedCart of abandonedCarts; track abandonedCart) {
+                <tr>
+                  <td>
+                    <span class="cart-id">#{{ abandonedCart.cart.id }}</span>
+                  </td>
+                  <td>
+                    <div class="user-info">
+                      @if (abandonedCart.cart.userId) {
+                        <span class="user-id">
+                          ID: {{ abandonedCart.cart.userId }}
+                        </span>
+                      }
+                      @if (!abandonedCart.cart.userId && abandonedCart.cart.sessionId) {
+                        <span class="session-id">
+                          Sesión: {{ truncateText(abandonedCart.cart.sessionId, 12) }}
+                        </span>
+                      }
+                      @if (!abandonedCart.cart.userId) {
+                        <span class="guest-badge">
+                          <i class="icon-guest"></i> Invitado
+                        </span>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="item-count">{{ abandonedCart.itemCount }} items</span>
+                  </td>
+                  <td>
+                    <span class="cart-value" [ngClass]="getValueClass(abandonedCart.totalValue)">
+                      {{ formatCurrency(abandonedCart.totalValue) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="days-badge" [ngClass]="getDaysClass(abandonedCart.daysSinceLastUpdate)">
+                      {{ getDaysLabel(abandonedCart.daysSinceLastUpdate) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="last-activity">
+                      {{ formatDate(abandonedCart.cart.updatedAt) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <!-- View Details -->
+                      <button
+                        class="btn-icon btn-view"
+                        (click)="openDetailsModal(abandonedCart)"
+                        title="Ver detalles">
+                        <i class="icon-eye"></i>
+                      </button>
+                      <!-- Send Reminder -->
+                      @if (abandonedCart.cart.userId) {
+                        <button
+                          class="btn-icon btn-email"
+                          (click)="sendReminderEmail(abandonedCart)"
+                          title="Enviar recordatorio">
+                          <i class="icon-email"></i>
+                        </button>
+                      }
+                      <!-- Delete -->
+                      <button
+                        class="btn-icon btn-delete"
+                        (click)="deleteCart(abandonedCart.cart.id)"
+                        title="Eliminar carrito">
+                        <i class="icon-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <!-- Pagination -->
+          @if (totalPages > 1) {
+            <div class="pagination">
+              <button
+                class="btn-pagination"
+                (click)="previousPage()"
+                [disabled]="currentPage === 0">
+                Anterior
+              </button>
+              <span class="page-info">
+                Página {{ currentPage + 1 }} de {{ totalPages }}
+                ({{ totalElements }} carritos)
+              </span>
+              <button
+                class="btn-pagination"
+                (click)="nextPage()"
+                [disabled]="currentPage >= totalPages - 1">
+                Siguiente
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!isLoading && abandonedCarts.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🛒</div>
+          <h3>No hay carritos abandonados</h3>
+          <p>¡Genial! Todos los carritos están activos o se han completado.</p>
+          <button class="btn-primary" (click)="resetFilters()">Recargar</button>
+        </div>
+      }
+    </div>
+
+    <!-- Details Modal -->
+    @if (showDetailsModal) {
+      <div class="modal-overlay" (click)="closeDetailsModal()">
+        <div class="modal-content details-modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Detalles del Carrito #{{ selectedCart?.cart?.id }}</h2>
+            <button class="btn-close" (click)="closeDetailsModal()">✕</button>
+          </div>
+          @if (selectedCart) {
+            <div class="modal-body">
+              <!-- Cart Info -->
+              <div class="detail-section">
+                <h3>Información del Carrito</h3>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">ID Carrito:</span>
+                    <span class="info-value">#{{ selectedCart.cart.id }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Usuario:</span>
+                    <span class="info-value">
+                      @if (selectedCart.cart.userId) {
+                        <span>ID: {{ selectedCart.cart.userId }}</span>
+                      }
+                      @if (!selectedCart.cart.userId) {
+                        <span class="guest-text">
+                          <i class="icon-guest"></i> Invitado (Sesión: {{ truncateText(selectedCart.cart.sessionId || '', 15) }})
+                        </span>
+                      }
+                    </span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Estado:</span>
+                    <span class="info-value">{{ selectedCart.cart.status }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Creado:</span>
+                    <span class="info-value">{{ formatDate(selectedCart.cart.createdAt) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Última actividad:</span>
+                    <span class="info-value">{{ formatDate(selectedCart.cart.updatedAt) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Tiempo abandonado:</span>
+                    <span class="info-value days-badge" [ngClass]="getDaysClass(selectedCart.daysSinceLastUpdate)">
+                      {{ getDaysLabel(selectedCart.daysSinceLastUpdate) }}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="item-total">
-              <div class="total-label">Total</div>
-              <div class="total-value">{{ formatCurrency(item.total) }}</div>
+              <!-- Cart Items -->
+              <div class="detail-section">
+                <h3>Productos en el Carrito ({{ selectedCart.itemCount }})</h3>
+                <div class="cart-items-list">
+                  @for (item of selectedCart.cart.items; track item) {
+                    <div class="cart-item-card">
+                      <img
+                        [src]="getCartItemImage(item)"
+                        [alt]="item.productName"
+                        class="item-image">
+                        <div class="item-info">
+                          <h4 class="item-name">{{ item.productName }}</h4>
+                          <p class="item-sku">SKU: {{ item.productSku }}</p>
+                          <div class="item-details">
+                            <span class="item-quantity">Cantidad: {{ item.quantity }}</span>
+                            <span class="item-price">{{ formatCurrency(item.unitPrice) }} c/u</span>
+                          </div>
+                        </div>
+                        <div class="item-total">
+                          <div class="total-label">Total</div>
+                          <div class="total-value">{{ formatCurrency(item.total) }}</div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <!-- Price Summary -->
+                <div class="detail-section">
+                  <h3>Resumen de Precios</h3>
+                  <div class="price-summary">
+                    <div class="price-row">
+                      <span class="price-label">Subtotal:</span>
+                      <span class="price-value">{{ formatCurrency(selectedCart.cart.subtotal) }}</span>
+                    </div>
+                    @if (selectedCart.cart.discount > 0) {
+                      <div class="price-row">
+                        <span class="price-label">Descuento:</span>
+                        <span class="price-value discount">-{{ formatCurrency(selectedCart.cart.discount) }}</span>
+                      </div>
+                    }
+                    @if (selectedCart.cart.appliedCoupon) {
+                      <div class="price-row">
+                        <span class="price-label">Cupón aplicado:</span>
+                        <span class="price-value coupon">{{ selectedCart.cart.appliedCoupon.code }}</span>
+                      </div>
+                    }
+                    @if (selectedCart.cart.tax > 0) {
+                      <div class="price-row">
+                        <span class="price-label">Impuestos:</span>
+                        <span class="price-value">{{ formatCurrency(selectedCart.cart.tax) }}</span>
+                      </div>
+                    }
+                    @if (selectedCart.cart.shippingCost > 0) {
+                      <div class="price-row">
+                        <span class="price-label">Envío:</span>
+                        <span class="price-value">{{ formatCurrency(selectedCart.cart.shippingCost) }}</span>
+                      </div>
+                    }
+                    <div class="price-row total-row">
+                      <span class="price-label">Total:</span>
+                      <span class="price-value total">{{ formatCurrency(selectedCart.cart.total) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+            <div class="modal-footer">
+              @if (selectedCart?.cart?.userId) {
+                <button
+                  class="btn-primary"
+                  (click)="selectedCart && sendReminderEmail(selectedCart)">
+                  <i class="icon-email"></i> Enviar Recordatorio
+                </button>
+              }
+              <button class="btn-secondary" (click)="closeDetailsModal()">Cerrar</button>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Price Summary -->
-      <div class="detail-section">
-        <h3>Resumen de Precios</h3>
-        <div class="price-summary">
-          <div class="price-row">
-            <span class="price-label">Subtotal:</span>
-            <span class="price-value">{{ formatCurrency(selectedCart.cart.subtotal) }}</span>
-          </div>
-          <div class="price-row" *ngIf="selectedCart.cart.discount > 0">
-            <span class="price-label">Descuento:</span>
-            <span class="price-value discount">-{{ formatCurrency(selectedCart.cart.discount) }}</span>
-          </div>
-          <div class="price-row" *ngIf="selectedCart.cart.appliedCoupon">
-            <span class="price-label">Cupón aplicado:</span>
-            <span class="price-value coupon">{{ selectedCart.cart.appliedCoupon.code }}</span>
-          </div>
-          <div class="price-row" *ngIf="selectedCart.cart.tax > 0">
-            <span class="price-label">Impuestos:</span>
-            <span class="price-value">{{ formatCurrency(selectedCart.cart.tax) }}</span>
-          </div>
-          <div class="price-row" *ngIf="selectedCart.cart.shippingCost > 0">
-            <span class="price-label">Envío:</span>
-            <span class="price-value">{{ formatCurrency(selectedCart.cart.shippingCost) }}</span>
-          </div>
-          <div class="price-row total-row">
-            <span class="price-label">Total:</span>
-            <span class="price-value total">{{ formatCurrency(selectedCart.cart.total) }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button 
-        *ngIf="selectedCart?.cart?.userId"
-        class="btn-primary" 
-        (click)="selectedCart && sendReminderEmail(selectedCart)">
-        <i class="icon-email"></i> Enviar Recordatorio
-      </button>
-      <button class="btn-secondary" (click)="closeDetailsModal()">Cerrar</button>
-    </div>
-  </div>
-</div>
+      }

@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+
 import { CartService } from '../../services/cart.service';
 import { Subscription } from 'rxjs';
 
@@ -13,26 +13,28 @@ interface ToastNotification {
 @Component({
   selector: 'app-cart-toast',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="toast-container">
-      <div 
-        *ngFor="let toast of toasts" 
-        class="toast-notification"
-        [class.show]="toast.show">
-        <div class="toast-content">
-          <img [src]="toast.productImage" [alt]="toast.productName" class="toast-image" />
-          <div class="toast-text">
-            <span class="material-symbols-outlined toast-icon">check_circle</span>
-            <div>
-              <p class="toast-title">¡Agregado al carrito!</p>
-              <p class="toast-product">{{ toast.productName }}</p>
+      @for (toast of toasts; track toast) {
+        <div
+          class="toast-notification"
+          [class.show]="toast.show">
+          <div class="toast-content">
+            <img [src]="toast.productImage" [alt]="toast.productName" class="toast-image" />
+            <div class="toast-text">
+              <span class="material-symbols-outlined toast-icon">check_circle</span>
+              <div>
+                <p class="toast-title">¡Agregado al carrito!</p>
+                <p class="toast-product">{{ toast.productName }}</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      }
     </div>
-  `,
+    `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .toast-container {
       position: fixed;

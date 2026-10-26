@@ -1,14 +1,14 @@
 <!-- ================================================================
-     GESTIÓN DE ROLES Y PERMISOS
-     Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
-     ================================================================ -->
+GESTIÓN DE ROLES Y PERMISOS
+Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
+================================================================ -->
 <div class="roles-wrapper">
 
   <!-- ── BARRA DE CONTEXTO MINIMALISTA ─────────────────────── -->
   <div class="module-info-bar">
     <div class="module-info-bar__stat">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
       </svg>
       <span class="module-info-bar__num">{{ roles.length }}</span>
@@ -17,7 +17,7 @@
     <div class="module-info-bar__divider"></div>
     <div class="module-info-bar__stat">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
       </svg>
       <span class="module-info-bar__num">{{ getTotalPermissionsCount() }}</span>
@@ -30,609 +30,651 @@
   </div>
 
   <!-- ── AVISO ACCESO RESTRINGIDO ──────────────────────────── -->
-  <div *ngIf="isReadOnlyMode" class="alert-restricted">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/>
-      <line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-    <span>Tienes acceso de <strong>solo lectura</strong> a los roles del sistema. Contacta al Super Administrador para realizar cambios.</span>
-  </div>
+  @if (isReadOnlyMode) {
+    <div class="alert-restricted">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span>Tienes acceso de <strong>solo lectura</strong> a los roles del sistema. Contacta al Super Administrador para realizar cambios.</span>
+    </div>
+  }
 
   <!-- ── BARRA DE BUSQUEDA ─────────────────────────────────── -->
   <div class="search-bar">
     <div class="search-bar__input-wrap">
       <svg class="search-bar__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input type="text" class="search-bar__input"
-             [(ngModel)]="searchTerm"
-             placeholder="Buscar rol por nombre o descripcion..."
-             autocomplete="off">
-      <button *ngIf="searchTerm" class="search-bar__clear" (click)="searchTerm = ''">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar rol por nombre o descripcion..."
+        autocomplete="off">
+      @if (searchTerm) {
+        <button class="search-bar__clear" (click)="searchTerm = ''">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      }
     </div>
-    <span class="search-bar__count" *ngIf="searchTerm">
-      {{ filteredRoles.length }} de {{ roles.length }} roles
-    </span>
+    @if (searchTerm) {
+      <span class="search-bar__count">
+        {{ filteredRoles.length }} de {{ roles.length }} roles
+      </span>
+    }
   </div>
 
   <!-- ── CARGANDO ───────────────────────────────────────────── -->
-  <div *ngIf="loading" class="loading-state">
-    <div class="spinner-ring"></div>
-    <p>Cargando roles del sistema...</p>
-  </div>
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner-ring"></div>
+      <p>Cargando roles del sistema...</p>
+    </div>
+  }
 
   <!-- ── GRID DE TARJETAS ───────────────────────────────────── -->
-  <div *ngIf="!loading" class="roles-grid">
-
-    <div *ngFor="let role of filteredRoles"
-         class="role-card"
-         [class.role-card--system]="isImmutableRole(role)"
-         [class.role-card--custom]="!isImmutableRole(role)">
-
-      <!-- Cabecera de tarjeta -->
-      <div class="role-card__head">
-        <div class="role-card__avatar" [class.role-card__avatar--gold]="isImmutableRole(role)">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-        </div>
-        <span *ngIf="isImmutableRole(role)" class="chip-system">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          Sistema
-        </span>
-        <span *ngIf="!isImmutableRole(role)" class="chip-custom">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-          </svg>
-          Personalizado
-        </span>
-      </div>
-
-      <!-- Nombre del rol -->
-      <div class="role-card__body">
-        <h3 class="role-card__name">{{ displayName(role.name) }}</h3>
-        <p class="role-card__full-name">{{ role.name }}</p>
-        <p class="role-card__desc">{{ role.description || "Sin descripción asignada." }}</p>
-      </div>
-
-      <!-- Estadísticas -->
-      <div class="role-card__stats">
-        <button class="stat-pill stat-pill--clickable"
-                (click)="openPermissionsModal(role)"
-                title="Ver permisos de este rol">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-          </svg>
-          <span><strong>{{ (role.permissions.length) || 0 }}</strong> permisos</span>
-        </button>
-        <button class="stat-pill stat-pill--clickable"
-                (click)="openRoleUsersModal(role)"
-                title="Ver usuarios con este rol">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          <span><strong>{{ role.userCount || 0 }}</strong> usuarios</span>
-        </button>
-        <span class="stat-pill stat-pill--categories" title="Categorias de permisos">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-          </svg>
-          <span><strong>{{ getRoleCategoryCount(role) }}</strong> cat.</span>
-        </span>
-      </div>
-
-      <!-- Indicador de rol propio -->
-      <div *ngIf="isOwnRole(role)" class="role-card__own-badge">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             style="width:14px;height:14px">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        Tu rol actual
-      </div>
-
-      <!-- Acciones -->
-      <div class="role-card__footer">
-        <!-- Botón editar permisos: visible si puede editar Y no es su propio rol -->
-        <button
-          *ngIf="canEditPermissions(role) && !isOwnRole(role)"
-          class="btn-action btn-action--primary"
-          (click)="openPermissionsModal(role)"
-          title="Configurar permisos">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-          </svg>
-          Permisos
-        </button>
-
-        <!-- Botón ver permisos (solo lectura): para inmutables, propio rol, o sin PERMISSION_ASSIGN -->
-        <button
-          *ngIf="!canEditPermissions(role) || isImmutableRole(role) || isOwnRole(role)"
-          class="btn-action btn-action--view"
-          (click)="openPermissionsModalReadOnly(role)"
-          title="Ver permisos (solo lectura)">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-          Ver Permisos
-        </button>
-
-        <!-- Botón eliminar: no puede eliminar su propio rol -->
-        <button
-          *ngIf="canDelete(role) && !isOwnRole(role)"
-          class="btn-action btn-action--danger"
-          (click)="deleteRole(role)"
-          title="Eliminar rol">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6"/><path d="M14 11v6"/>
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
-          Eliminar
-        </button>
-      </div>
-
-    </div><!-- /role-card -->
-
-    <!-- Sin resultados de busqueda -->
-    <div *ngIf="filteredRoles.length === 0 && roles.length > 0 && searchTerm" class="empty-state">
-      <div class="empty-state__icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          <line x1="8" y1="11" x2="14" y2="11"/>
-        </svg>
-      </div>
-      <h3>Sin resultados</h3>
-      <p>No se encontraron roles que coincidan con "<strong>{{ searchTerm }}</strong>".</p>
-      <button class="btn-create" (click)="searchTerm = ''">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-        Limpiar busqueda
-      </button>
-    </div>
-
-    <!-- Estado vacío -->
-    <div *ngIf="roles.length === 0 && !searchTerm" class="empty-state">
-      <div class="empty-state__icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>
-        </svg>
-      </div>
-      <h3>No hay roles configurados</h3>
-      <p>Crea el primer rol del sistema para comenzar a gestionar permisos.</p>
-      <button *ngIf="canCreateRole()" class="btn-create" (click)="openCreateRoleModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Crear primer rol
-      </button>
-    </div>
-
-  </div><!-- /roles-grid -->
-
-</div><!-- /roles-wrapper -->
-
-
-<!-- ================================================================
-     MODAL: CREAR ROL (incluye selector de permisos obligatorio)
-     ================================================================ -->
-<div *ngIf="showRoleModal" class="overlay" (click)="closeRoleModal()">
-  <div class="modal-box modal-box--lg" (click)="$event.stopPropagation()">
-
-    <div class="modal-box__header">
-      <div class="modal-box__header-info">
-        <div class="modal-box__header-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-          </svg>
-        </div>
-        <div>
-          <h2 class="modal-box__title">Crear Nuevo Rol</h2>
-          <p class="modal-box__subtitle">Completa los datos y asigna al menos un permiso</p>
-        </div>
-      </div>
-      <button class="modal-box__close" (click)="closeRoleModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="modal-box__body">
-
-      <div class="field-group">
-        <label class="field-label" for="roleName">
-          Nombre del Rol <span class="field-required">*</span>
-        </label>
-        <div class="field-prefix-wrap">
-          <span class="field-prefix">ROLE_</span>
-          <input type="text" id="roleName"
-                 class="field-input field-input--prefixed"
-                 [(ngModel)]="roleFormData.name"
-                 (input)="onRoleNameInput($event)"
-                 placeholder="NOMBRE_ROL"
-                 autocomplete="off">
-        </div>
-        <small class="field-hint">Solo letras mayusculas y guiones bajos. El prefijo ROLE_ se agrega automaticamente.</small>
-        <small *ngIf="isNameDuplicate()" class="field-error">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-               style="width:13px;height:13px;vertical-align:middle;margin-right:4px">
-            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-          </svg>
-          Ya existe un rol con este nombre.
-        </small>
-      </div>
-
-      <div class="field-group">
-        <label class="field-label" for="roleDesc">Descripción</label>
-        <textarea id="roleDesc" class="field-input field-textarea" rows="2"
-                  [(ngModel)]="roleFormData.description"
-                  placeholder="Describe brevemente las responsabilidades de este rol..."></textarea>
-      </div>
-
-      <div class="field-group">
-        <div class="perms-label-row">
-          <label class="field-label">
-            Permisos del Rol <span class="field-required">*</span>
-          </label>
-          <span class="perms-badge" [class.perms-badge--ok]="selectedPermissions.length > 0">
-            {{ selectedPermissions.length }} seleccionado(s)
-          </span>
-        </div>
-        <p class="field-hint" style="margin-bottom:.75rem">
-          Debes seleccionar al menos un permiso. Puedes modificarlos después.
-        </p>
-
-        <div class="create-perms-scroll">
-          <div *ngFor="let category of getCategories()" class="create-cat-block"
-               [class.create-cat-block--collapsed]="isCreateCategoryCollapsed(category)">
-            <div class="create-cat-header" (click)="toggleCreateCategoryCollapse(category)">
-              <label class="create-cat-toggle" (click)="$event.stopPropagation()">
-                <input type="checkbox" class="create-cat-check"
-                       [checked]="isCategoryFullySelected(category)"
-                       [indeterminate]="isCategoryPartiallySelected(category)"
-                       (change)="toggleCategory(category, $any($event.target).checked)">
-                <span class="create-cat-abbr">{{ getCategoryAbbr(category) }}</span>
-                <span class="create-cat-name">{{ translateCategory(category) }}</span>
-              </label>
-              <div class="create-cat-right">
-                <span class="cat-selection-badge"
-                      [class.cat-selection-badge--active]="categorySelectedCount(category) > 0">
-                  {{ categorySelectedCount(category) }}/{{ permissionsByCategory[category].length }}
-                </span>
-                <svg class="cat-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </div>
-            </div>
-            <div class="create-perms-list" *ngIf="!isCreateCategoryCollapsed(category)">
-              <div *ngFor="let perm of permissionsByCategory[category]"
-                   class="create-perm-item"
-                   [class.create-perm-item--on]="isPermissionSelected(perm.id)"
-                   (click)="togglePermission(perm.id)">
-                <input type="checkbox" class="create-perm-check"
-                       [checked]="isPermissionSelected(perm.id)"
-                       (click)="$event.stopPropagation()">
-                <div class="create-perm-info">
-                  <span class="create-perm-name">{{ translatePermission(perm.name) }}</span>
-                  <span class="create-perm-desc">{{ perm.description }}</span>
-                  <div class="create-perm-tags">
-                    <span *ngIf="perm.ownerOnly" class="tag-owner-only" title="Solo el Protected Owner puede asignar esto">Owner Only</span>
-                    <span *ngIf="perm.critical" class="tag-critical" title="Permiso de alto impacto">Crítico</span>
-                    <span class="tag-action" [ngClass]="getActionClass(perm.name)">{{ getPermissionAction(perm.name) }}</span>
-                    <span class="tag-technical">{{ perm.name }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div><!-- /body -->
-
-    <div class="modal-box__footer">
-      <button class="btn-modal-cancel" (click)="closeRoleModal()" [disabled]="savingRole">
-        Cancelar
-      </button>
-      <button class="btn-modal-confirm" (click)="saveRole()" [disabled]="savingRole || isNameDuplicate()">
-        <span *ngIf="savingRole" class="spinner-xs"></span>
-        <svg *ngIf="!savingRole" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-             stroke-linejoin="round" style="width:16px;height:16px">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        {{ savingRole ? "Creando..." : "Crear Rol" }}
-      </button>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ================================================================
-     MODAL: CONFIGURAR PERMISOS (para roles ya creados)
-     ================================================================ -->
-<div *ngIf="showPermissionsModal" class="overlay" (click)="closePermissionsModal()">
-  <div class="modal-box modal-box--xl" (click)="$event.stopPropagation()">
-
-    <div class="modal-box__header">
-      <div class="modal-box__header-info">
-        <div class="modal-box__header-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-          </svg>
-        </div>
-        <div>
-          <h2 class="modal-box__title">
-            {{ permissionsModalReadOnly ? 'Ver Permisos' : 'Configurar Permisos' }}
-          </h2>
-          <p class="modal-box__subtitle">
-            Rol: <strong>{{ selectedRole?.name }}</strong>
-            <span *ngIf="permissionsModalReadOnly" class="badge-readonly">Solo lectura</span>
-          </p>
-        </div>
-      </div>
-      <button class="modal-box__close" (click)="closePermissionsModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="modal-stats-bar">
-      <div class="modal-stat">
-        <span class="modal-stat__val modal-stat__val--wine">{{ selectedPermissions.length }}</span>
-        <span class="modal-stat__lbl">Seleccionados</span>
-      </div>
-      <div class="modal-stat">
-        <span class="modal-stat__val">{{ allPermissions.length }}</span>
-        <span class="modal-stat__lbl">Disponibles</span>
-      </div>
-      <div class="modal-stat">
-        <span class="modal-stat__val modal-stat__val--gold">{{ getCategories().length }}</span>
-        <span class="modal-stat__lbl">Categorías</span>
-      </div>
-    </div>
-
-    <div class="modal-box__body">
-      <div class="perms-scroll">
-        <div *ngFor="let category of getCategories()" class="cat-block"
-             [class.cat-block--collapsed]="isCategoryCollapsed(category)">
-
-          <!-- Cabecera de categoría (acordeón) -->
-          <div class="cat-block__header" (click)="toggleCategoryCollapse(category)">
-            <div class="cat-header-left">
-              <label class="cat-toggle" (click)="$event.stopPropagation()">
-                <input type="checkbox" class="cat-check"
-                       [checked]="isCategoryFullySelected(category)"
-                       [indeterminate]="isCategoryPartiallySelected(category)"
-                       [disabled]="permissionsModalReadOnly"
-                       (change)="toggleCategory(category, $any($event.target).checked)">
-              </label>
-              <span class="cat-abbr">{{ getCategoryAbbr(category) }}</span>
-              <span class="cat-name">{{ translateCategory(category) }}</span>
-            </div>
-            <div class="cat-header-right">
-              <span class="cat-selection-badge"
-                    [class.cat-selection-badge--active]="categorySelectedCount(category) > 0">
-                {{ categorySelectedCount(category) }}/{{ permissionsByCategory[category].length }}
-              </span>
-              <svg class="cat-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
+  @if (!loading) {
+    <div class="roles-grid">
+      @for (role of filteredRoles; track role) {
+        <div
+          class="role-card"
+          [class.role-card--system]="isImmutableRole(role)"
+          [class.role-card--custom]="!isImmutableRole(role)">
+          <!-- Cabecera de tarjeta -->
+          <div class="role-card__head">
+            <div class="role-card__avatar" [class.role-card__avatar--gold]="isImmutableRole(role)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
             </div>
+            @if (isImmutableRole(role)) {
+              <span class="chip-system">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Sistema
+              </span>
+            }
+            @if (!isImmutableRole(role)) {
+              <span class="chip-custom">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                Personalizado
+              </span>
+            }
           </div>
+          <!-- Nombre del rol -->
+          <div class="role-card__body">
+            <h3 class="role-card__name">{{ displayName(role.name) }}</h3>
+            <p class="role-card__full-name">{{ role.name }}</p>
+            <p class="role-card__desc">{{ role.description || "Sin descripción asignada." }}</p>
+          </div>
+          <!-- Estadísticas -->
+          <div class="role-card__stats">
+            <button class="stat-pill stat-pill--clickable"
+              (click)="openPermissionsModal(role)"
+              title="Ver permisos de este rol">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+              </svg>
+              <span><strong>{{ (role.permissions.length) || 0 }}</strong> permisos</span>
+            </button>
+            <button class="stat-pill stat-pill--clickable"
+              (click)="openRoleUsersModal(role)"
+              title="Ver usuarios con este rol">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span><strong>{{ role.userCount || 0 }}</strong> usuarios</span>
+            </button>
+            <span class="stat-pill stat-pill--categories" title="Categorias de permisos">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+              </svg>
+              <span><strong>{{ getRoleCategoryCount(role) }}</strong> cat.</span>
+            </span>
+          </div>
+          <!-- Indicador de rol propio -->
+          @if (isOwnRole(role)) {
+            <div class="role-card__own-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="width:14px;height:14px">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Tu rol actual
+            </div>
+          }
+          <!-- Acciones -->
+          <div class="role-card__footer">
+            <!-- Botón editar permisos: visible si puede editar Y no es su propio rol -->
+            @if (canEditPermissions(role) && !isOwnRole(role)) {
+              <button
+                class="btn-action btn-action--primary"
+                (click)="openPermissionsModal(role)"
+                title="Configurar permisos">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+                </svg>
+                Permisos
+              </button>
+            }
+            <!-- Botón ver permisos (solo lectura): para inmutables, propio rol, o sin PERMISSION_ASSIGN -->
+            @if (!canEditPermissions(role) || isImmutableRole(role) || isOwnRole(role)) {
+              <button
+                class="btn-action btn-action--view"
+                (click)="openPermissionsModalReadOnly(role)"
+                title="Ver permisos (solo lectura)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                Ver Permisos
+              </button>
+            }
+            <!-- Botón eliminar: no puede eliminar su propio rol -->
+            @if (canDelete(role) && !isOwnRole(role)) {
+              <button
+                class="btn-action btn-action--danger"
+                (click)="deleteRole(role)"
+                title="Eliminar rol">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6"/><path d="M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+                Eliminar
+              </button>
+            }
+          </div>
+        </div>
+        }<!-- /role-card -->
+        <!-- Sin resultados de busqueda -->
+        @if (filteredRoles.length === 0 && roles.length > 0 && searchTerm) {
+          <div class="empty-state">
+            <div class="empty-state__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </div>
+            <h3>Sin resultados</h3>
+            <p>No se encontraron roles que coincidan con "<strong>{{ searchTerm }}</strong>".</p>
+            <button class="btn-create" (click)="searchTerm = ''">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Limpiar busqueda
+            </button>
+          </div>
+        }
+        <!-- Estado vacío -->
+        @if (roles.length === 0 && !searchTerm) {
+          <div class="empty-state">
+            <div class="empty-state__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>
+              </svg>
+            </div>
+            <h3>No hay roles configurados</h3>
+            <p>Crea el primer rol del sistema para comenzar a gestionar permisos.</p>
+            @if (canCreateRole()) {
+              <button class="btn-create" (click)="openCreateRoleModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Crear primer rol
+              </button>
+            }
+          </div>
+        }
+      </div>
+      }<!-- /roles-grid -->
 
-          <!-- Permisos (colapsable) -->
-          <div class="cat-body" *ngIf="!isCategoryCollapsed(category)">
-            <div class="perms-grid">
-              <div *ngFor="let perm of permissionsByCategory[category]"
-                   class="perm-item"
-                   [class.perm-item--on]="isPermissionSelected(perm.id)"
-                   [class.perm-item--readonly]="permissionsModalReadOnly"
-                   (click)="togglePermission(perm.id)">
-                <input type="checkbox" class="perm-check"
-                       [checked]="isPermissionSelected(perm.id)"
-                       [disabled]="permissionsModalReadOnly"
-                       (click)="$event.stopPropagation()">
-                <div class="perm-info">
-                  <span class="perm-name">{{ translatePermission(perm.name) }}</span>
-                  <span class="perm-desc">{{ perm.description }}</span>
-                  <div class="perm-tags">
-                    <span *ngIf="perm.ownerOnly" class="tag-owner-only" title="Solo el Protected Owner puede asignar esto">Owner Only</span>
-                    <span *ngIf="perm.critical" class="tag-critical" title="Permiso de alto impacto">Crítico</span>
-                    <span class="tag-action" [ngClass]="getActionClass(perm.name)">{{ getPermissionAction(perm.name) }}</span>
-                    <span class="tag-technical">{{ perm.name }}</span>
-                  </div>
-                </div>
+    </div><!-- /roles-wrapper -->
+
+
+    <!-- ================================================================
+    MODAL: CREAR ROL (incluye selector de permisos obligatorio)
+    ================================================================ -->
+    @if (showRoleModal) {
+      <div class="overlay" (click)="closeRoleModal()">
+        <div class="modal-box modal-box--lg" (click)="$event.stopPropagation()">
+          <div class="modal-box__header">
+            <div class="modal-box__header-info">
+              <div class="modal-box__header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="modal-box__title">Crear Nuevo Rol</h2>
+                <p class="modal-box__subtitle">Completa los datos y asigna al menos un permiso</p>
               </div>
             </div>
+            <button class="modal-box__close" (click)="closeRoleModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
           </div>
-
+          <div class="modal-box__body">
+            <div class="field-group">
+              <label class="field-label" for="roleName">
+                Nombre del Rol <span class="field-required">*</span>
+              </label>
+              <div class="field-prefix-wrap">
+                <span class="field-prefix">ROLE_</span>
+                <input type="text" id="roleName"
+                  class="field-input field-input--prefixed"
+                  [(ngModel)]="roleFormData.name"
+                  (input)="onRoleNameInput($event)"
+                  placeholder="NOMBRE_ROL"
+                  autocomplete="off">
+              </div>
+              <small class="field-hint">Solo letras mayusculas y guiones bajos. El prefijo ROLE_ se agrega automaticamente.</small>
+              @if (isNameDuplicate()) {
+                <small class="field-error">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="width:13px;height:13px;vertical-align:middle;margin-right:4px">
+                    <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  Ya existe un rol con este nombre.
+                </small>
+              }
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="roleDesc">Descripción</label>
+              <textarea id="roleDesc" class="field-input field-textarea" rows="2"
+                [(ngModel)]="roleFormData.description"
+              placeholder="Describe brevemente las responsabilidades de este rol..."></textarea>
+            </div>
+            <div class="field-group">
+              <div class="perms-label-row">
+                <label class="field-label">
+                  Permisos del Rol <span class="field-required">*</span>
+                </label>
+                <span class="perms-badge" [class.perms-badge--ok]="selectedPermissions.length > 0">
+                  {{ selectedPermissions.length }} seleccionado(s)
+                </span>
+              </div>
+              <p class="field-hint" style="margin-bottom:.75rem">
+                Debes seleccionar al menos un permiso. Puedes modificarlos después.
+              </p>
+              <div class="create-perms-scroll">
+                @for (category of getCategories(); track category) {
+                  <div class="create-cat-block"
+                    [class.create-cat-block--collapsed]="isCreateCategoryCollapsed(category)">
+                    <div class="create-cat-header" (click)="toggleCreateCategoryCollapse(category)">
+                      <label class="create-cat-toggle" (click)="$event.stopPropagation()">
+                        <input type="checkbox" class="create-cat-check"
+                          [checked]="isCategoryFullySelected(category)"
+                          [indeterminate]="isCategoryPartiallySelected(category)"
+                          (change)="toggleCategory(category, $any($event.target).checked)">
+                        <span class="create-cat-abbr">{{ getCategoryAbbr(category) }}</span>
+                        <span class="create-cat-name">{{ translateCategory(category) }}</span>
+                      </label>
+                      <div class="create-cat-right">
+                        <span class="cat-selection-badge"
+                          [class.cat-selection-badge--active]="categorySelectedCount(category) > 0">
+                          {{ categorySelectedCount(category) }}/{{ permissionsByCategory[category].length }}
+                        </span>
+                        <svg class="cat-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </div>
+                    </div>
+                    @if (!isCreateCategoryCollapsed(category)) {
+                      <div class="create-perms-list">
+                        @for (perm of permissionsByCategory[category]; track perm) {
+                          <div
+                            class="create-perm-item"
+                            [class.create-perm-item--on]="isPermissionSelected(perm.id)"
+                            (click)="togglePermission(perm.id)">
+                            <input type="checkbox" class="create-perm-check"
+                              [checked]="isPermissionSelected(perm.id)"
+                              (click)="$event.stopPropagation()">
+                            <div class="create-perm-info">
+                              <span class="create-perm-name">{{ translatePermission(perm.name) }}</span>
+                              <span class="create-perm-desc">{{ perm.description }}</span>
+                              <div class="create-perm-tags">
+                                @if (perm.ownerOnly) {
+                                  <span class="tag-owner-only" title="Solo el Protected Owner puede asignar esto">Owner Only</span>
+                                }
+                                @if (perm.critical) {
+                                  <span class="tag-critical" title="Permiso de alto impacto">Crítico</span>
+                                }
+                                <span class="tag-action" [ngClass]="getActionClass(perm.name)">{{ getPermissionAction(perm.name) }}</span>
+                                <span class="tag-technical">{{ perm.name }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div><!-- /body -->
+          <div class="modal-box__footer">
+            <button class="btn-modal-cancel" (click)="closeRoleModal()" [disabled]="savingRole">
+              Cancelar
+            </button>
+            <button class="btn-modal-confirm" (click)="saveRole()" [disabled]="savingRole || isNameDuplicate()">
+              @if (savingRole) {
+                <span class="spinner-xs"></span>
+              }
+              @if (!savingRole) {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round" style="width:16px;height:16px">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              }
+              {{ savingRole ? "Creando..." : "Crear Rol" }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="modal-box__footer">
-      <button class="btn-modal-cancel" (click)="closePermissionsModal()" [disabled]="savingPermissions">
-        {{ permissionsModalReadOnly ? 'Cerrar' : 'Cancelar' }}
-      </button>
-      <button *ngIf="!permissionsModalReadOnly"
-              class="btn-modal-confirm" (click)="savePermissions()" [disabled]="savingPermissions">
-        <span *ngIf="savingPermissions" class="spinner-xs"></span>
-        <svg *ngIf="!savingPermissions" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-             stroke-linejoin="round" style="width:16px;height:16px">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        {{ savingPermissions ? "Guardando..." : "Guardar Permisos" }}
-      </button>
-    </div>
-
-  </div>
-</div>
+    }
 
 
-<!-- ================================================================
-     MODAL: USUARIOS POR ROL (auditoría — lista paginada)
-     ================================================================ -->
-<div *ngIf="showUsersModal" class="overlay" (click)="closeUsersModal()">
-  <div class="modal-box modal-box--lg" (click)="$event.stopPropagation()">
-
-    <div class="modal-box__header">
-      <div class="modal-box__header-info">
-        <div class="modal-box__header-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+    <!-- ================================================================
+    MODAL: CONFIGURAR PERMISOS (para roles ya creados)
+    ================================================================ -->
+    @if (showPermissionsModal) {
+      <div class="overlay" (click)="closePermissionsModal()">
+        <div class="modal-box modal-box--xl" (click)="$event.stopPropagation()">
+          <div class="modal-box__header">
+            <div class="modal-box__header-info">
+              <div class="modal-box__header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="modal-box__title">
+                  {{ permissionsModalReadOnly ? 'Ver Permisos' : 'Configurar Permisos' }}
+                </h2>
+                <p class="modal-box__subtitle">
+                  Rol: <strong>{{ selectedRole?.name }}</strong>
+                  @if (permissionsModalReadOnly) {
+                    <span class="badge-readonly">Solo lectura</span>
+                  }
+                </p>
+              </div>
+            </div>
+            <button class="modal-box__close" (click)="closePermissionsModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-stats-bar">
+            <div class="modal-stat">
+              <span class="modal-stat__val modal-stat__val--wine">{{ selectedPermissions.length }}</span>
+              <span class="modal-stat__lbl">Seleccionados</span>
+            </div>
+            <div class="modal-stat">
+              <span class="modal-stat__val">{{ allPermissions.length }}</span>
+              <span class="modal-stat__lbl">Disponibles</span>
+            </div>
+            <div class="modal-stat">
+              <span class="modal-stat__val modal-stat__val--gold">{{ getCategories().length }}</span>
+              <span class="modal-stat__lbl">Categorías</span>
+            </div>
+          </div>
+          <div class="modal-box__body">
+            <div class="perms-scroll">
+              @for (category of getCategories(); track category) {
+                <div class="cat-block"
+                  [class.cat-block--collapsed]="isCategoryCollapsed(category)">
+                  <!-- Cabecera de categoría (acordeón) -->
+                  <div class="cat-block__header" (click)="toggleCategoryCollapse(category)">
+                    <div class="cat-header-left">
+                      <label class="cat-toggle" (click)="$event.stopPropagation()">
+                        <input type="checkbox" class="cat-check"
+                          [checked]="isCategoryFullySelected(category)"
+                          [indeterminate]="isCategoryPartiallySelected(category)"
+                          [disabled]="permissionsModalReadOnly"
+                          (change)="toggleCategory(category, $any($event.target).checked)">
+                      </label>
+                      <span class="cat-abbr">{{ getCategoryAbbr(category) }}</span>
+                      <span class="cat-name">{{ translateCategory(category) }}</span>
+                    </div>
+                    <div class="cat-header-right">
+                      <span class="cat-selection-badge"
+                        [class.cat-selection-badge--active]="categorySelectedCount(category) > 0">
+                        {{ categorySelectedCount(category) }}/{{ permissionsByCategory[category].length }}
+                      </span>
+                      <svg class="cat-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <!-- Permisos (colapsable) -->
+                  @if (!isCategoryCollapsed(category)) {
+                    <div class="cat-body">
+                      <div class="perms-grid">
+                        @for (perm of permissionsByCategory[category]; track perm) {
+                          <div
+                            class="perm-item"
+                            [class.perm-item--on]="isPermissionSelected(perm.id)"
+                            [class.perm-item--readonly]="permissionsModalReadOnly"
+                            (click)="togglePermission(perm.id)">
+                            <input type="checkbox" class="perm-check"
+                              [checked]="isPermissionSelected(perm.id)"
+                              [disabled]="permissionsModalReadOnly"
+                              (click)="$event.stopPropagation()">
+                            <div class="perm-info">
+                              <span class="perm-name">{{ translatePermission(perm.name) }}</span>
+                              <span class="perm-desc">{{ perm.description }}</span>
+                              <div class="perm-tags">
+                                @if (perm.ownerOnly) {
+                                  <span class="tag-owner-only" title="Solo el Protected Owner puede asignar esto">Owner Only</span>
+                                }
+                                @if (perm.critical) {
+                                  <span class="tag-critical" title="Permiso de alto impacto">Crítico</span>
+                                }
+                                <span class="tag-action" [ngClass]="getActionClass(perm.name)">{{ getPermissionAction(perm.name) }}</span>
+                                <span class="tag-technical">{{ perm.name }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="modal-box__footer">
+            <button class="btn-modal-cancel" (click)="closePermissionsModal()" [disabled]="savingPermissions">
+              {{ permissionsModalReadOnly ? 'Cerrar' : 'Cancelar' }}
+            </button>
+            @if (!permissionsModalReadOnly) {
+              <button
+                class="btn-modal-confirm" (click)="savePermissions()" [disabled]="savingPermissions">
+                @if (savingPermissions) {
+                  <span class="spinner-xs"></span>
+                }
+                @if (!savingPermissions) {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round" style="width:16px;height:16px">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                }
+                {{ savingPermissions ? "Guardando..." : "Guardar Permisos" }}
+              </button>
+            }
+          </div>
         </div>
-        <div>
-          <h2 class="modal-box__title">Usuarios con este Rol</h2>
-          <p class="modal-box__subtitle">
-            Rol: <strong>{{ usersModalRole?.name }}</strong>
-            <span *ngIf="usersPage"> · {{ usersPage.totalElements }} usuario(s)</span>
-          </p>
+      </div>
+    }
+
+
+    <!-- ================================================================
+    MODAL: USUARIOS POR ROL (auditoría — lista paginada)
+    ================================================================ -->
+    @if (showUsersModal) {
+      <div class="overlay" (click)="closeUsersModal()">
+        <div class="modal-box modal-box--lg" (click)="$event.stopPropagation()">
+          <div class="modal-box__header">
+            <div class="modal-box__header-info">
+              <div class="modal-box__header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="modal-box__title">Usuarios con este Rol</h2>
+                <p class="modal-box__subtitle">
+                  Rol: <strong>{{ usersModalRole?.name }}</strong>
+                  @if (usersPage) {
+                    <span> · {{ usersPage.totalElements }} usuario(s)</span>
+                  }
+                </p>
+              </div>
+            </div>
+            <button class="modal-box__close" (click)="closeUsersModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-box__body">
+            <!-- Cargando -->
+            @if (usersModalLoading) {
+              <div class="loading-state">
+                <div class="spinner-ring"></div>
+                <p>Cargando usuarios...</p>
+              </div>
+            }
+            <!-- Sin usuarios -->
+            @if (!usersModalLoading && usersPage && usersPage.content.length === 0) {
+              <div
+                class="empty-state" style="padding:3rem 1rem">
+                <div class="empty-state__icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <line x1="17" y1="11" x2="23" y2="17"/><line x1="23" y1="11" x2="17" y2="17"/>
+                  </svg>
+                </div>
+                <h3>Sin usuarios asignados</h3>
+                <p>Ningún usuario tiene el rol <strong>{{ usersModalRole?.name }}</strong> actualmente.</p>
+              </div>
+            }
+            <!-- Tabla de usuarios -->
+            @if (!usersModalLoading && usersPage && usersPage.content.length > 0) {
+              <table
+                class="users-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Estado</th>
+                    <th>Registro</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (u of usersPage.content; track u) {
+                    <tr class="users-table__row">
+                      <td class="user-cell">
+                        <div class="user-avatar">{{ u.firstName.charAt(0) }}{{ u.lastName.charAt(0) }}</div>
+                        <span>{{ u.firstName }} {{ u.lastName }}</span>
+                      </td>
+                      <td class="user-email">{{ u.email }}</td>
+                      <td>
+                        <span class="status-dot"
+                          [class.status-dot--active]="u.enabled && u.accountNonLocked"
+                          [class.status-dot--disabled]="!u.enabled"
+                          [class.status-dot--locked]="u.enabled && !u.accountNonLocked">
+                          {{ u.enabled && u.accountNonLocked ? 'Activo' : (!u.enabled ? 'Desactivado' : 'Bloqueado') }}
+                        </span>
+                      </td>
+                      <td class="user-date">{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+            <!-- Paginación -->
+            @if (usersPage && usersPage.totalPages > 1) {
+              <div class="users-pagination">
+                <button class="pg-btn" (click)="goToUsersPage(usersCurrentPage - 1)"
+                  [disabled]="usersPage.first">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    width="16" height="16">
+                    <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+                </button>
+                @for (p of getUsersPageNumbers(); track p) {
+                  <button
+                    class="pg-btn" [class.pg-btn--active]="p === usersCurrentPage"
+                    (click)="goToUsersPage(p)">
+                    {{ p + 1 }}
+                  </button>
+                }
+                <button class="pg-btn" (click)="goToUsersPage(usersCurrentPage + 1)"
+                  [disabled]="usersPage.last">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    width="16" height="16">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div><!-- /body -->
+          <div class="modal-box__footer">
+            <button class="btn-modal-cancel" (click)="closeUsersModal()">Cerrar</button>
+          </div>
         </div>
       </div>
-      <button class="modal-box__close" (click)="closeUsersModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="modal-box__body">
-
-      <!-- Cargando -->
-      <div *ngIf="usersModalLoading" class="loading-state">
-        <div class="spinner-ring"></div>
-        <p>Cargando usuarios...</p>
-      </div>
-
-      <!-- Sin usuarios -->
-      <div *ngIf="!usersModalLoading && usersPage && usersPage.content.length === 0"
-           class="empty-state" style="padding:3rem 1rem">
-        <div class="empty-state__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <line x1="17" y1="11" x2="23" y2="17"/><line x1="23" y1="11" x2="17" y2="17"/>
-          </svg>
-        </div>
-        <h3>Sin usuarios asignados</h3>
-        <p>Ningún usuario tiene el rol <strong>{{ usersModalRole?.name }}</strong> actualmente.</p>
-      </div>
-
-      <!-- Tabla de usuarios -->
-      <table *ngIf="!usersModalLoading && usersPage && usersPage.content.length > 0"
-             class="users-table">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Email</th>
-            <th>Estado</th>
-            <th>Registro</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let u of usersPage.content" class="users-table__row">
-            <td class="user-cell">
-              <div class="user-avatar">{{ u.firstName.charAt(0) }}{{ u.lastName.charAt(0) }}</div>
-              <span>{{ u.firstName }} {{ u.lastName }}</span>
-            </td>
-            <td class="user-email">{{ u.email }}</td>
-            <td>
-              <span class="status-dot"
-                    [class.status-dot--active]="u.enabled && u.accountNonLocked"
-                    [class.status-dot--disabled]="!u.enabled"
-                    [class.status-dot--locked]="u.enabled && !u.accountNonLocked">
-                {{ u.enabled && u.accountNonLocked ? 'Activo' : (!u.enabled ? 'Desactivado' : 'Bloqueado') }}
-              </span>
-            </td>
-            <td class="user-date">{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Paginación -->
-      <div *ngIf="usersPage && usersPage.totalPages > 1" class="users-pagination">
-        <button class="pg-btn" (click)="goToUsersPage(usersCurrentPage - 1)"
-                [disabled]="usersPage.first">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-               width="16" height="16">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        <button *ngFor="let p of getUsersPageNumbers()"
-                class="pg-btn" [class.pg-btn--active]="p === usersCurrentPage"
-                (click)="goToUsersPage(p)">
-          {{ p + 1 }}
-        </button>
-        <button class="pg-btn" (click)="goToUsersPage(usersCurrentPage + 1)"
-                [disabled]="usersPage.last">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-               width="16" height="16">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
-
-    </div><!-- /body -->
-
-    <div class="modal-box__footer">
-      <button class="btn-modal-cancel" (click)="closeUsersModal()">Cerrar</button>
-    </div>
-
-  </div>
-</div>
+    }

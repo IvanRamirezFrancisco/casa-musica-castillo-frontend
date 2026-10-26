@@ -1,244 +1,250 @@
 ﻿<!-- ─────────────────────────────────────────────────────────────────────────
-     Gestión de Respaldos · Admin Panel
-     Acceso exclusivo: SUPER_ADMIN
-     ───────────────────────────────────────────────────────────────────────── -->
+Gestión de Respaldos · Admin Panel
+Acceso exclusivo: SUPER_ADMIN
+───────────────────────────────────────────────────────────────────────── -->
 <div class="min-h-screen bg-[#f5f0eb] p-6 font-body">
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       MODAL: PROGRESO EN VIVO
-       ══════════════════════════════════════════════════════════════════════ -->
-  <div *ngIf="isLiveModalOpen"
-    class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-md" role="dialog"
-    aria-modal="true" aria-label="Progreso del respaldo en vivo">
-    <div class="live-modal w-full max-w-2xl mx-4 rounded-2xl overflow-hidden shadow-2xl"
-      (click)="$event.stopPropagation()">
-
-      <!-- Barra superior estilo terminal -->
-      <div class="terminal-bar flex items-center gap-3 px-4 py-3">
-        <div class="flex items-center gap-1.5">
-          <span class="traffic-dot traffic-dot--red" title="Cerrar (disponible al finalizar)"></span>
-          <span class="traffic-dot traffic-dot--amber" title="Minimizar"></span>
-          <span class="traffic-dot traffic-dot--green" title="Maximizar"></span>
-        </div>
-        <div class="flex items-center gap-2 text-[#d4c5a0] text-sm font-medium mx-auto">
-          <span class="material-icons text-base text-[#a89060]">cloud_sync</span>
-          Respaldo de Base de Datos
-        </div>
-      </div>
-
-      <!-- Sección de progreso -->
-      <div class="live-progress-section px-6 pt-6 pb-5">
-        <div class="flex items-center gap-4 mb-5">
-          <!-- Icono de estado con color psicológico -->
-          <div class="live-status-icon flex-shrink-0" [class.live-status-icon--pending]="liveBackupStatus === 'PENDING'"
-            [class.live-status-icon--completed]="liveBackupStatus === 'COMPLETED'"
-            [class.live-status-icon--failed]="liveBackupStatus === 'FAILED'">
-            <span *ngIf="liveBackupStatus === 'PENDING'" class="material-icons live-spin">sync</span>
-            <span *ngIf="liveBackupStatus === 'COMPLETED'" class="material-icons">check_circle</span>
-            <span *ngIf="liveBackupStatus === 'FAILED'" class="material-icons">cancel</span>
+  MODAL: PROGRESO EN VIVO
+  ══════════════════════════════════════════════════════════════════════ -->
+  @if (isLiveModalOpen) {
+    <div
+      class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-md" role="dialog"
+      aria-modal="true" aria-label="Progreso del respaldo en vivo">
+      <div class="live-modal w-full max-w-2xl mx-4 rounded-2xl overflow-hidden shadow-2xl"
+        (click)="$event.stopPropagation()">
+        <!-- Barra superior estilo terminal -->
+        <div class="terminal-bar flex items-center gap-3 px-4 py-3">
+          <div class="flex items-center gap-1.5">
+            <span class="traffic-dot traffic-dot--red" title="Cerrar (disponible al finalizar)"></span>
+            <span class="traffic-dot traffic-dot--amber" title="Minimizar"></span>
+            <span class="traffic-dot traffic-dot--green" title="Maximizar"></span>
           </div>
-
-          <div class="flex-1 min-w-0">
-            <div class="text-sm font-semibold mb-1" [class.text-[#d4c5a0]]="liveBackupStatus === 'PENDING'"
+          <div class="flex items-center gap-2 text-[#d4c5a0] text-sm font-medium mx-auto">
+            <span class="material-icons text-base text-[#a89060]">cloud_sync</span>
+            Respaldo de Base de Datos
+          </div>
+        </div>
+        <!-- Sección de progreso -->
+        <div class="live-progress-section px-6 pt-6 pb-5">
+          <div class="flex items-center gap-4 mb-5">
+            <!-- Icono de estado con color psicológico -->
+            <div class="live-status-icon flex-shrink-0" [class.live-status-icon--pending]="liveBackupStatus === 'PENDING'"
+              [class.live-status-icon--completed]="liveBackupStatus === 'COMPLETED'"
+              [class.live-status-icon--failed]="liveBackupStatus === 'FAILED'">
+              @if (liveBackupStatus === 'PENDING') {
+                <span class="material-icons live-spin">sync</span>
+              }
+              @if (liveBackupStatus === 'COMPLETED') {
+                <span class="material-icons">check_circle</span>
+              }
+              @if (liveBackupStatus === 'FAILED') {
+                <span class="material-icons">cancel</span>
+              }
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold mb-1" [class.text-[#d4c5a0]]="liveBackupStatus === 'PENDING'"
+                [class.text-[#86efac]]="liveBackupStatus === 'COMPLETED'"
+                [class.text-red-400]="liveBackupStatus === 'FAILED'">
+                @if (liveBackupStatus === 'PENDING') {
+                  Generando respaldo<span class="live-ellipsis"></span>
+                }
+                @if (liveBackupStatus === 'COMPLETED') {
+                  Respaldo completado exitosamente
+                }
+                @if (liveBackupStatus === 'FAILED') {
+                  El respaldo finalizó con errores
+                }
+              </div>
+              <div class="flex items-center gap-3 text-xs text-slate-400">
+                @if (liveBackupStatus === 'PENDING') {
+                  <span class="flex items-center gap-1 text-[#C5A059]">
+                    <span class="material-icons text-xs">timer</span>{{ liveElapsedSec }}s transcurridos
+                  </span>
+                  <span class="text-slate-600">·</span>
+                  <span class="flex items-center gap-1 text-slate-400">
+                    <span class="material-icons text-xs">storage</span>pg_dump en ejecución
+                  </span>
+                }
+                @if (liveBackupStatus === 'COMPLETED') {
+                  <span class="flex items-center gap-1 text-[#86efac]">
+                    <span class="material-icons text-xs">cloud_done</span>Subido a Supabase Storage
+                  </span>
+                  <span class="text-slate-600">·</span>
+                  <span class="text-[#86efac]">{{ liveElapsedSec }}s totales</span>
+                }
+                @if (liveBackupStatus === 'FAILED') {
+                  <span class="flex items-center gap-1 text-red-400">
+                    <span class="material-icons text-xs">error_outline</span>Revisa la bitácora para más detalles
+                  </span>
+                }
+              </div>
+            </div>
+            <!-- Porcentaje con color psicológico -->
+            <div class="text-3xl font-bold tabular-nums" [class.text-[#C5A059]]="liveBackupStatus === 'PENDING'"
               [class.text-[#86efac]]="liveBackupStatus === 'COMPLETED'"
               [class.text-red-400]="liveBackupStatus === 'FAILED'">
-              <ng-container *ngIf="liveBackupStatus === 'PENDING'">
-                Generando respaldo<span class="live-ellipsis"></span>
-              </ng-container>
-              <ng-container *ngIf="liveBackupStatus === 'COMPLETED'">
-                Respaldo completado exitosamente
-              </ng-container>
-              <ng-container *ngIf="liveBackupStatus === 'FAILED'">
-                El respaldo finalizó con errores
-              </ng-container>
-            </div>
-            <div class="flex items-center gap-3 text-xs text-slate-400">
-              <ng-container *ngIf="liveBackupStatus === 'PENDING'">
-                <span class="flex items-center gap-1 text-[#C5A059]">
-                  <span class="material-icons text-xs">timer</span>{{ liveElapsedSec }}s transcurridos
-                </span>
-                <span class="text-slate-600">·</span>
-                <span class="flex items-center gap-1 text-slate-400">
-                  <span class="material-icons text-xs">storage</span>pg_dump en ejecución
-                </span>
-              </ng-container>
-              <ng-container *ngIf="liveBackupStatus === 'COMPLETED'">
-                <span class="flex items-center gap-1 text-[#86efac]">
-                  <span class="material-icons text-xs">cloud_done</span>Subido a Supabase Storage
-                </span>
-                <span class="text-slate-600">·</span>
-                <span class="text-[#86efac]">{{ liveElapsedSec }}s totales</span>
-              </ng-container>
-              <ng-container *ngIf="liveBackupStatus === 'FAILED'">
-                <span class="flex items-center gap-1 text-red-400">
-                  <span class="material-icons text-xs">error_outline</span>Revisa la bitácora para más detalles
-                </span>
-              </ng-container>
+              {{ liveProgress }}%
             </div>
           </div>
-
-          <!-- Porcentaje con color psicológico -->
-          <div class="text-3xl font-bold tabular-nums" [class.text-[#C5A059]]="liveBackupStatus === 'PENDING'"
-            [class.text-[#86efac]]="liveBackupStatus === 'COMPLETED'"
-            [class.text-red-400]="liveBackupStatus === 'FAILED'">
-            {{ liveProgress }}%
+          <!-- Barra de progreso -->
+          <div class="h-2.5 bg-[#2a2520] rounded-full overflow-hidden relative">
+            <div class="live-bar-fill h-full rounded-full transition-all duration-500"
+              [class.live-bar-fill--pending]="liveBackupStatus === 'PENDING'"
+              [class.live-bar-fill--completed]="liveBackupStatus === 'COMPLETED'"
+              [class.live-bar-fill--failed]="liveBackupStatus === 'FAILED'" [style.width.%]="liveProgress">
+            </div>
+            @if (liveBackupStatus === 'PENDING') {
+              <div class="live-bar-shine"></div>
+            }
+          </div>
+          <div class="flex justify-between mt-2 text-[11px]">
+            <span class="text-slate-600">0%</span>
+            @if (liveBackupStatus === 'PENDING') {
+              <span class="text-[#C5A059] flex items-center gap-1">
+                <span class="live-log-dot"></span>Procesando…
+              </span>
+            }
+            @if (liveBackupStatus !== 'PENDING') {
+              <span [class.text-[#86efac]]="liveBackupStatus === 'COMPLETED'"
+                [class.text-red-400]="liveBackupStatus === 'FAILED'">
+                {{ liveBackupStatus === 'COMPLETED' ? '✓ Finalizado' : '✗ Error' }}
+              </span>
+            }
+            <span class="text-slate-600">100%</span>
           </div>
         </div>
-
-        <!-- Barra de progreso -->
-        <div class="h-2.5 bg-[#2a2520] rounded-full overflow-hidden relative">
-          <div class="live-bar-fill h-full rounded-full transition-all duration-500"
-            [class.live-bar-fill--pending]="liveBackupStatus === 'PENDING'"
-            [class.live-bar-fill--completed]="liveBackupStatus === 'COMPLETED'"
-            [class.live-bar-fill--failed]="liveBackupStatus === 'FAILED'" [style.width.%]="liveProgress">
-          </div>
-          <div *ngIf="liveBackupStatus === 'PENDING'" class="live-bar-shine"></div>
+        <!-- Etiqueta de terminal -->
+        <div class="flex items-center gap-2 bg-[#110e0c] px-4 py-2 text-xs text-[#9a8060] border-t border-[#3a2e1e]/60">
+          <span class="material-icons text-sm text-[#a89060]">terminal</span>
+          <span>Bitácora en tiempo real</span>
+          @if (liveBackupStatus === 'PENDING') {
+            <span class="live-log-dot ml-1"></span>
+          }
         </div>
-
-        <div class="flex justify-between mt-2 text-[11px]">
-          <span class="text-slate-600">0%</span>
-          <span *ngIf="liveBackupStatus === 'PENDING'" class="text-[#C5A059] flex items-center gap-1">
-            <span class="live-log-dot"></span>Procesando…
-          </span>
-          <span *ngIf="liveBackupStatus !== 'PENDING'" [class.text-[#86efac]]="liveBackupStatus === 'COMPLETED'"
-            [class.text-red-400]="liveBackupStatus === 'FAILED'">
-            {{ liveBackupStatus === 'COMPLETED' ? '✓ Finalizado' : '✗ Error' }}
-          </span>
-          <span class="text-slate-600">100%</span>
+        <!-- Terminal log -->
+        <div class="log-terminal" role="log" aria-live="polite" aria-label="Salida en tiempo real">
+          <pre class="log-pre"><code>{{ liveLogText || 'Iniciando proceso de respaldo...' }}</code></pre>
         </div>
-      </div>
-
-      <!-- Etiqueta de terminal -->
-      <div class="flex items-center gap-2 bg-[#110e0c] px-4 py-2 text-xs text-[#9a8060] border-t border-[#3a2e1e]/60">
-        <span class="material-icons text-sm text-[#a89060]">terminal</span>
-        <span>Bitácora en tiempo real</span>
-        <span *ngIf="liveBackupStatus === 'PENDING'" class="live-log-dot ml-1"></span>
-      </div>
-
-      <!-- Terminal log -->
-      <div class="log-terminal" role="log" aria-live="polite" aria-label="Salida en tiempo real">
-        <pre class="log-pre"><code>{{ liveLogText || 'Iniciando proceso de respaldo...' }}</code></pre>
-      </div>
-
-      <!-- Footer -->
-      <div class="terminal-footer flex items-center justify-between px-4 py-3 border-t border-[#3a2e1e]/60">
-        <span class="flex items-center gap-1.5 text-xs text-[#9a8060]">
-          <span class="material-icons text-sm">info_outline</span>
-          {{ liveBackupStatus === 'PENDING'
-          ? 'El proceso está en ejecución · actualizando cada segundo…'
-          : 'Proceso finalizado · puedes cerrar esta ventana' }}
-        </span>
+        <!-- Footer -->
+        <div class="terminal-footer flex items-center justify-between px-4 py-3 border-t border-[#3a2e1e]/60">
+          <span class="flex items-center gap-1.5 text-xs text-[#9a8060]">
+            <span class="material-icons text-sm">info_outline</span>
+            {{ liveBackupStatus === 'PENDING'
+            ? 'El proceso está en ejecución · actualizando cada segundo…'
+            : 'Proceso finalizado · puedes cerrar esta ventana' }}
+          </span>
         <button class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium
                        transition-all duration-200
                        disabled:opacity-40 disabled:cursor-not-allowed"
-          [class.btn-close-pending]="liveBackupStatus === 'PENDING'"
-          [class.btn-close-done]="liveBackupStatus !== 'PENDING'" [disabled]="liveBackupStatus === 'PENDING'"
-          (click)="closeLiveModal()">
-          <span class="material-icons text-sm">
-            {{ liveBackupStatus === 'PENDING' ? 'hourglass_top' : 'close' }}
-          </span>
-          {{ liveBackupStatus === 'PENDING' ? 'Procesando…' : 'Cerrar' }}
-        </button>
+            [class.btn-close-pending]="liveBackupStatus === 'PENDING'"
+            [class.btn-close-done]="liveBackupStatus !== 'PENDING'" [disabled]="liveBackupStatus === 'PENDING'"
+            (click)="closeLiveModal()">
+            <span class="material-icons text-sm">
+              {{ liveBackupStatus === 'PENDING' ? 'hourglass_top' : 'close' }}
+            </span>
+            {{ liveBackupStatus === 'PENDING' ? 'Procesando…' : 'Cerrar' }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       MODAL: CONFIGURACIÓN DE RESPALDO
-       ══════════════════════════════════════════════════════════════════════ -->
-  <div *ngIf="showBackupConfigModal"
-       class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-       (click)="closeBackupConfigModal()">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl border border-stone-200 overflow-hidden max-h-[90vh] overflow-y-auto"
-         role="dialog" aria-modal="true" aria-label="Configurar respaldo"
-         (click)="$event.stopPropagation()">
-
-      <!-- Header -->
-      <div class="flex items-center gap-3 px-6 pt-5 pb-4 border-b border-stone-100 sticky top-0 bg-white z-10">
+  MODAL: CONFIGURACIÓN DE RESPALDO
+  ══════════════════════════════════════════════════════════════════════ -->
+  @if (showBackupConfigModal) {
+    <div
+      class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      (click)="closeBackupConfigModal()">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl border border-stone-200 overflow-hidden max-h-[90vh] overflow-y-auto"
+        role="dialog" aria-modal="true" aria-label="Configurar respaldo"
+        (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="flex items-center gap-3 px-6 pt-5 pb-4 border-b border-stone-100 sticky top-0 bg-white z-10">
         <div class="w-10 h-10 rounded-xl bg-red-900/10 border border-red-900/15
                     flex items-center justify-center text-red-900 flex-shrink-0">
-          <span class="material-icons text-xl">backup</span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <h3 class="text-base font-semibold text-stone-800 m-0">Configurar Respaldo</h3>
-          <p class="text-xs text-stone-400 m-0">Selecciona el tipo y las opciones del respaldo.</p>
-        </div>
-        <button class="text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg p-1.5 transition-colors"
-                (click)="closeBackupConfigModal()" aria-label="Cerrar">
-          <span class="material-icons text-lg">close</span>
-        </button>
-      </div>
-
-      <!-- Body -->
-      <div class="px-6 py-5 space-y-5">
-
-        <!-- Tipo de Respaldo -->
-        <div>
-          <label class="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-2.5">
-            Tipo de Respaldo
-          </label>
-          <div class="grid grid-cols-2 gap-3">
-            <button type="button"
-                    class="flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-all duration-200 hover:border-stone-300"
-                    [class.border-red-900]="backupType === 'FULL'"
-                    [class.bg-red-50]="backupType === 'FULL'"
-                    [class.shadow-sm]="backupType === 'FULL'"
-                    [class.border-stone-200]="backupType !== 'FULL'"
-                    (click)="onBackupTypeChange('FULL')">
-              <span class="material-icons text-xl" [class.text-red-900]="backupType === 'FULL'"
-                    [class.text-stone-400]="backupType !== 'FULL'">cloud_done</span>
-              <div>
-                <strong class="block text-sm text-stone-800">Completo</strong>
-                <span class="text-[11px] text-stone-400">Todas las tablas</span>
-              </div>
-            </button>
-            <button type="button"
-                    class="flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-all duration-200 hover:border-stone-300"
-                    [class.border-red-900]="backupType === 'PARTIAL'"
-                    [class.bg-red-50]="backupType === 'PARTIAL'"
-                    [class.shadow-sm]="backupType === 'PARTIAL'"
-                    [class.border-stone-200]="backupType !== 'PARTIAL'"
-                    (click)="onBackupTypeChange('PARTIAL')">
-              <span class="material-icons text-xl" [class.text-red-900]="backupType === 'PARTIAL'"
-                    [class.text-stone-400]="backupType !== 'PARTIAL'">table_chart</span>
-              <div>
-                <strong class="block text-sm text-stone-800">Tablas Específicas</strong>
-                <span class="text-[11px] text-stone-400">Selecciona cuáles</span>
-              </div>
-            </button>
+            <span class="material-icons text-xl">backup</span>
           </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-base font-semibold text-stone-800 m-0">Configurar Respaldo</h3>
+            <p class="text-xs text-stone-400 m-0">Selecciona el tipo y las opciones del respaldo.</p>
+          </div>
+          <button class="text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg p-1.5 transition-colors"
+            (click)="closeBackupConfigModal()" aria-label="Cerrar">
+            <span class="material-icons text-lg">close</span>
+          </button>
         </div>
-
-        <!-- Selector de Tablas (solo PARTIAL) -->
-        <div *ngIf="backupType === 'PARTIAL'" class="space-y-3">
-
-          <!-- Tags de tablas seleccionadas -->
+        <!-- Body -->
+        <div class="px-6 py-5 space-y-5">
+          <!-- Tipo de Respaldo -->
           <div>
-            <label class="flex items-center gap-1.5 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-2">
-              Tablas seleccionadas
-              <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px]
-                           font-bold bg-red-900 text-white">{{ selectedTables.length }}</span>
+            <label class="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-2.5">
+              Tipo de Respaldo
             </label>
-            <div class="flex flex-wrap gap-1.5">
-              <span *ngFor="let table of selectedTables"
-                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold
-                           bg-red-50 text-red-900 border border-red-200">
-                <span class="material-icons text-xs">table_rows</span>
-                {{ table }}
-                <button type="button" class="ml-0.5 hover:bg-red-200/60 rounded-full p-0.5 transition-colors"
-                        (click)="removeTable(table)" [disabled]="selectedTables.length <= 1">
-                  <span class="material-icons text-xs">close</span>
-                </button>
-              </span>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button"
+                class="flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-all duration-200 hover:border-stone-300"
+                [class.border-red-900]="backupType === 'FULL'"
+                [class.bg-red-50]="backupType === 'FULL'"
+                [class.shadow-sm]="backupType === 'FULL'"
+                [class.border-stone-200]="backupType !== 'FULL'"
+                (click)="onBackupTypeChange('FULL')">
+                <span class="material-icons text-xl" [class.text-red-900]="backupType === 'FULL'"
+                [class.text-stone-400]="backupType !== 'FULL'">cloud_done</span>
+                <div>
+                  <strong class="block text-sm text-stone-800">Completo</strong>
+                  <span class="text-[11px] text-stone-400">Todas las tablas</span>
+                </div>
+              </button>
+              <button type="button"
+                class="flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-all duration-200 hover:border-stone-300"
+                [class.border-red-900]="backupType === 'PARTIAL'"
+                [class.bg-red-50]="backupType === 'PARTIAL'"
+                [class.shadow-sm]="backupType === 'PARTIAL'"
+                [class.border-stone-200]="backupType !== 'PARTIAL'"
+                (click)="onBackupTypeChange('PARTIAL')">
+                <span class="material-icons text-xl" [class.text-red-900]="backupType === 'PARTIAL'"
+                [class.text-stone-400]="backupType !== 'PARTIAL'">table_chart</span>
+                <div>
+                  <strong class="block text-sm text-stone-800">Tablas Específicas</strong>
+                  <span class="text-[11px] text-stone-400">Selecciona cuáles</span>
+                </div>
+              </button>
             </div>
           </div>
-
-          <!-- Grid de tablas principales -->
-          <div>
-            <p class="text-[11px] text-stone-400 mb-2 m-0">Tablas principales (alto volumen):</p>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-              <button *ngFor="let table of PRIMARY_TABLES" type="button"
+          <!-- Selector de Tablas (solo PARTIAL) -->
+          @if (backupType === 'PARTIAL') {
+            <div class="space-y-3">
+              <!-- Tags de tablas seleccionadas -->
+              <div>
+                <label class="flex items-center gap-1.5 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-2">
+                  Tablas seleccionadas
+              <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px]
+                           font-bold bg-red-900 text-white">{{ selectedTables.length }}</span>
+                </label>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (table of selectedTables; track table) {
+                    <span
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold
+                           bg-red-50 text-red-900 border border-red-200">
+                      <span class="material-icons text-xs">table_rows</span>
+                      {{ table }}
+                      <button type="button" class="ml-0.5 hover:bg-red-200/60 rounded-full p-0.5 transition-colors"
+                        (click)="removeTable(table)" [disabled]="selectedTables.length <= 1">
+                        <span class="material-icons text-xs">close</span>
+                      </button>
+                    </span>
+                  }
+                </div>
+              </div>
+              <!-- Grid de tablas principales -->
+              <div>
+                <p class="text-[11px] text-stone-400 mb-2 m-0">Tablas principales (alto volumen):</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  @for (table of PRIMARY_TABLES; track table) {
+                    <button type="button"
                       class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-mono
                              border transition-all duration-150 hover:border-stone-300"
                       [class.border-red-900]="isTableSelected(table)"
@@ -247,266 +253,277 @@
                       [class.border-stone-200]="!isTableSelected(table)"
                       [class.text-stone-600]="!isTableSelected(table)"
                       (click)="toggleTable(table)">
-                <span class="material-icons text-sm"
-                      [class.text-red-900]="isTableSelected(table)"
-                      [class.text-stone-300]="!isTableSelected(table)">
-                  {{ isTableSelected(table) ? 'check_box' : 'check_box_outline_blank' }}
-                </span>
-                {{ table }}
-              </button>
-            </div>
-          </div>
-
-          <div *ngIf="selectedTables.length === 0" class="text-xs text-red-500 font-medium flex items-center gap-1">
-            <span class="material-icons text-sm">error</span>
-            Debes seleccionar al menos una tabla.
-          </div>
-
-          <!-- Botón ver todas las tablas -->
-          <button *ngIf="!showAllTables" type="button"
+                      <span class="material-icons text-sm"
+                        [class.text-red-900]="isTableSelected(table)"
+                        [class.text-stone-300]="!isTableSelected(table)">
+                        {{ isTableSelected(table) ? 'check_box' : 'check_box_outline_blank' }}
+                      </span>
+                      {{ table }}
+                    </button>
+                  }
+                </div>
+              </div>
+              @if (selectedTables.length === 0) {
+                <div class="text-xs text-red-500 font-medium flex items-center gap-1">
+                  <span class="material-icons text-sm">error</span>
+                  Debes seleccionar al menos una tabla.
+                </div>
+              }
+              <!-- Botón ver todas las tablas -->
+              @if (!showAllTables) {
+                <button type="button"
                   class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
                          border border-dashed border-stone-300 text-xs font-medium text-stone-500
                          hover:border-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors
                          disabled:opacity-50"
                   (click)="loadAllTables()" [disabled]="loadingTables">
-            <ng-container *ngIf="!loadingTables">
-              <span class="material-icons text-sm">storage</span>
-              Ver todas las tablas de la base de datos
-            </ng-container>
-            <ng-container *ngIf="loadingTables">
-              <span class="spinner-xs"></span> Cargando tablas...
-            </ng-container>
-          </button>
-
-          <!-- Lista expandida de todas las tablas -->
-          <div *ngIf="showAllTables && allDbTables.length > 0"
-               class="border border-stone-200 rounded-xl overflow-hidden">
-            <div class="flex items-center justify-between px-3.5 py-2.5 bg-stone-50 border-b border-stone-200">
-              <span class="flex items-center gap-1.5 text-xs font-semibold text-stone-600">
-                <span class="material-icons text-sm text-stone-400">storage</span>
-                Todas las tablas ({{ allDbTables.length }})
-              </span>
-              <button type="button" class="text-xs text-stone-400 hover:text-stone-600 transition-colors flex items-center gap-1"
+                  @if (!loadingTables) {
+                    <span class="material-icons text-sm">storage</span>
+                    Ver todas las tablas de la base de datos
+                  }
+                  @if (loadingTables) {
+                    <span class="spinner-xs"></span> Cargando tablas...
+                  }
+                </button>
+              }
+              <!-- Lista expandida de todas las tablas -->
+              @if (showAllTables && allDbTables.length > 0) {
+                <div
+                  class="border border-stone-200 rounded-xl overflow-hidden">
+                  <div class="flex items-center justify-between px-3.5 py-2.5 bg-stone-50 border-b border-stone-200">
+                    <span class="flex items-center gap-1.5 text-xs font-semibold text-stone-600">
+                      <span class="material-icons text-sm text-stone-400">storage</span>
+                      Todas las tablas ({{ allDbTables.length }})
+                    </span>
+                    <button type="button" class="text-xs text-stone-400 hover:text-stone-600 transition-colors flex items-center gap-1"
                       (click)="hideAllTables()">
-                <span class="material-icons text-sm">expand_less</span> Ocultar
-              </button>
-            </div>
-            <div class="max-h-52 overflow-y-auto divide-y divide-stone-100">
-              <button *ngFor="let tbl of allDbTables" type="button"
+                      <span class="material-icons text-sm">expand_less</span> Ocultar
+                    </button>
+                  </div>
+                  <div class="max-h-52 overflow-y-auto divide-y divide-stone-100">
+                    @for (tbl of allDbTables; track tbl) {
+                      <button type="button"
                       class="flex items-center gap-2.5 w-full px-3.5 py-2 text-left text-xs
                              hover:bg-stone-50 transition-colors"
-                      [class.bg-red-50]="isTableSelected(tbl.name)"
-                      (click)="toggleTable(tbl.name)">
-                <span class="material-icons text-sm"
-                      [class.text-red-900]="isTableSelected(tbl.name)"
-                      [class.text-stone-300]="!isTableSelected(tbl.name)">
-                  {{ isTableSelected(tbl.name) ? 'check_box' : 'check_box_outline_blank' }}
-                </span>
-                <span class="font-mono text-stone-700 flex-1">{{ tbl.name }}</span>
-                <span class="text-stone-400 tabular-nums">{{ formatRowCount(tbl.rowEstimate) }} filas</span>
-              </button>
+                        [class.bg-red-50]="isTableSelected(tbl.name)"
+                        (click)="toggleTable(tbl.name)">
+                        <span class="material-icons text-sm"
+                          [class.text-red-900]="isTableSelected(tbl.name)"
+                          [class.text-stone-300]="!isTableSelected(tbl.name)">
+                          {{ isTableSelected(tbl.name) ? 'check_box' : 'check_box_outline_blank' }}
+                        </span>
+                        <span class="font-mono text-stone-700 flex-1">{{ tbl.name }}</span>
+                        <span class="text-stone-400 tabular-nums">{{ formatRowCount(tbl.rowEstimate) }} filas</span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
             </div>
-          </div>
-
-        </div>
-
-        <!-- Opciones avanzadas -->
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="flex items-center gap-1 text-xs font-semibold text-stone-600 mb-1.5">
-              <span class="material-icons text-xs text-stone-400">date_range</span>
-              Días de Retención
-              <span style="position:relative;display:inline-flex;align-items:center;">
-                <span class="material-icons" style="font-size:13px;color:#a8a29e;cursor:help;line-height:1;">help_outline</span>
+          }
+          <!-- Opciones avanzadas -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="flex items-center gap-1 text-xs font-semibold text-stone-600 mb-1.5">
+                <span class="material-icons text-xs text-stone-400">date_range</span>
+                Días de Retención
+                <span style="position:relative;display:inline-flex;align-items:center;">
+                  <span class="material-icons" style="font-size:13px;color:#a8a29e;cursor:help;line-height:1;">help_outline</span>
                 <span style="position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
                              width:210px;padding:8px 10px;background:#292524;color:#fff;font-size:11px;
                              line-height:1.55;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.25);
                              opacity:0;visibility:hidden;transition:opacity .18s,visibility .18s;
                              pointer-events:none;z-index:9999;text-align:center;font-weight:400;white-space:normal;"
-                      class="bk-tooltip">
-                  Número de días que el respaldo se conservará disponible antes de ser eliminado automáticamente. Recomendado: 30 días en producción.
+                    class="bk-tooltip">
+                    Número de días que el respaldo se conservará disponible antes de ser eliminado automáticamente. Recomendado: 30 días en producción.
                   <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);
                                width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
                                border-top:5px solid #292524;"></span>
+                  </span>
                 </span>
-              </span>
-            </label>
+              </label>
             <input type="number" class="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm
                                         font-mono focus:border-red-900 focus:ring-2 focus:ring-red-900/10
                                         outline-none transition-all"
-                   [(ngModel)]="retentionDays" min="1" max="365" />
-            <span *ngIf="retentionDays < 1" class="text-[11px] text-red-500 mt-0.5">Mínimo 1 día</span>
-          </div>
-          <div>
-            <label class="flex items-center gap-1 text-xs font-semibold text-stone-600 mb-1.5">
-              <span class="material-icons text-xs text-stone-400">compress</span>
-              Nivel de Compresión
-              <span style="position:relative;display:inline-flex;align-items:center;">
-                <span class="material-icons" style="font-size:13px;color:#a8a29e;cursor:help;line-height:1;">help_outline</span>
+                [(ngModel)]="retentionDays" min="1" max="365" />
+              @if (retentionDays < 1) {
+                <span class="text-[11px] text-red-500 mt-0.5">Mínimo 1 día</span>
+              }
+            </div>
+            <div>
+              <label class="flex items-center gap-1 text-xs font-semibold text-stone-600 mb-1.5">
+                <span class="material-icons text-xs text-stone-400">compress</span>
+                Nivel de Compresión
+                <span style="position:relative;display:inline-flex;align-items:center;">
+                  <span class="material-icons" style="font-size:13px;color:#a8a29e;cursor:help;line-height:1;">help_outline</span>
                 <span style="position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
                              width:220px;padding:8px 10px;background:#292524;color:#fff;font-size:11px;
                              line-height:1.55;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.25);
                              opacity:0;visibility:hidden;transition:opacity .18s,visibility .18s;
                              pointer-events:none;z-index:9999;text-align:center;font-weight:400;white-space:normal;"
-                      class="bk-tooltip">
-                  Nivel de compresión gzip (0–9). 0 = sin compresión (más rápido). 6 = balance óptimo (recomendado). 9 = máxima compresión (más lento).
+                    class="bk-tooltip">
+                    Nivel de compresión gzip (0–9). 0 = sin compresión (más rápido). 6 = balance óptimo (recomendado). 9 = máxima compresión (más lento).
                   <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);
                                width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
                                border-top:5px solid #292524;"></span>
+                  </span>
                 </span>
-              </span>
-            </label>
+              </label>
             <input type="number" class="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm
                                         font-mono focus:border-red-900 focus:ring-2 focus:ring-red-900/10
                                         outline-none transition-all"
-                   [(ngModel)]="compressionLevel" min="0" max="9" />
-            <span class="text-[11px] text-stone-400">0 = ninguna, 9 = máxima</span>
+                [(ngModel)]="compressionLevel" min="0" max="9" />
+              <span class="text-[11px] text-stone-400">0 = ninguna, 9 = máxima</span>
+            </div>
           </div>
         </div>
-
-      </div>
-
-      <!-- Footer -->
-      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-stone-100 sticky bottom-0 bg-white">
-        <button type="button"
+        <!-- Footer -->
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-stone-100 sticky bottom-0 bg-white">
+          <button type="button"
                 class="px-4 py-2 rounded-lg text-sm font-medium border border-stone-200 text-stone-600
                        hover:bg-stone-50 transition-colors"
-                (click)="closeBackupConfigModal()">
-          Cancelar
-        </button>
-        <button type="button"
+            (click)="closeBackupConfigModal()">
+            Cancelar
+          </button>
+          <button type="button"
                 class="px-5 py-2 rounded-lg text-sm font-semibold bg-red-900 text-white
                        hover:bg-red-800 shadow-sm hover:shadow-md transition-all duration-200
                        disabled:opacity-50 disabled:cursor-not-allowed
                        flex items-center gap-2"
-                [disabled]="!isBackupConfigValid()"
-                (click)="confirmBackup()">
-          <span class="material-icons text-base">cloud_upload</span>
-          {{ backupType === 'PARTIAL' ? 'Respaldar ' + selectedTables.length + ' tabla' + (selectedTables.length > 1 ? 's' : '') : 'Respaldar Todo' }}
-        </button>
+            [disabled]="!isBackupConfigValid()"
+            (click)="confirmBackup()">
+            <span class="material-icons text-base">cloud_upload</span>
+            {{ backupType === 'PARTIAL' ? 'Respaldar ' + selectedTables.length + ' tabla' + (selectedTables.length > 1 ? 's' : '') : 'Respaldar Todo' }}
+          </button>
+        </div>
       </div>
-
     </div>
-  </div>
+  }
 
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       MODAL: ERROR
-       ══════════════════════════════════════════════════════════════════════ -->
-  <div *ngIf="errorModal"
-    class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
-    (click)="closeErrorModal()">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg border border-slate-200 overflow-hidden" role="dialog"
-      aria-modal="true" (click)="$event.stopPropagation()">
-      <div class="flex items-start gap-4 px-6 pt-6 pb-4">
-        <div
-          class="flex-shrink-0 w-10 h-10 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center text-red-600">
-          <span class="material-icons text-xl">error_outline</span>
+  MODAL: ERROR
+  ══════════════════════════════════════════════════════════════════════ -->
+  @if (errorModal) {
+    <div
+      class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+      (click)="closeErrorModal()">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg border border-slate-200 overflow-hidden" role="dialog"
+        aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="flex items-start gap-4 px-6 pt-6 pb-4">
+          <div
+            class="flex-shrink-0 w-10 h-10 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center text-red-600">
+            <span class="material-icons text-xl">error_outline</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-base font-semibold text-slate-900 font-title m-0">Detalle del Error</h3>
+            <p class="text-xs text-slate-500 truncate mt-0.5 m-0" title="{{ errorModal.filename }}">
+              {{ errorModal.filename }}
+            </p>
+          </div>
+          <button class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg p-1 transition-colors"
+            (click)="closeErrorModal()" aria-label="Cerrar">
+            <span class="material-icons text-xl">close</span>
+          </button>
         </div>
-        <div class="flex-1 min-w-0">
-          <h3 class="text-base font-semibold text-slate-900 font-title m-0">Detalle del Error</h3>
-          <p class="text-xs text-slate-500 truncate mt-0.5 m-0" title="{{ errorModal.filename }}">
-            {{ errorModal.filename }}
-          </p>
-        </div>
-        <button class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg p-1 transition-colors"
-          (click)="closeErrorModal()" aria-label="Cerrar">
-          <span class="material-icons text-xl">close</span>
-        </button>
-      </div>
-      <div class="px-6 pb-2">
-        <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
-          <span class="material-icons text-sm text-red-400">bug_report</span>
-          Mensaje de error registrado
-        </div>
-        <pre
+        <div class="px-6 pb-2">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+            <span class="material-icons text-sm text-red-400">bug_report</span>
+            Mensaje de error registrado
+          </div>
+          <pre
           class="bg-slate-900 text-red-300 text-xs rounded-lg p-4 overflow-auto max-h-48 font-mono leading-relaxed">{{ errorModal.message }}</pre>
-      </div>
-      <div class="flex justify-end px-6 py-4 border-t border-slate-100">
+        </div>
+        <div class="flex justify-end px-6 py-4 border-t border-slate-100">
         <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
                        border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-          (click)="closeErrorModal()">
-          <span class="material-icons text-base">close</span> Cerrar
-        </button>
+            (click)="closeErrorModal()">
+            <span class="material-icons text-base">close</span> Cerrar
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       MODAL: BITÁCORA — VISOR TERMINAL
-       ══════════════════════════════════════════════════════════════════════ -->
-  <div *ngIf="logModal" class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
-    (click)="closeLogModal()" role="dialog" aria-modal="true" aria-label="Bitácora del respaldo">
-    <div class="live-modal w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl" (click)="$event.stopPropagation()">
-      <div class="terminal-bar flex items-center gap-3 px-4 py-3">
-        <div class="flex items-center gap-1.5">
-          <span class="traffic-dot traffic-dot--red" (click)="closeLogModal()" title="Cerrar"></span>
-          <span class="traffic-dot traffic-dot--amber" title="Minimizar"></span>
-          <span class="traffic-dot traffic-dot--green" title="Maximizar"></span>
+  MODAL: BITÁCORA — VISOR TERMINAL
+  ══════════════════════════════════════════════════════════════════════ -->
+  @if (logModal) {
+    <div class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+      (click)="closeLogModal()" role="dialog" aria-modal="true" aria-label="Bitácora del respaldo">
+      <div class="live-modal w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl" (click)="$event.stopPropagation()">
+        <div class="terminal-bar flex items-center gap-3 px-4 py-3">
+          <div class="flex items-center gap-1.5">
+            <span class="traffic-dot traffic-dot--red" (click)="closeLogModal()" title="Cerrar"></span>
+            <span class="traffic-dot traffic-dot--amber" title="Minimizar"></span>
+            <span class="traffic-dot traffic-dot--green" title="Maximizar"></span>
+          </div>
+          <div class="flex items-center gap-2 text-[#d4c5a0] text-sm font-medium mx-auto overflow-hidden">
+            <span class="material-icons text-base text-[#a89060]">terminal</span>
+            <span class="truncate max-w-xs" title="{{ logModal.filename }}">{{ logModal.filename }}</span>
+            <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold"
+              [class.log-badge--completed]="logModal.status === 'COMPLETED'"
+              [class.log-badge--failed]="logModal.status === 'FAILED'"
+              [class.log-badge--pending]="logModal.status === 'PENDING'">
+              {{ logModal.status === 'COMPLETED' ? 'COMPLETADO' :
+              logModal.status === 'FAILED' ? 'FALLIDO' : 'EN PROCESO' }}
+            </span>
+          </div>
+          <button class="text-[#9a8060] hover:text-[#d4c5a0] transition-colors ml-auto flex-shrink-0"
+            (click)="closeLogModal()" aria-label="Cerrar bitácora">
+            <span class="material-icons text-lg">close</span>
+          </button>
         </div>
-        <div class="flex items-center gap-2 text-[#d4c5a0] text-sm font-medium mx-auto overflow-hidden">
-          <span class="material-icons text-base text-[#a89060]">terminal</span>
-          <span class="truncate max-w-xs" title="{{ logModal.filename }}">{{ logModal.filename }}</span>
-          <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold"
-            [class.log-badge--completed]="logModal.status === 'COMPLETED'"
-            [class.log-badge--failed]="logModal.status === 'FAILED'"
-            [class.log-badge--pending]="logModal.status === 'PENDING'">
-            {{ logModal.status === 'COMPLETED' ? 'COMPLETADO' :
-            logModal.status === 'FAILED' ? 'FALLIDO' : 'EN PROCESO' }}
+        <div class="log-terminal" role="log" aria-live="off" aria-label="Salida de la bitácora">
+          <pre class="log-pre"><code>{{ logModal.log }}</code></pre>
+        </div>
+        <div class="terminal-footer flex items-center justify-between px-4 py-3 border-t border-[#3a2e1e]/60">
+          <span class="flex items-center gap-1.5 text-xs text-[#9a8060]">
+            <span class="material-icons text-sm">info_outline</span>
+            Solo lectura · Datos capturados durante la ejecución del proceso
           </span>
+          <button
+            class="btn-close-done inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+            (click)="closeLogModal()">
+            <span class="material-icons text-sm">close</span> Cerrar
+          </button>
         </div>
-        <button class="text-[#9a8060] hover:text-[#d4c5a0] transition-colors ml-auto flex-shrink-0"
-          (click)="closeLogModal()" aria-label="Cerrar bitácora">
-          <span class="material-icons text-lg">close</span>
-        </button>
-      </div>
-      <div class="log-terminal" role="log" aria-live="off" aria-label="Salida de la bitácora">
-        <pre class="log-pre"><code>{{ logModal.log }}</code></pre>
-      </div>
-      <div class="terminal-footer flex items-center justify-between px-4 py-3 border-t border-[#3a2e1e]/60">
-        <span class="flex items-center gap-1.5 text-xs text-[#9a8060]">
-          <span class="material-icons text-sm">info_outline</span>
-          Solo lectura · Datos capturados durante la ejecución del proceso
-        </span>
-        <button
-          class="btn-close-done inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
-          (click)="closeLogModal()">
-          <span class="material-icons text-sm">close</span> Cerrar
-        </button>
       </div>
     </div>
-  </div>
+  }
 
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       TOAST DE NOTIFICACIÓN
-       ══════════════════════════════════════════════════════════════════════ -->
-  <div *ngIf="notification" class="toast fixed bottom-6 right-6 z-50 flex items-start gap-3 max-w-sm w-full
+  TOAST DE NOTIFICACIÓN
+  ══════════════════════════════════════════════════════════════════════ -->
+  @if (notification) {
+<div class="toast fixed bottom-6 right-6 z-50 flex items-start gap-3 max-w-sm w-full
               bg-white border shadow-xl rounded-xl p-4" [class.border-emerald-200]="notification.type === 'success'"
-    [class.border-red-200]="notification.type === 'error'" [class.border-amber-200]="notification.type === 'warning'"
-    [class.border-blue-200]="notification.type === 'info'" role="alert">
-    <span class="material-icons text-xl flex-shrink-0 mt-0.5" [class.text-emerald-500]="notification.type === 'success'"
-      [class.text-red-500]="notification.type === 'error'" [class.text-amber-500]="notification.type === 'warning'"
-      [class.text-blue-500]="notification.type === 'info'">
-      {{ notification.type === 'success' ? 'check_circle' :
-      notification.type === 'error' ? 'error' :
-      notification.type === 'warning' ? 'warning' : 'info' }}
-    </span>
-    <div class="flex-1 min-w-0">
-      <strong class="block text-sm font-semibold text-slate-800">{{ notification.title }}</strong>
-      <span class="text-xs text-slate-500 leading-relaxed">{{ notification.message }}</span>
+      [class.border-red-200]="notification.type === 'error'" [class.border-amber-200]="notification.type === 'warning'"
+      [class.border-blue-200]="notification.type === 'info'" role="alert">
+      <span class="material-icons text-xl flex-shrink-0 mt-0.5" [class.text-emerald-500]="notification.type === 'success'"
+        [class.text-red-500]="notification.type === 'error'" [class.text-amber-500]="notification.type === 'warning'"
+        [class.text-blue-500]="notification.type === 'info'">
+        {{ notification.type === 'success' ? 'check_circle' :
+        notification.type === 'error' ? 'error' :
+        notification.type === 'warning' ? 'warning' : 'info' }}
+      </span>
+      <div class="flex-1 min-w-0">
+        <strong class="block text-sm font-semibold text-slate-800">{{ notification.title }}</strong>
+        <span class="text-xs text-slate-500 leading-relaxed">{{ notification.message }}</span>
+      </div>
+      <button class="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0" (click)="clearNotification()"
+        aria-label="Cerrar">
+        <span class="material-icons text-base">close</span>
+      </button>
     </div>
-    <button class="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0" (click)="clearNotification()"
-      aria-label="Cerrar">
-      <span class="material-icons text-base">close</span>
-    </button>
-  </div>
+  }
 
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       HEADER DE PÁGINA
-       ══════════════════════════════════════════════════════════════════════ -->
+  HEADER DE PÁGINA
+  ══════════════════════════════════════════════════════════════════════ -->
   <div class="flex items-center justify-between mb-3 pb-3 border-b border-stone-200">
     <div class="flex items-center gap-2.5">
       <div class="w-9 h-9 rounded-xl bg-red-900/10 border border-red-900/15
@@ -526,8 +543,8 @@
 
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       TARJETA: RESPALDO MANUAL
-       ══════════════════════════════════════════════════════════════════════ -->
+  TARJETA: RESPALDO MANUAL
+  ══════════════════════════════════════════════════════════════════════ -->
   <div class="bg-white rounded-xl border border-stone-200 shadow-sm mb-4">
     <div class="px-5 py-3.5">
 
@@ -548,33 +565,35 @@
             <span class="relative inline-flex">
               <button class="w-4 h-4 rounded flex items-center justify-center text-stone-400
                              hover:text-red-900 hover:bg-red-50 transition-colors"
-                      (mouseenter)="showBackupInfo = true"
-                      (mouseleave)="showBackupInfo = false"
-                      [class.active]="showBackupInfo"
-                      title="Ver información del proceso">
+                (mouseenter)="showBackupInfo = true"
+                (mouseleave)="showBackupInfo = false"
+                [class.active]="showBackupInfo"
+                title="Ver información del proceso">
                 <span class="material-icons text-sm">info_outline</span>
               </button>
               <!-- Popover anclado al botón -->
-              <div class="info-popover absolute left-1/2 -translate-x-1/2 top-6 w-72
+              @if (showBackupInfo) {
+<div class="info-popover absolute left-1/2 -translate-x-1/2 top-6 w-72
                           bg-white border border-stone-200 rounded-xl shadow-2xl z-20 p-4"
-                   *ngIf="showBackupInfo">
+                  >
                 <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white
                             border-l border-t border-stone-200 rotate-45"></div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3 m-0">
-                  Flujo del proceso
-                </p>
-                <ol class="text-xs text-stone-600 leading-relaxed space-y-1.5 pl-4 m-0 mb-3">
-                  <li>Servidor responde <code class="bg-red-50 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono border border-red-100">202 Accepted</code> inmediatamente</li>
-                  <li><code class="bg-red-50 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono border border-red-100">pg_dump</code> ejecuta en hilo dedicado</li>
-                  <li>Se verifica el archivo generado</li>
-                  <li>Subida a Supabase Storage (bucket privado)</li>
-                  <li>Archivo temporal eliminado del servidor</li>
-                  <li>Registro actualizado a <code class="bg-red-50 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono border border-red-100">COMPLETADO</code></li>
-                </ol>
-                <p class="text-xs text-stone-400 border-t border-stone-100 pt-3 m-0">
-                  Para restaurar usar <code class="bg-red-50 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono border border-red-100">pg_restore</code>
-                </p>
-              </div>
+                  <p class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3 m-0">
+                    Flujo del proceso
+                  </p>
+                  <ol class="text-xs text-stone-600 leading-relaxed space-y-1.5 pl-4 m-0 mb-3">
+                    <li>Servidor responde <code class="bg-red-50 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono border border-red-100">202 Accepted</code> inmediatamente</li>
+                    <li><code class="bg-red-50 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono border border-red-100">pg_dump</code> ejecuta en hilo dedicado</li>
+                    <li>Se verifica el archivo generado</li>
+                    <li>Subida a Supabase Storage (bucket privado)</li>
+                    <li>Archivo temporal eliminado del servidor</li>
+                    <li>Registro actualizado a <code class="bg-red-50 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono border border-red-100">COMPLETADO</code></li>
+                  </ol>
+                  <p class="text-xs text-stone-400 border-t border-stone-100 pt-3 m-0">
+                    Para restaurar usar <code class="bg-red-50 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono border border-red-100">pg_restore</code>
+                  </p>
+                </div>
+              }
             </span>
           </div>
           <!-- Etiquetas técnicas en línea -->
@@ -622,17 +641,17 @@
                      shadow-sm hover:shadow-md
                      disabled:opacity-60 disabled:cursor-not-allowed
                      transition-all duration-200"
-              (click)="generateBackup()"
-              [disabled]="isGenerating"
-              [class.btn-loading]="isGenerating">
-        <ng-container *ngIf="!isGenerating">
+        (click)="generateBackup()"
+        [disabled]="isGenerating"
+        [class.btn-loading]="isGenerating">
+        @if (!isGenerating) {
           <span class="material-icons text-base">cloud_upload</span>
           Generar Respaldo Manual
-        </ng-container>
-        <ng-container *ngIf="isGenerating">
+        }
+        @if (isGenerating) {
           <span class="spinner"></span>
           Generando respaldo...
-        </ng-container>
+        }
       </button>
 
       <!-- Auto-backup note con enlace a Automatizaciones -->
@@ -642,7 +661,7 @@
         <button type="button"
                 class="inline-flex items-center gap-0.5 text-red-900 font-semibold hover:text-red-700
                        hover:underline transition-colors cursor-pointer bg-transparent border-none p-0"
-                (click)="navigateToAutomations.emit()">
+          (click)="navigateToAutomations.emit()">
           Automatizaciones
           <span class="material-icons text-[11px]">arrow_forward</span>
         </button>
@@ -653,8 +672,8 @@
 
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       HISTORIAL DE RESPALDOS
-       ══════════════════════════════════════════════════════════════════════ -->
+  HISTORIAL DE RESPALDOS
+  ══════════════════════════════════════════════════════════════════════ -->
   <section aria-label="Historial de respaldos">
 
     <!-- Encabezado de sección -->
@@ -664,219 +683,228 @@
         <h2 class="text-sm font-semibold text-stone-700 font-title tracking-tight m-0">
           Historial de Respaldos
         </h2>
-        <span *ngIf="backupPage" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium
+        @if (backupPage) {
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium
                      bg-stone-100 text-stone-500 border border-stone-200">
-          {{ backupPage.totalElements }} registros
-        </span>
+            {{ backupPage.totalElements }} registros
+          </span>
+        }
       </div>
       <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
                      border border-stone-200 text-stone-600 hover:bg-stone-100
                      disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              (click)="loadHistory()" [disabled]="historyLoading">
+        (click)="loadHistory()" [disabled]="historyLoading">
         <span class="material-icons text-sm" [class.spin]="historyLoading">refresh</span>
         {{ historyLoading ? 'Cargando...' : 'Actualizar' }}
       </button>
     </div>
 
     <!-- Skeleton loader -->
-    <div *ngIf="historyLoading && !backupPage"
-      class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
-      <div *ngFor="let i of [1,2,3,4]" class="skeleton-row h-12 border-b border-stone-100 last:border-0"></div>
-    </div>
+    @if (historyLoading && !backupPage) {
+      <div
+        class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="skeleton-row h-12 border-b border-stone-100 last:border-0"></div>
+        }
+      </div>
+    }
 
     <!-- Estado vacío -->
-    <div *ngIf="!historyLoading && backupPage && backupPage.totalElements === 0"
+    @if (!historyLoading && backupPage && backupPage.totalElements === 0) {
+      <div
          class="bg-white rounded-xl border border-stone-200 shadow-sm py-14
                 flex flex-col items-center gap-3 text-center">
-      <span class="material-icons text-5xl text-stone-200">cloud_off</span>
-      <h3 class="text-sm font-semibold text-stone-500 m-0">Sin respaldos registrados</h3>
-      <p class="text-xs text-stone-400 m-0">
-        Inicia el primer respaldo con el botón <strong class="font-medium">"Generar Respaldo Manual"</strong>.
-      </p>
-    </div>
+        <span class="material-icons text-5xl text-stone-200">cloud_off</span>
+        <h3 class="text-sm font-semibold text-stone-500 m-0">Sin respaldos registrados</h3>
+        <p class="text-xs text-stone-400 m-0">
+          Inicia el primer respaldo con el botón <strong class="font-medium">"Generar Respaldo Manual"</strong>.
+        </p>
+      </div>
+    }
 
     <!-- Tabla -->
-    <div *ngIf="backupPage && backupPage.totalElements > 0"
-      class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-stone-100 bg-stone-50/80">
-              <th scope="col"
-                class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-32">Estado
-              </th>
-              <th scope="col" class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+    @if (backupPage && backupPage.totalElements > 0) {
+      <div
+        class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-stone-100 bg-stone-50/80">
+                <th scope="col"
+                  class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-32">Estado
+                </th>
+                <th scope="col" class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
                 Archivo · Fecha</th>
-              <th scope="col"
-                class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-24">Tamaño
-              </th>
-              <th scope="col"
-                class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-24">Duración
-              </th>
-              <th scope="col"
-                class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-44">Origen
-              </th>
-              <th scope="col"
-                class="px-4 py-2.5 text-right text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-28">Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-stone-100">
-            <tr *ngFor="let log of rows; trackBy: trackById" class="hover:bg-stone-50/60 transition-colors"
-              [class.row--success]="log.status === 'COMPLETED'" [class.row--error]="log.status === 'FAILED'">
-
-              <!-- Estado -->
-              <td class="px-4 py-3">
+                <th scope="col"
+                  class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-24">Tamaño
+                </th>
+                <th scope="col"
+                  class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-24">Duración
+                </th>
+                <th scope="col"
+                  class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-44">Origen
+                </th>
+                <th scope="col"
+                  class="px-4 py-2.5 text-right text-[11px] font-semibold text-stone-500 uppercase tracking-wider w-28">Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100">
+              @for (log of rows; track trackById($index, log)) {
+                <tr class="hover:bg-stone-50/60 transition-colors"
+                  [class.row--success]="log.status === 'COMPLETED'" [class.row--error]="log.status === 'FAILED'">
+                  <!-- Estado -->
+                  <td class="px-4 py-3">
                 <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium" [ngClass]="{
                         'bg-emerald-50 text-emerald-700 border border-emerald-200': log.status === 'COMPLETED',
                         'bg-red-50 text-red-700 border border-red-200': log.status === 'FAILED',
                         'bg-amber-50 text-amber-700 border border-amber-200': log.status === 'PENDING'
                       }">
-                  <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    [class.bg-emerald-500]="log.status === 'COMPLETED'" [class.bg-red-500]="log.status === 'FAILED'"
-                    [class.bg-amber-400]="log.status === 'PENDING'"
-                    [class.status-dot--pulse]="log.status === 'PENDING'">
-                  </span>
-                  {{ log.status === 'COMPLETED' ? 'Completado' :
-                  log.status === 'PENDING' ? 'Procesando' : 'Error' }}
-                </span>
-              </td>
-
-              <!-- Archivo · Fecha -->
-              <td class="px-4 py-3">
-                <span class="block font-mono text-xs font-medium text-stone-700 truncate max-w-xs"
-                  [title]="log.filename">
-                  {{ log.filename | slice:0:32 }}{{ log.filename.length > 32 ? '…' : '' }}
-                </span>
-                <span class="block text-[11px] text-stone-400 mt-0.5">
-                  {{ log.createdAt | date:'dd MMM yyyy · HH:mm' }}
-                </span>
-              </td>
-
-              <!-- Tamaño -->
-              <td class="px-4 py-3 text-xs text-stone-500 tabular-nums">
-                {{ formatFileSize(log.fileSizeBytes) }}
-              </td>
-
-              <!-- Duración -->
-              <td class="px-4 py-3">
-                <span class="inline-flex items-center gap-1 text-xs text-stone-500 tabular-nums">
-                  <span class="material-icons text-xs text-stone-400">schedule</span>
-                  {{ formatMs(log.executionTimeMs) }}
-                </span>
-              </td>
-
-              <!-- Origen -->
-              <td class="px-4 py-3">
-                <ng-container *ngIf="log.triggeredBy === 'SYSTEM_CRON'">
-                  <span class="inline-flex items-center gap-1.5 text-xs text-stone-500">
-                    <span class="material-icons text-xs text-stone-400">auto_mode</span>
-                    Automático
-                  </span>
-                </ng-container>
-                <ng-container *ngIf="log.triggeredBy !== 'SYSTEM_CRON'">
-                  <span class="inline-flex items-center gap-1.5 text-xs text-stone-600">
-                    <span class="material-icons text-xs text-stone-400">person</span>
-                    <span class="truncate max-w-[140px]" [title]="log.triggeredBy">{{ log.triggeredBy }}</span>
-                  </span>
-                </ng-container>
-              </td>
-
-              <!-- Acciones -->
-              <td class="px-4 py-3">
-                <div class="flex items-center justify-end gap-1">
-
-                  <!-- COMPLETED -->
-                  <ng-container *ngIf="log.status === 'COMPLETED'">
-                    <button *ngIf="!isExpired(log.createdAt)" class="inline-flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-md
+                      <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        [class.bg-emerald-500]="log.status === 'COMPLETED'" [class.bg-red-500]="log.status === 'FAILED'"
+                        [class.bg-amber-400]="log.status === 'PENDING'"
+                        [class.status-dot--pulse]="log.status === 'PENDING'">
+                      </span>
+                      {{ log.status === 'COMPLETED' ? 'Completado' :
+                      log.status === 'PENDING' ? 'Procesando' : 'Error' }}
+                    </span>
+                  </td>
+                  <!-- Archivo · Fecha -->
+                  <td class="px-4 py-3">
+                    <span class="block font-mono text-xs font-medium text-stone-700 truncate max-w-xs"
+                      [title]="log.filename">
+                      {{ log.filename | slice:0:32 }}{{ log.filename.length > 32 ? '…' : '' }}
+                    </span>
+                    <span class="block text-[11px] text-stone-400 mt-0.5">
+                      {{ log.createdAt | date:'dd MMM yyyy · HH:mm' }}
+                    </span>
+                  </td>
+                  <!-- Tamaño -->
+                  <td class="px-4 py-3 text-xs text-stone-500 tabular-nums">
+                    {{ formatFileSize(log.fileSizeBytes) }}
+                  </td>
+                  <!-- Duración -->
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-1 text-xs text-stone-500 tabular-nums">
+                      <span class="material-icons text-xs text-stone-400">schedule</span>
+                      {{ formatMs(log.executionTimeMs) }}
+                    </span>
+                  </td>
+                  <!-- Origen -->
+                  <td class="px-4 py-3">
+                    @if (log.triggeredBy === 'SYSTEM_CRON') {
+                      <span class="inline-flex items-center gap-1.5 text-xs text-stone-500">
+                        <span class="material-icons text-xs text-stone-400">auto_mode</span>
+                        Automático
+                      </span>
+                    }
+                    @if (log.triggeredBy !== 'SYSTEM_CRON') {
+                      <span class="inline-flex items-center gap-1.5 text-xs text-stone-600">
+                        <span class="material-icons text-xs text-stone-400">person</span>
+                        <span class="truncate max-w-[140px]" [title]="log.triggeredBy">{{ log.triggeredBy }}</span>
+                      </span>
+                    }
+                  </td>
+                  <!-- Acciones -->
+                  <td class="px-4 py-3">
+                    <div class="flex items-center justify-end gap-1">
+                      <!-- COMPLETED -->
+                      @if (log.status === 'COMPLETED') {
+                        @if (!isExpired(log.createdAt)) {
+<button class="inline-flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-md
                                    min-w-[44px] text-slate-500 hover:text-slate-800 hover:bg-slate-100
                                    disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                      (click)="downloadBackup(log.id)" [disabled]="loadingUrlId === log.id"
-                      title="Descargar respaldo (válido 1 hora)">
-                      <span class="material-icons text-base" *ngIf="loadingUrlId !== log.id">download</span>
-                      <span class="spinner-xs" *ngIf="loadingUrlId === log.id"></span>
-                      <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Bajar</span>
-                    </button>
-                    <button *ngIf="isExpired(log.createdAt)" class="inline-flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-md
+                            (click)="downloadBackup(log.id)" [disabled]="loadingUrlId === log.id"
+                            title="Descargar respaldo (válido 1 hora)">
+                            @if (loadingUrlId !== log.id) {
+                              <span class="material-icons text-base">download</span>
+                            }
+                            @if (loadingUrlId === log.id) {
+                              <span class="spinner-xs"></span>
+                            }
+                            <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Bajar</span>
+                          </button>
+                        }
+                        @if (isExpired(log.createdAt)) {
+<button class="inline-flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-md
                                    min-w-[44px] text-slate-300 cursor-not-allowed" disabled
-                      title="Enlace expirado (válido solo 1 hora)">
-                      <span class="material-icons text-base">schedule</span>
-                      <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Expiró</span>
-                    </button>
-                    <button
+                            title="Enlace expirado (válido solo 1 hora)">
+                            <span class="material-icons text-base">schedule</span>
+                            <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Expiró</span>
+                          </button>
+                        }
+                        <button
                       class="inline-flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-md
                                    min-w-[44px] text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
-                      (click)="openLogModal(log)" title="Ver bitácora técnica">
-                      <span class="material-icons text-base">receipt_long</span>
-                      <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Log</span>
-                    </button>
-                  </ng-container>
-
-                  <!-- FAILED -->
-                  <ng-container *ngIf="log.status === 'FAILED'">
+                          (click)="openLogModal(log)" title="Ver bitácora técnica">
+                          <span class="material-icons text-base">receipt_long</span>
+                          <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Log</span>
+                        </button>
+                      }
+                      <!-- FAILED -->
+                      @if (log.status === 'FAILED') {
                     <button class="inline-flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-md
                                    min-w-[44px] text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
-                      (click)="openErrorModal(log)" title="Ver detalle del error">
-                      <span class="material-icons text-base">error_outline</span>
-                      <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Error</span>
-                    </button>
-                    <button
+                          (click)="openErrorModal(log)" title="Ver detalle del error">
+                          <span class="material-icons text-base">error_outline</span>
+                          <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Error</span>
+                        </button>
+                        <button
                       class="inline-flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-md
                                    min-w-[44px] text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
-                      (click)="openLogModal(log)" title="Ver bitácora técnica">
-                      <span class="material-icons text-base">receipt_long</span>
-                      <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Log</span>
-                    </button>
-                  </ng-container>
-
-                  <!-- PENDING -->
-                  <ng-container *ngIf="log.status === 'PENDING'">
-                    <span class="inline-flex items-center gap-1.5 text-xs text-amber-500">
-                      <span class="spinner-xs spinner-xs--amber"></span>
-                      Procesando
-                    </span>
-                  </ng-container>
-
-                </div>
-              </td>
-
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Paginación -->
-      <div *ngIf="backupPage && backupPage.totalPages > 1"
-        class="flex items-center justify-between px-4 py-2.5 border-t border-stone-100 bg-stone-50/50">
-        <p class="text-[11px] text-stone-500 m-0">
-          Página <strong class="font-medium text-stone-600">{{ backupPage.number + 1 }}</strong> de
-          <strong class="font-medium text-stone-600">{{ backupPage.totalPages }}</strong>
-          · {{ backupPage.totalElements }} registros
-        </p>
-        <div class="flex items-center gap-1">
-          <button class="pg-btn" (click)="goToPage(0)" [disabled]="backupPage.first" title="Primera">
-            <span class="material-icons text-base">first_page</span>
-          </button>
-          <button class="pg-btn" (click)="goToPage(currentPage - 1)" [disabled]="backupPage.first" title="Anterior">
-            <span class="material-icons text-base">chevron_left</span>
-          </button>
-          <ng-container *ngFor="let p of [].constructor(backupPage.totalPages); let i = index">
-            <button class="pg-btn" [class.pg-btn--active]="i === backupPage.number" (click)="goToPage(i)">
-              {{ i + 1 }}
-            </button>
-          </ng-container>
-          <button class="pg-btn" (click)="goToPage(currentPage + 1)" [disabled]="backupPage.last" title="Siguiente">
-            <span class="material-icons text-base">chevron_right</span>
-          </button>
-          <button class="pg-btn" (click)="goToPage(backupPage.totalPages - 1)" [disabled]="backupPage.last"
-            title="Última">
-            <span class="material-icons text-base">last_page</span>
-          </button>
+                          (click)="openLogModal(log)" title="Ver bitácora técnica">
+                          <span class="material-icons text-base">receipt_long</span>
+                          <span class="text-[9px] font-medium leading-none tracking-wide uppercase">Log</span>
+                        </button>
+                      }
+                      <!-- PENDING -->
+                      @if (log.status === 'PENDING') {
+                        <span class="inline-flex items-center gap-1.5 text-xs text-amber-500">
+                          <span class="spinner-xs spinner-xs--amber"></span>
+                          Procesando
+                        </span>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
+        <!-- Paginación -->
+        @if (backupPage && backupPage.totalPages > 1) {
+          <div
+            class="flex items-center justify-between px-4 py-2.5 border-t border-stone-100 bg-stone-50/50">
+            <p class="text-[11px] text-stone-500 m-0">
+              Página <strong class="font-medium text-stone-600">{{ backupPage.number + 1 }}</strong> de
+              <strong class="font-medium text-stone-600">{{ backupPage.totalPages }}</strong>
+              · {{ backupPage.totalElements }} registros
+            </p>
+            <div class="flex items-center gap-1">
+              <button class="pg-btn" (click)="goToPage(0)" [disabled]="backupPage.first" title="Primera">
+                <span class="material-icons text-base">first_page</span>
+              </button>
+              <button class="pg-btn" (click)="goToPage(currentPage - 1)" [disabled]="backupPage.first" title="Anterior">
+                <span class="material-icons text-base">chevron_left</span>
+              </button>
+              @for (p of [].constructor(backupPage.totalPages); track p; let i = $index) {
+                <button class="pg-btn" [class.pg-btn--active]="i === backupPage.number" (click)="goToPage(i)">
+                  {{ i + 1 }}
+                </button>
+              }
+              <button class="pg-btn" (click)="goToPage(currentPage + 1)" [disabled]="backupPage.last" title="Siguiente">
+                <span class="material-icons text-base">chevron_right</span>
+              </button>
+              <button class="pg-btn" (click)="goToPage(backupPage.totalPages - 1)" [disabled]="backupPage.last"
+                title="Última">
+                <span class="material-icons text-base">last_page</span>
+              </button>
+            </div>
+          </div>
+        }
       </div>
+      }<!-- /table card -->
 
-    </div><!-- /table card -->
+    </section>
 
-  </section>
-
-</div><!-- /root -->
+  </div><!-- /root -->

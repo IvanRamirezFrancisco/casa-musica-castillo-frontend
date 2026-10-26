@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { User } from '../../../models/user.model';
@@ -46,8 +46,9 @@ interface ModuleHeader {
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, CsvImportExportComponent, NotificationCenterComponent],
+  imports: [RouterModule, CsvImportExportComponent, NotificationCenterComponent],
   templateUrl: './admin-layout.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-layout.component.css'
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {

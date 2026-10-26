@@ -378,7 +378,7 @@
                   <li><strong>Variables utilizadas:</strong> 10</li>
                   <li><strong>Órdenes históricas analizadas:</strong> 1,000</li>
                   <li><strong>Estado:</strong> Modelo operativo</li>
-                  <li><strong>Fecha de generación:</strong> {{ (modelStatus()?.fechaGeneracionUtc | date:'mediumDate':'':'es-MX') || 'Reciente' }}</li>
+                  <li><strong>Fecha de generación:</strong> {{ ($safeNavigationMigration(modelStatus()?.fechaGeneracionUtc) | date:'mediumDate':'':'es-MX') || 'Reciente' }}</li>
                 </ul>
 
                 <details class="text-sm mt-3 border-t border-gray-200 pt-3">

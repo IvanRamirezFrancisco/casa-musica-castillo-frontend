@@ -15,107 +15,121 @@
       </div>
 
       <!-- Acciones para usuario NO logueado -->
-      <div class="user-actions" *ngIf="!isLoggedIn">
-        <button class="action-btn mobile-search-trigger" (click)="toggleMobileSearch()" aria-label="Abrir búsqueda" [attr.aria-expanded]="isMobileSearchOpen">
-          <span class="material-icons">search</span>
-        </button>
-        <button class="action-btn" (click)="toggleWishlist()" title="Lista de deseos">
-          <span class="material-icons">favorite_border</span>
-          <span class="action-count" *ngIf="wishlistCount > 0">{{wishlistCount}}</span>
-        </button>
-        <button class="action-btn" (click)="navigateToLogin()" title="Iniciar sesión">
-          <span class="material-icons">person</span>
-        </button>
-        <button class="action-btn cart-btn" (click)="navigateToCart()" title="Carrito de compras">
-          <span class="material-icons">shopping_cart</span>
-          <span class="cart-count" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
-        </button>
-      </div>
+      @if (!isLoggedIn) {
+        <div class="user-actions">
+          <button class="action-btn mobile-search-trigger" (click)="toggleMobileSearch()" aria-label="Abrir búsqueda" [attr.aria-expanded]="isMobileSearchOpen">
+            <span class="material-icons">search</span>
+          </button>
+          <button class="action-btn" (click)="toggleWishlist()" title="Lista de deseos">
+            <span class="material-icons">favorite_border</span>
+            @if (wishlistCount > 0) {
+              <span class="action-count">{{wishlistCount}}</span>
+            }
+          </button>
+          <button class="action-btn" (click)="navigateToLogin()" title="Iniciar sesión">
+            <span class="material-icons">person</span>
+          </button>
+          <button class="action-btn cart-btn" (click)="navigateToCart()" title="Carrito de compras">
+            <span class="material-icons">shopping_cart</span>
+            @if (cartItemCount > 0) {
+              <span class="cart-count">{{cartItemCount}}</span>
+            }
+          </button>
+        </div>
+      }
 
       <!-- Acciones para usuario LOGUEADO -->
-      <div class="user-actions" *ngIf="isLoggedIn">
-        <button class="action-btn mobile-search-trigger" (click)="toggleMobileSearch()" aria-label="Abrir búsqueda" [attr.aria-expanded]="isMobileSearchOpen">
-          <span class="material-icons">search</span>
-        </button>
-        <button class="action-btn" (click)="toggleWishlist()" title="Lista de deseos">
-          <span class="material-icons">favorite</span>
-          <span class="action-count" *ngIf="wishlistCount > 0">{{wishlistCount}}</span>
-        </button>
-        <button class="action-btn cart-btn" (click)="navigateToCart()" title="Carrito de compras">
-          <span class="material-icons">shopping_cart</span>
-          <span class="cart-count" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
-        </button>
-
-        <!-- Menú de usuario logueado -->
-        <div class="user-menu-container">
-          <button class="action-btn user-btn" (click)="toggleUserMenu()" title="Mi cuenta">
-            <span class="material-icons">account_circle</span>
+      @if (isLoggedIn) {
+        <div class="user-actions">
+          <button class="action-btn mobile-search-trigger" (click)="toggleMobileSearch()" aria-label="Abrir búsqueda" [attr.aria-expanded]="isMobileSearchOpen">
+            <span class="material-icons">search</span>
           </button>
-
-          <!-- Dropdown del usuario -->
-          <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
-            <div class="user-dropdown-header">
-              <div class="user-avatar">
-                <span class="material-icons">person</span>
-              </div>
-              <div class="user-info">
-                <p class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
-                <p class="user-email">{{ currentUser?.email }}</p>
-              </div>
-            </div>
-
-            <div class="dropdown-divider"></div>
-
-            <ul class="dropdown-menu-list">
-              <li *ngIf="isAdminUser()">
-                <button (click)="navigateToAdmin()" class="dropdown-item admin-item">
-                  <span class="material-icons">admin_panel_settings</span>
-                  <span>Panel de Administración</span>
-                </button>
-              </li>
-              <li>
-                <button (click)="navigateToProfile()" class="dropdown-item">
-                  <span class="material-icons">settings</span>
-                  <span>Configuración de Seguridad</span>
-                </button>
-              </li>
-              <li>
-                <button (click)="closeUserMenu()" routerLink="/orders/my" class="dropdown-item">
-                  <span class="material-icons">shopping_bag</span>
-                  <span>Mis Pedidos</span>
-                </button>
-              </li>
-              <li>
-                <button (click)="closeUserMenu()" routerLink="/wishlist" class="dropdown-item">
-                  <span class="material-icons">favorite</span>
-                  <span>Lista de Deseos</span>
-                </button>
-              </li>
-            </ul>
-
-            <div class="dropdown-divider"></div>
-
-            <button (click)="logout()" class="dropdown-item logout-item">
-              <span class="material-icons">logout</span>
-              <span>Cerrar Sesión</span>
+          <button class="action-btn" (click)="toggleWishlist()" title="Lista de deseos">
+            <span class="material-icons">favorite</span>
+            @if (wishlistCount > 0) {
+              <span class="action-count">{{wishlistCount}}</span>
+            }
+          </button>
+          <button class="action-btn cart-btn" (click)="navigateToCart()" title="Carrito de compras">
+            <span class="material-icons">shopping_cart</span>
+            @if (cartItemCount > 0) {
+              <span class="cart-count">{{cartItemCount}}</span>
+            }
+          </button>
+          <!-- Menú de usuario logueado -->
+          <div class="user-menu-container">
+            <button class="action-btn user-btn" (click)="toggleUserMenu()" title="Mi cuenta">
+              <span class="material-icons">account_circle</span>
             </button>
+            <!-- Dropdown del usuario -->
+            @if (showUserMenu) {
+              <div class="user-dropdown" (click)="$event.stopPropagation()">
+                <div class="user-dropdown-header">
+                  <div class="user-avatar">
+                    <span class="material-icons">person</span>
+                  </div>
+                  <div class="user-info">
+                    <p class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+                    <p class="user-email">{{ currentUser?.email }}</p>
+                  </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <ul class="dropdown-menu-list">
+                  @if (isAdminUser()) {
+                    <li>
+                      <button (click)="navigateToAdmin()" class="dropdown-item admin-item">
+                        <span class="material-icons">admin_panel_settings</span>
+                        <span>Panel de Administración</span>
+                      </button>
+                    </li>
+                  }
+                  <li>
+                    <button (click)="navigateToProfile()" class="dropdown-item">
+                      <span class="material-icons">settings</span>
+                      <span>Configuración de Seguridad</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button (click)="closeUserMenu()" routerLink="/orders/my" class="dropdown-item">
+                      <span class="material-icons">shopping_bag</span>
+                      <span>Mis Pedidos</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button (click)="closeUserMenu()" routerLink="/wishlist" class="dropdown-item">
+                      <span class="material-icons">favorite</span>
+                      <span>Lista de Deseos</span>
+                    </button>
+                  </li>
+                </ul>
+                <div class="dropdown-divider"></div>
+                <button (click)="logout()" class="dropdown-item logout-item">
+                  <span class="material-icons">logout</span>
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            }
           </div>
         </div>
-      </div>
+      }
     </div>
 
     <!-- Fila inferior exclusiva para la búsqueda móvil -->
-    <div class="mobile-search-row" *ngIf="isMobileSearchOpen">
-      <app-global-search
-        [autoFocus]="true"
-        (searchActiveChange)="onSearchActiveChange($event)"
-        (searchExecuted)="closeMobileSearch()"
-      ></app-global-search>
-    </div>
+    @if (isMobileSearchOpen) {
+      <div class="mobile-search-row">
+        <app-global-search
+          [autoFocus]="true"
+          (searchActiveChange)="onSearchActiveChange($event)"
+          (searchExecuted)="closeMobileSearch()"
+        ></app-global-search>
+      </div>
+    }
   </div>
 
   <!-- Overlay para cerrar el menú (fuera del nav) -->
-  <div class="mobile-overlay" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+  @if (isMobileMenuOpen) {
+    <div class="mobile-overlay" (click)="closeMobileMenu()"></div>
+  }
 
   <!-- Navegación Secundaria (integrada al header para que se comporte como parte del sticky header) -->
   <nav class="secondary-nav" [class.mobile-open]="isMobileMenuOpen">
@@ -146,12 +160,14 @@
             </a>
           </li>
 
-          <li class="nav-item" *ngIf="!isLoggedIn">
-            <a routerLink="/register" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
-              <span class="material-icons">person_add</span>
-              <span class="nav-text">Registrarse</span>
-            </a>
-          </li>
+          @if (!isLoggedIn) {
+            <li class="nav-item">
+              <a routerLink="/register" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+                <span class="material-icons">person_add</span>
+                <span class="nav-text">Registrarse</span>
+              </a>
+            </li>
+          }
 
           <li class="nav-item">
             <a routerLink="/ayuda" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
@@ -169,64 +185,61 @@
             </button>
 
             <!-- Desktop: Popover refinado | Mobile: Acordeón interno -->
-            <div id="info-menu" class="dropdown-menu-nav" *ngIf="showInfoMenu" (click)="$event.stopPropagation()">
-              <div class="dropdown-content-grid">
-
-                <div class="dropdown-group">
-                  <span class="dropdown-group-title">LA TIENDA</span>
-                  <a routerLink="/mapa-sitio" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
-                    <div class="dropdown-item-icon-container"><span class="material-icons">explore</span></div>
-                    <div class="dropdown-item-text">
-                      <span class="dropdown-item-title">Explorar el sitio</span>
-                      <span class="dropdown-item-desc">Consulta todas las secciones</span>
-                    </div>
-                  </a>
-                </div>
-
-                <div class="dropdown-group">
-                  <span class="dropdown-group-title">TUS COMPRAS</span>
-                  <a routerLink="/informacion/envios" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
-                    <div class="dropdown-item-icon-container"><span class="material-icons">local_shipping</span></div>
-                    <div class="dropdown-item-text">
-                      <span class="dropdown-item-title">Envíos y entregas</span>
-                      <span class="dropdown-item-desc">Información sobre tu pedido</span>
-                    </div>
-                  </a>
-                  <a routerLink="/informacion/pagos" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
-                    <div class="dropdown-item-icon-container"><span class="material-icons">payment</span></div>
-                    <div class="dropdown-item-text">
-                      <span class="dropdown-item-title">Formas de pago</span>
-                      <span class="dropdown-item-desc">Consulta los métodos disponibles</span>
-                    </div>
-                  </a>
-                </div>
-
-                <div class="dropdown-group">
-                  <span class="dropdown-group-title">POLÍTICAS Y PRIVACIDAD</span>
-                  <a routerLink="/terminos" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
-                    <div class="dropdown-item-icon-container"><span class="material-icons">gavel</span></div>
-                    <div class="dropdown-item-text">
-                      <span class="dropdown-item-title">Términos y condiciones</span>
-                    </div>
-                  </a>
-                  <a routerLink="/privacidad" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
-                    <div class="dropdown-item-icon-container"><span class="material-icons">security</span></div>
-                    <div class="dropdown-item-text">
-                      <span class="dropdown-item-title">Aviso de privacidad</span>
-                    </div>
-                  </a>
-                </div>
-
-                <hr class="dropdown-divider">
-                <a href="https://wa.me/525512345678?text=Hola%2C%20me%20gustar%C3%ADa%20recibir%20informaci%C3%B3n%20sobre%20un%20producto." target="_blank" rel="noopener noreferrer" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav whatsapp-cta">
-                  <div class="dropdown-item-icon-container whatsapp-icon"><span class="material-icons">chat</span></div>
-                  <div class="dropdown-item-text">
-                    <span class="dropdown-item-title">Contactar por WhatsApp</span>
+            @if (showInfoMenu) {
+              <div id="info-menu" class="dropdown-menu-nav" (click)="$event.stopPropagation()">
+                <div class="dropdown-content-grid">
+                  <div class="dropdown-group">
+                    <span class="dropdown-group-title">LA TIENDA</span>
+                    <a routerLink="/mapa-sitio" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                      <div class="dropdown-item-icon-container"><span class="material-icons">explore</span></div>
+                      <div class="dropdown-item-text">
+                        <span class="dropdown-item-title">Explorar el sitio</span>
+                        <span class="dropdown-item-desc">Consulta todas las secciones</span>
+                      </div>
+                    </a>
                   </div>
-                </a>
-
+                  <div class="dropdown-group">
+                    <span class="dropdown-group-title">TUS COMPRAS</span>
+                    <a routerLink="/informacion/envios" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                      <div class="dropdown-item-icon-container"><span class="material-icons">local_shipping</span></div>
+                      <div class="dropdown-item-text">
+                        <span class="dropdown-item-title">Envíos y entregas</span>
+                        <span class="dropdown-item-desc">Información sobre tu pedido</span>
+                      </div>
+                    </a>
+                    <a routerLink="/informacion/pagos" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                      <div class="dropdown-item-icon-container"><span class="material-icons">payment</span></div>
+                      <div class="dropdown-item-text">
+                        <span class="dropdown-item-title">Formas de pago</span>
+                        <span class="dropdown-item-desc">Consulta los métodos disponibles</span>
+                      </div>
+                    </a>
+                  </div>
+                  <div class="dropdown-group">
+                    <span class="dropdown-group-title">POLÍTICAS Y PRIVACIDAD</span>
+                    <a routerLink="/terminos" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                      <div class="dropdown-item-icon-container"><span class="material-icons">gavel</span></div>
+                      <div class="dropdown-item-text">
+                        <span class="dropdown-item-title">Términos y condiciones</span>
+                      </div>
+                    </a>
+                    <a routerLink="/privacidad" routerLinkActive="active-dropdown-item" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav">
+                      <div class="dropdown-item-icon-container"><span class="material-icons">security</span></div>
+                      <div class="dropdown-item-text">
+                        <span class="dropdown-item-title">Aviso de privacidad</span>
+                      </div>
+                    </a>
+                  </div>
+                  <hr class="dropdown-divider">
+                  <a href="https://wa.me/525512345678?text=Hola%2C%20me%20gustar%C3%ADa%20recibir%20informaci%C3%B3n%20sobre%20un%20producto." target="_blank" rel="noopener noreferrer" (click)="closeInfoMenu(); closeMobileMenu()" class="dropdown-item-nav whatsapp-cta">
+                    <div class="dropdown-item-icon-container whatsapp-icon"><span class="material-icons">chat</span></div>
+                    <div class="dropdown-item-text">
+                      <span class="dropdown-item-title">Contactar por WhatsApp</span>
+                    </div>
+                  </a>
+                </div>
               </div>
-            </div>
+            }
           </li>
         </ul>
       </div>
@@ -235,12 +248,13 @@
 
   <!-- Animaciones de productos volando al carrito -->
   <div class="flying-products-container">
-    <div
-      *ngFor="let product of flyingProducts"
-      class="flying-product"
-      [style.left.px]="product.startX"
-      [style.top.px]="product.startY">
-      <img [src]="product.productImage" [alt]="product.productName" width="40" height="40" />
-    </div>
+    @for (product of flyingProducts; track product) {
+      <div
+        class="flying-product"
+        [style.left.px]="product.startX"
+        [style.top.px]="product.startY">
+        <img [src]="product.productImage" [alt]="product.productName" width="40" height="40" />
+      </div>
+    }
   </div>
 </header>

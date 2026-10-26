@@ -1,7 +1,7 @@
 <!-- ================================================================
-     CARRITO DE COMPRAS - CASA DE MÚSICA CASTILLO
-     FASE 1.2 - Carrito UX - 2026-05-15
-     ================================================================ -->
+CARRITO DE COMPRAS - CASA DE MÚSICA CASTILLO
+FASE 1.2 - Carrito UX - 2026-05-15
+================================================================ -->
 
 <div class="cart-page">
 
@@ -20,9 +20,11 @@
           <h1 class="page-title">
             <span class="material-icons">shopping_cart</span>Mi Carrito
           </h1>
-          <p class="items-count" *ngIf="hasItems">
-            {{ getTotalItems() }} {{ getTotalItems() === 1 ? 'artículo' : 'artículos' }}
-          </p>
+          @if (hasItems) {
+            <p class="items-count">
+              {{ getTotalItems() }} {{ getTotalItems() === 1 ? 'artículo' : 'artículos' }}
+            </p>
+          }
         </div>
         <button class="btn-continue-shopping" routerLink="/catalogo">
           <span class="material-icons">arrow_back</span>Seguir Comprando
@@ -36,370 +38,382 @@
     <div class="container">
 
       <!-- ── ESTADO: CARGANDO ── -->
-      <div class="cart-loading" *ngIf="isLoading">
-        <div class="loading-spinner"></div>
-        <p>Cargando tu carrito...</p>
-      </div>
+      @if (isLoading) {
+        <div class="cart-loading">
+          <div class="loading-spinner"></div>
+          <p>Cargando tu carrito...</p>
+        </div>
+      }
 
       <!-- ── ESTADO: ERROR ── -->
-      <div class="cart-error" *ngIf="hasError">
-        <div class="error-icon">
-          <span class="material-icons">error_outline</span>
-        </div>
-        <h2>{{ errorMessage || 'Error al cargar el carrito' }}</h2>
-        <p>Verifica tu conexión o inicia sesión nuevamente.</p>
-        <div class="error-actions">
-          <button class="btn-retry" (click)="retryLoad()">
-            <span class="material-icons">refresh</span>Reintentar
-          </button>
-          <button class="btn-login" routerLink="/login">
-            <span class="material-icons">login</span>Iniciar Sesión
-          </button>
-        </div>
-      </div>
-
-      <!-- ── ESTADO: VACÍO ── -->
-      <div class="empty-cart" *ngIf="isEmpty">
-        <div class="empty-icon">
-          <span class="material-icons">shopping_cart</span>
-        </div>
-        <h2 class="empty-title">Tu carrito está vacío</h2>
-        <p class="empty-text">¡Descubre nuestra colección de instrumentos musicales!</p>
-        <button class="btn-explore" routerLink="/catalogo">
-          <span class="material-icons">explore</span>Explorar Catálogo
-        </button>
-      </div>
-
-      <!-- ── ESTADO: CON PRODUCTOS ── -->
-      <div class="cart-layout" *ngIf="hasItems">
-
-        <!-- COLUMNA IZQUIERDA: PRODUCTOS -->
-        <div class="products-section">
-
-          <!-- Barra de acciones -->
-          <div class="cart-actions-bar">
-            <p class="items-summary">
-              <span class="material-icons">inventory_2</span>
-              {{ getTotalItems() }} {{ getTotalItems() === 1 ? 'producto' : 'productos' }} en tu carrito
-            </p>
-            <button class="btn-clear-cart" (click)="showClearConfirm = true">
-              <span class="material-icons">delete_outline</span>Vaciar carrito
+      @if (hasError) {
+        <div class="cart-error">
+          <div class="error-icon">
+            <span class="material-icons">error_outline</span>
+          </div>
+          <h2>{{ errorMessage || 'Error al cargar el carrito' }}</h2>
+          <p>Verifica tu conexión o inicia sesión nuevamente.</p>
+          <div class="error-actions">
+            <button class="btn-retry" (click)="retryLoad()">
+              <span class="material-icons">refresh</span>Reintentar
+            </button>
+            <button class="btn-login" routerLink="/login">
+              <span class="material-icons">login</span>Iniciar Sesión
             </button>
           </div>
+        </div>
+      }
 
-          <!-- Lista de productos -->
-          <div class="products-list">
-            <div
-              class="product-card"
-              [class.unavailable-item]="!isItemAvailable(item)"
-              *ngFor="let item of cartItems; trackBy: trackByItemId"
-              [@slideIn]
-            >
-              <!-- Imagen -->
-              <div class="product-image">
-                <img
+      <!-- ── ESTADO: VACÍO ── -->
+      @if (isEmpty) {
+        <div class="empty-cart">
+          <div class="empty-icon">
+            <span class="material-icons">shopping_cart</span>
+          </div>
+          <h2 class="empty-title">Tu carrito está vacío</h2>
+          <p class="empty-text">¡Descubre nuestra colección de instrumentos musicales!</p>
+          <button class="btn-explore" routerLink="/catalogo">
+            <span class="material-icons">explore</span>Explorar Catálogo
+          </button>
+        </div>
+      }
+
+      <!-- ── ESTADO: CON PRODUCTOS ── -->
+      @if (hasItems) {
+        <div class="cart-layout">
+          <!-- COLUMNA IZQUIERDA: PRODUCTOS -->
+          <div class="products-section">
+            <!-- Barra de acciones -->
+            <div class="cart-actions-bar">
+              <p class="items-summary">
+                <span class="material-icons">inventory_2</span>
+                {{ getTotalItems() }} {{ getTotalItems() === 1 ? 'producto' : 'productos' }} en tu carrito
+              </p>
+              <button class="btn-clear-cart" (click)="showClearConfirm = true">
+                <span class="material-icons">delete_outline</span>Vaciar carrito
+              </button>
+            </div>
+            <!-- Lista de productos -->
+            <div class="products-list">
+              @for (item of cartItems; track trackByItemId($index, item)) {
+                <div
+                  class="product-card"
+                  [class.unavailable-item]="!isItemAvailable(item)"
+                  [@slideIn]
+                  >
+                  <!-- Imagen -->
+                  <div class="product-image">
+                    <img
                   [src]="item.product.images && item.product.images.length > 0
                     ? item.product.images[0]
                     : '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png'"
-                  [alt]="item.product.name"
-                  (error)="onImageError($event)"
-                />
-                <span
-                  class="stock-badge"
-                  *ngIf="item.availableStock > 0 && item.availableStock < 10 && isItemAvailable(item)"
-                >
-                  Solo {{ item.availableStock }} disponibles
-                </span>
-                
-                <!-- Badge de Agotado/No Disponible -->
-                <span class="stock-badge unavailable-badge" *ngIf="!isItemAvailable(item)">
-                  {{ getAvailabilityLabel(item) }}
-                </span>
-              </div>
-
-              <!-- Información del producto -->
-              <div class="product-details">
-                <h3 class="product-name">{{ item.product.name }}</h3>
-                <p class="product-brand" *ngIf="item.product.brand">
-                  <span class="material-icons">verified</span>{{ item.product.brand }}
-                </p>
-                <p class="product-sku" *ngIf="item.product.sku">
-                  SKU: {{ item.product.sku }}
-                </p>
-
-                <!-- Opciones seleccionadas -->
-                <div class="product-options" *ngIf="item.selectedOptions">
-                  <span
-                    class="option-badge"
-                    *ngFor="let option of getSelectedOptionsArray(item.selectedOptions)"
-                  >
-                    {{ option.key }}: {{ option.value }}
-                  </span>
-                </div>
-
-                <!-- Mensaje de Advertencia por item -->
-                <div class="item-warning-message" *ngIf="!isItemAvailable(item) || item.warningMessage">
-                  <span class="material-icons">warning</span>
-                  <span>{{ getAvailabilityMessage(item) }}</span>
-                </div>
-
-                <!-- Acciones -->
-                <div class="product-actions">
-                  <button
-                    class="action-btn remove"
-                    (click)="removeItem(item)"
-                    [disabled]="isItemUpdating(item.backendItemId)"
-                    [attr.aria-label]="'Eliminar ' + item.product.name + ' del carrito'"
-                    title="Eliminar del carrito"
-                  >
-                    <span class="material-icons">delete_outline</span>
-                    <span *ngIf="!isItemUpdating(item.backendItemId)">Eliminar</span>
-                    <span *ngIf="isItemUpdating(item.backendItemId)">Procesando...</span>
-                  </button>
-                  
-                  <button
-                    *ngIf="!isItemAvailable(item)"
-                    class="action-btn wishlist"
-                    (click)="moveToWishlist(item)"
-                    [disabled]="isItemUpdating(item.backendItemId)"
-                    title="Mover a lista de deseos"
-                  >
-                    <span class="material-icons">favorite_border</span>
-                    <span>Mover a Wishlist</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Precio y cantidad -->
-              <div class="product-pricing">
-
-                <!-- Precio unitario -->
-                <div class="price-section">
-                  <div class="price-main">
-                    <span class="price-current">${{ item.backendUnitPrice | number:'1.2-2' }}</span>
-                    <span class="price-unit">c/u</span>
+                      [alt]="item.product.name"
+                      (error)="onImageError($event)"
+                      />
+                      @if (item.availableStock > 0 && item.availableStock < 10 && isItemAvailable(item)) {
+                        <span
+                          class="stock-badge"
+                          >
+                          Solo {{ item.availableStock }} disponibles
+                        </span>
+                      }
+                      <!-- Badge de Agotado/No Disponible -->
+                      @if (!isItemAvailable(item)) {
+                        <span class="stock-badge unavailable-badge">
+                          {{ getAvailabilityLabel(item) }}
+                        </span>
+                      }
+                    </div>
+                    <!-- Información del producto -->
+                    <div class="product-details">
+                      <h3 class="product-name">{{ item.product.name }}</h3>
+                      @if (item.product.brand) {
+                        <p class="product-brand">
+                          <span class="material-icons">verified</span>{{ item.product.brand }}
+                        </p>
+                      }
+                      @if (item.product.sku) {
+                        <p class="product-sku">
+                          SKU: {{ item.product.sku }}
+                        </p>
+                      }
+                      <!-- Opciones seleccionadas -->
+                      @if (item.selectedOptions) {
+                        <div class="product-options">
+                          @for (option of getSelectedOptionsArray(item.selectedOptions); track option) {
+                            <span
+                              class="option-badge"
+                              >
+                              {{ option.key }}: {{ option.value }}
+                            </span>
+                          }
+                        </div>
+                      }
+                      <!-- Mensaje de Advertencia por item -->
+                      @if (!isItemAvailable(item) || item.warningMessage) {
+                        <div class="item-warning-message">
+                          <span class="material-icons">warning</span>
+                          <span>{{ getAvailabilityMessage(item) }}</span>
+                        </div>
+                      }
+                      <!-- Acciones -->
+                      <div class="product-actions">
+                        <button
+                          class="action-btn remove"
+                          (click)="removeItem(item)"
+                          [disabled]="isItemUpdating(item.backendItemId)"
+                          [attr.aria-label]="'Eliminar ' + item.product.name + ' del carrito'"
+                          title="Eliminar del carrito"
+                          >
+                          <span class="material-icons">delete_outline</span>
+                          @if (!isItemUpdating(item.backendItemId)) {
+                            <span>Eliminar</span>
+                          }
+                          @if (isItemUpdating(item.backendItemId)) {
+                            <span>Procesando...</span>
+                          }
+                        </button>
+                        @if (!isItemAvailable(item)) {
+                          <button
+                            class="action-btn wishlist"
+                            (click)="moveToWishlist(item)"
+                            [disabled]="isItemUpdating(item.backendItemId)"
+                            title="Mover a lista de deseos"
+                            >
+                            <span class="material-icons">favorite_border</span>
+                            <span>Mover a Wishlist</span>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                    <!-- Precio y cantidad -->
+                    <div class="product-pricing">
+                      <!-- Precio unitario -->
+                      <div class="price-section">
+                        <div class="price-main">
+                          <span class="price-current">${{ item.backendUnitPrice | number:'1.2-2' }}</span>
+                          <span class="price-unit">c/u</span>
+                        </div>
+                      </div>
+                      <!-- ── SELECTOR DE CANTIDAD PROFESIONAL (FASE 1.2) ── -->
+                      <!-- Reemplaza el <input type="number"> que generaba spinners duplicados -->
+                      <div class="quantity-section">
+                        <label class="quantity-label">Cantidad</label>
+                        <div
+                          class="quantity-control"
+                          [class.quantity-loading]="isItemUpdating(item.backendItemId)"
+                          >
+                          <button
+                            type="button"
+                            class="qty-btn qty-decrease"
+                            [disabled]="item.quantity <= 1 || isItemUpdating(item.backendItemId) || !canUpdateQuantity(item)"
+                            (click)="decreaseQuantity(item)"
+                            [attr.aria-label]="'Disminuir cantidad de ' + item.product.name"
+                            >
+                            <span class="material-icons">remove</span>
+                          </button>
+                          <!-- Span solo-lectura: sin spinners del navegador -->
+                          <span
+                            class="qty-value"
+                            [attr.aria-label]="'Cantidad: ' + item.quantity"
+                          >{{ item.quantity }}</span>
+                          <button
+                            type="button"
+                            class="qty-btn qty-increase"
+                            [disabled]="item.quantity >= (item.availableStock || 99) || isItemUpdating(item.backendItemId) || !canUpdateQuantity(item)"
+                            (click)="increaseQuantity(item)"
+                            [attr.aria-label]="'Aumentar cantidad de ' + item.product.name"
+                            >
+                            <span class="material-icons">add</span>
+                          </button>
+                        </div>
+                        <!-- Aviso de stock bajo -->
+                        @if (item.quantity >= (item.availableStock || 99) && item.availableStock > 0) {
+                          <span
+                            class="stock-warning"
+                            >
+                            Máximo disponible
+                          </span>
+                        }
+                      </div>
+                      <!-- Subtotal del item -->
+                      <div class="item-total">
+                        <span class="total-label">Subtotal</span>
+                        <span class="total-price">${{ getItemTotal(item) | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                    <!-- Overlay de loading por item -->
+                    @if (isItemUpdating(item.backendItemId)) {
+                      <div class="item-loading-overlay">
+                        <div class="item-spinner"></div>
+                      </div>
+                    }
                   </div>
-                </div>
-
-                <!-- ── SELECTOR DE CANTIDAD PROFESIONAL (FASE 1.2) ── -->
-                <!-- Reemplaza el <input type="number"> que generaba spinners duplicados -->
-                <div class="quantity-section">
-                  <label class="quantity-label">Cantidad</label>
-                  <div
-                    class="quantity-control"
-                    [class.quantity-loading]="isItemUpdating(item.backendItemId)"
-                  >
-                    <button
-                      type="button"
-                      class="qty-btn qty-decrease"
-                      [disabled]="item.quantity <= 1 || isItemUpdating(item.backendItemId) || !canUpdateQuantity(item)"
-                      (click)="decreaseQuantity(item)"
-                      [attr.aria-label]="'Disminuir cantidad de ' + item.product.name"
-                    >
-                      <span class="material-icons">remove</span>
-                    </button>
-
-                    <!-- Span solo-lectura: sin spinners del navegador -->
-                    <span
-                      class="qty-value"
-                      [attr.aria-label]="'Cantidad: ' + item.quantity"
-                    >{{ item.quantity }}</span>
-
-                    <button
-                      type="button"
-                      class="qty-btn qty-increase"
-                      [disabled]="item.quantity >= (item.availableStock || 99) || isItemUpdating(item.backendItemId) || !canUpdateQuantity(item)"
-                      (click)="increaseQuantity(item)"
-                      [attr.aria-label]="'Aumentar cantidad de ' + item.product.name"
-                    >
-                      <span class="material-icons">add</span>
-                    </button>
-                  </div>
-
-                  <!-- Aviso de stock bajo -->
-                  <span
-                    class="stock-warning"
-                    *ngIf="item.quantity >= (item.availableStock || 99) && item.availableStock > 0"
-                  >
-                    Máximo disponible
-                  </span>
-                </div>
-
-                <!-- Subtotal del item -->
-                <div class="item-total">
-                  <span class="total-label">Subtotal</span>
-                  <span class="total-price">${{ getItemTotal(item) | number:'1.2-2' }}</span>
-                </div>
-              </div>
-
-              <!-- Overlay de loading por item -->
-              <div class="item-loading-overlay" *ngIf="isItemUpdating(item.backendItemId)">
-                <div class="item-spinner"></div>
+                }
               </div>
             </div>
+            <!-- COLUMNA DERECHA: RESUMEN -->
+            <aside class="summary-section">
+              <div class="summary-card sticky">
+                <!-- Header -->
+                <div class="summary-header">
+                  <h2 class="summary-title">Resumen del Pedido</h2>
+                </div>
+                <!-- Detalles -->
+                <div class="summary-details">
+                  <!-- Warning Global del Carrito -->
+                  @if (!canCheckout && cartWarningMessage) {
+                    <div class="global-warning">
+                      <span class="material-icons">error_outline</span>
+                      <span>{{ cartWarningMessage }}</span>
+                    </div>
+                  }
+                  <div class="detail-row">
+                    <span class="detail-label">Subtotal ({{ getTotalItems() }} productos)</span>
+                    <span class="detail-value">${{ cartSubtotal | number:'1.2-2' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Envío</span>
+                    <span class="detail-value" [class.free]="cartShipping === 0">
+                      {{ cartShipping === 0 ? 'GRATIS' : ('$' + (cartShipping | number:'1.2-2')) }}
+                    </span>
+                  </div>
+                  <!-- Barra de progreso envío gratis -->
+                  @if (cartSubtotal < freeShippingThreshold) {
+                    <div class="free-shipping-progress">
+                      <div class="progress-info">
+                        <span class="material-icons">local_shipping</span>
+                        <span class="progress-text">
+                          ¡Agrega <strong>${{ (freeShippingThreshold - cartSubtotal) | number:'1.2-2' }}</strong> más para envío gratis!
+                        </span>
+                      </div>
+                      <div class="progress-bar">
+                        <div
+                          class="progress-fill"
+                          [style.width.%]="(cartSubtotal / freeShippingThreshold) * 100"
+                        ></div>
+                      </div>
+                    </div>
+                  }
+                  @if (cartSubtotal >= freeShippingThreshold) {
+                    <div class="free-shipping-achieved">
+                      <span class="material-icons">check_circle</span>
+                      <span>¡Envío gratis aplicado!</span>
+                    </div>
+                  }
+                  <div class="detail-row">
+                    <span class="detail-label">IVA (16%)</span>
+                    <span class="detail-value">${{ cartTaxes | number:'1.2-2' }}</span>
+                  </div>
+                  <!-- Descuento por cupón -->
+                  @if (currentDiscount > 0) {
+                    <div class="detail-row discount-row">
+                      <span class="detail-label">
+                        Descuento
+                        @if (appliedCoupon) {
+                          <span class="coupon-tag">({{ appliedCoupon }})</span>
+                        }
+                      </span>
+                      <span class="detail-value discount-value">-${{ currentDiscount | number:'1.2-2' }}</span>
+                      <button class="btn-remove-coupon" (click)="removeCoupon()" title="Quitar cupón">✕</button>
+                    </div>
+                  }
+                  <div class="divider"></div>
+                  <div class="detail-row total-row">
+                    <span class="detail-label">Total</span>
+                    <span class="detail-value total-value">${{ cartTotal | number:'1.2-2' }}</span>
+                  </div>
+                  <!-- Productos No Disponibles -->
+                  @if (unavailableItemsTotal > 0) {
+                    <div class="detail-row unavailable-row">
+                      <span class="detail-label">Productos no disponibles</span>
+                      <span class="detail-value">${{ unavailableItemsTotal | number:'1.2-2' }}</span>
+                    </div>
+                  }
+                </div>
+                <!-- Cupón -->
+                <div class="coupon-section">
+                  <button class="coupon-toggle" (click)="toggleCoupon()">
+                    <span class="material-icons">local_offer</span>
+                    ¿Tienes un cupón de descuento?
+                    <span class="material-icons">{{ showCouponInput ? 'expand_less' : 'expand_more' }}</span>
+                  </button>
+                  @if (showCouponInput) {
+                    <div class="coupon-input-wrapper" [@slideIn]>
+                      <input
+                        type="text"
+                        class="coupon-input"
+                        placeholder="Código del cupón"
+                        [(ngModel)]="couponCode"
+                        (keyup.enter)="applyCoupon()"
+                        />
+                        <button class="btn-apply-coupon" (click)="applyCoupon()">Aplicar</button>
+                      </div>
+                    }
+                  </div>
+                  <!-- Botón Checkout (TODO Fase 2) -->
+                  <div class="checkout-wrapper" [title]="!canCheckout ? 'Elimina o mueve a lista de deseos los productos no disponibles para continuar.' : ''">
+                    <button
+                      id="btn-proceed-checkout"
+                      class="btn-checkout"
+                      (click)="proceedToCheckout()"
+                      [disabled]="cartItems.length === 0 || !canCheckout"
+                      >
+                      <span class="material-icons">lock</span>Proceder al Pago
+                    </button>
+                    @if (!canCheckout) {
+                      <p class="checkout-hint">
+                        Hay productos no disponibles en tu carrito.
+                      </p>
+                    }
+                  </div>
+                  <!-- Métodos de pago -->
+                  <div class="payment-methods">
+                    <p class="methods-title">Métodos de pago aceptados</p>
+                    <div class="methods-icons">
+                      <span class="material-icons" title="Tarjetas de crédito">credit_card</span>
+                      <span class="material-icons" title="PayPal">account_balance_wallet</span>
+                      <span class="material-icons" title="Transferencia">account_balance</span>
+                      <span class="material-icons" title="Efectivo">payments</span>
+                    </div>
+                  </div>
+                  <!-- Garantías -->
+                  <div class="guarantees">
+                    <div class="guarantee-item">
+                      <span class="material-icons">verified_user</span>
+                      <span>Compra 100% segura</span>
+                    </div>
+                    <div class="guarantee-item">
+                      <span class="material-icons">cached</span>
+                      <span>30 días de devolución</span>
+                    </div>
+                    <div class="guarantee-item">
+                      <span class="material-icons">support_agent</span>
+                      <span>Soporte 24/7</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          }
+
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Confirmar vaciar carrito -->
+    @if (showClearConfirm) {
+      <div class="modal-overlay" (click)="showClearConfirm = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-icon warning">
+            <span class="material-icons">warning</span>
+          </div>
+          <h3 class="modal-title">¿Vaciar carrito?</h3>
+          <p class="modal-text">Esta acción eliminará todos los productos de tu carrito. ¿Deseas continuar?</p>
+          <div class="modal-actions">
+            <button class="btn-cancel" (click)="showClearConfirm = false">Cancelar</button>
+            <button class="btn-confirm" (click)="confirmClearCart()">Sí, vaciar carrito</button>
           </div>
         </div>
-
-        <!-- COLUMNA DERECHA: RESUMEN -->
-        <aside class="summary-section">
-          <div class="summary-card sticky">
-
-            <!-- Header -->
-            <div class="summary-header">
-              <h2 class="summary-title">Resumen del Pedido</h2>
-            </div>
-
-            <!-- Detalles -->
-            <div class="summary-details">
-              
-              <!-- Warning Global del Carrito -->
-              <div class="global-warning" *ngIf="!canCheckout && cartWarningMessage">
-                <span class="material-icons">error_outline</span>
-                <span>{{ cartWarningMessage }}</span>
-              </div>
-              
-              <div class="detail-row">
-                <span class="detail-label">Subtotal ({{ getTotalItems() }} productos)</span>
-                <span class="detail-value">${{ cartSubtotal | number:'1.2-2' }}</span>
-              </div>
-
-              <div class="detail-row">
-                <span class="detail-label">Envío</span>
-                <span class="detail-value" [class.free]="cartShipping === 0">
-                  {{ cartShipping === 0 ? 'GRATIS' : ('$' + (cartShipping | number:'1.2-2')) }}
-                </span>
-              </div>
-
-              <!-- Barra de progreso envío gratis -->
-              <div class="free-shipping-progress" *ngIf="cartSubtotal < freeShippingThreshold">
-                <div class="progress-info">
-                  <span class="material-icons">local_shipping</span>
-                  <span class="progress-text">
-                    ¡Agrega <strong>${{ (freeShippingThreshold - cartSubtotal) | number:'1.2-2' }}</strong> más para envío gratis!
-                  </span>
-                </div>
-                <div class="progress-bar">
-                  <div
-                    class="progress-fill"
-                    [style.width.%]="(cartSubtotal / freeShippingThreshold) * 100"
-                  ></div>
-                </div>
-              </div>
-
-              <div class="free-shipping-achieved" *ngIf="cartSubtotal >= freeShippingThreshold">
-                <span class="material-icons">check_circle</span>
-                <span>¡Envío gratis aplicado!</span>
-              </div>
-
-              <div class="detail-row">
-                <span class="detail-label">IVA (16%)</span>
-                <span class="detail-value">${{ cartTaxes | number:'1.2-2' }}</span>
-              </div>
-
-              <!-- Descuento por cupón -->
-              <div class="detail-row discount-row" *ngIf="currentDiscount > 0">
-                <span class="detail-label">
-                  Descuento
-                  <span class="coupon-tag" *ngIf="appliedCoupon">({{ appliedCoupon }})</span>
-                </span>
-                <span class="detail-value discount-value">-${{ currentDiscount | number:'1.2-2' }}</span>
-                <button class="btn-remove-coupon" (click)="removeCoupon()" title="Quitar cupón">✕</button>
-              </div>
-
-              <div class="divider"></div>
-
-              <div class="detail-row total-row">
-                <span class="detail-label">Total</span>
-                <span class="detail-value total-value">${{ cartTotal | number:'1.2-2' }}</span>
-              </div>
-              
-              <!-- Productos No Disponibles -->
-              <div class="detail-row unavailable-row" *ngIf="unavailableItemsTotal > 0">
-                <span class="detail-label">Productos no disponibles</span>
-                <span class="detail-value">${{ unavailableItemsTotal | number:'1.2-2' }}</span>
-              </div>
-            </div>
-
-            <!-- Cupón -->
-            <div class="coupon-section">
-              <button class="coupon-toggle" (click)="toggleCoupon()">
-                <span class="material-icons">local_offer</span>
-                ¿Tienes un cupón de descuento?
-                <span class="material-icons">{{ showCouponInput ? 'expand_less' : 'expand_more' }}</span>
-              </button>
-
-              <div class="coupon-input-wrapper" *ngIf="showCouponInput" [@slideIn]>
-                <input
-                  type="text"
-                  class="coupon-input"
-                  placeholder="Código del cupón"
-                  [(ngModel)]="couponCode"
-                  (keyup.enter)="applyCoupon()"
-                />
-                <button class="btn-apply-coupon" (click)="applyCoupon()">Aplicar</button>
-              </div>
-            </div>
-
-            <!-- Botón Checkout (TODO Fase 2) -->
-            <div class="checkout-wrapper" [title]="!canCheckout ? 'Elimina o mueve a lista de deseos los productos no disponibles para continuar.' : ''">
-              <button
-                id="btn-proceed-checkout"
-                class="btn-checkout"
-                (click)="proceedToCheckout()"
-                [disabled]="cartItems.length === 0 || !canCheckout"
-              >
-                <span class="material-icons">lock</span>Proceder al Pago
-              </button>
-              <p class="checkout-hint" *ngIf="!canCheckout">
-                Hay productos no disponibles en tu carrito.
-              </p>
-            </div>
-
-            <!-- Métodos de pago -->
-            <div class="payment-methods">
-              <p class="methods-title">Métodos de pago aceptados</p>
-              <div class="methods-icons">
-                <span class="material-icons" title="Tarjetas de crédito">credit_card</span>
-                <span class="material-icons" title="PayPal">account_balance_wallet</span>
-                <span class="material-icons" title="Transferencia">account_balance</span>
-                <span class="material-icons" title="Efectivo">payments</span>
-              </div>
-            </div>
-
-            <!-- Garantías -->
-            <div class="guarantees">
-              <div class="guarantee-item">
-                <span class="material-icons">verified_user</span>
-                <span>Compra 100% segura</span>
-              </div>
-              <div class="guarantee-item">
-                <span class="material-icons">cached</span>
-                <span>30 días de devolución</span>
-              </div>
-              <div class="guarantee-item">
-                <span class="material-icons">support_agent</span>
-                <span>Soporte 24/7</span>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Confirmar vaciar carrito -->
-<div class="modal-overlay" *ngIf="showClearConfirm" (click)="showClearConfirm = false">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-icon warning">
-      <span class="material-icons">warning</span>
-    </div>
-    <h3 class="modal-title">¿Vaciar carrito?</h3>
-    <p class="modal-text">Esta acción eliminará todos los productos de tu carrito. ¿Deseas continuar?</p>
-    <div class="modal-actions">
-      <button class="btn-cancel" (click)="showClearConfirm = false">Cancelar</button>
-      <button class="btn-confirm" (click)="confirmClearCart()">Sí, vaciar carrito</button>
-    </div>
-  </div>
-</div>
+    }

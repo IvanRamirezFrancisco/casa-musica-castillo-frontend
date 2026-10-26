@@ -1,21 +1,22 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
-     Admin DB Management — Componente Padre con Tabs
-     Ruta: /admin/gestion-db  |  Tabs filtradas por permisos granulares
-     ═══════════════════════════════════════════════════════════════════════ -->
+Admin DB Management — Componente Padre con Tabs
+Ruta: /admin/gestion-db  |  Tabs filtradas por permisos granulares
+═══════════════════════════════════════════════════════════════════════ -->
 <div class="dbm-root">
 
   <!-- ── BARRA DE TABS ──────────────────────────────────────────────────── -->
   <nav class="dbm-tabs" role="tablist" aria-label="Módulos de gestión de base de datos">
-    <button
-      *ngFor="let tab of visibleTabs"
-      role="tab"
-      class="dbm-tab"
-      [class.dbm-tab--active]="activeTab === tab.value"
-      [attr.aria-selected]="activeTab === tab.value"
-      (click)="changeTab(tab.value)">
-      <span class="material-icons dbm-tab__icon">{{ tab.icon }}</span>
-      <span class="dbm-tab__label">{{ tab.label }}</span>
-    </button>
+    @for (tab of visibleTabs; track tab) {
+      <button
+        role="tab"
+        class="dbm-tab"
+        [class.dbm-tab--active]="activeTab === tab.value"
+        [attr.aria-selected]="activeTab === tab.value"
+        (click)="changeTab(tab.value)">
+        <span class="material-icons dbm-tab__icon">{{ tab.icon }}</span>
+        <span class="dbm-tab__label">{{ tab.label }}</span>
+      </button>
+    }
   </nav>
 
   <!-- ── CONTENIDO DINÁMICO ─────────────────────────────────────────────── -->

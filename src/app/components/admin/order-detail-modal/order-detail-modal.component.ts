@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,17 +15,17 @@ import {
   OrderTimelineEvent
 } from '../../../models/order.model';
 import Swal from 'sweetalert2';
-import * as pdfjsLib from 'pdfjs-dist';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { loadPdfDocument, renderPdfPage } from '../../../shared/pdf/pdf-preview';
 import { AuthService } from '../../../services/auth.service';
 
-// Configurar el worker (esto requiere que pdf.worker.min.js esté en assets/pdfjs)
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
 
 @Component({
   selector: 'app-order-detail-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './order-detail-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./order-detail-modal.component.css']
 })
 export class OrderDetailModalComponent implements OnInit {
@@ -63,7 +63,7 @@ export class OrderDetailModalComponent implements OnInit {
   proofPreviewError: string | null = null;
   loadingProofPreview = false;
   @ViewChild('pdfCanvas') pdfCanvas!: ElementRef<HTMLCanvasElement>;
-  pdfDocument: any = null;
+  pdfDocument: PDFDocumentProxy | null = null;
 
   // Timeline
   timeline: OrderTimelineEvent[] = [];
@@ -723,8 +723,7 @@ export class OrderDetailModalComponent implements OnInit {
   async renderPdf(blob: Blob): Promise<void> {
     try {
       const arrayBuffer = await blob.arrayBuffer();
-      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      this.pdfDocument = await loadingTask.promise;
+      this.pdfDocument = await loadPdfDocument(arrayBuffer);
       const page = await this.pdfDocument.getPage(1);
       
       // Forzar que Angular renderice el modal y asigne el elemento al ViewChild
@@ -735,19 +734,12 @@ export class OrderDetailModalComponent implements OnInit {
           console.error('PDF canvas no disponible después del setTimeout');
           return;
         }
-        const canvas = this.pdfCanvas.nativeElement;
-        const context = canvas.getContext('2d');
-        if (!context) return;
-        
-        // Setup viewport
-        const viewport = page.getViewport({ scale: 1.5 });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        await page.render({
-          canvasContext: context,
-          viewport: viewport
-        }).promise;
+        try {
+          await renderPdfPage(page, this.pdfCanvas.nativeElement);
+        } catch {
+          this.proofPreviewError = 'No se pudo previsualizar el PDF. Puedes descargarlo.';
+          this.cdr.detectChanges();
+        }
       }, 0);
     } catch (error) {
       console.error('PDF.js render error:', error);

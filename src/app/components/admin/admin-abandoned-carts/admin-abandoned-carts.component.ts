@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ShoppingCartService } from '../../../services/shopping-cart.service';
@@ -22,6 +22,7 @@ interface CartFilters {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-abandoned-carts.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-abandoned-carts.component.css']
 })
 export class AdminAbandonedCartsComponent implements OnInit {

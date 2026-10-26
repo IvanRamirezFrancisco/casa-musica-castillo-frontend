@@ -28,7 +28,8 @@
           "/assets/icons/icon-512x512.png",
           "/assets/icons/maskable-icon-192x192.png",
           "/assets/icons/maskable-icon-512x512.png",
-          "/assets/image.png"
+          "/assets/image.png",
+          "/assets/pdfjs/pdf.worker.min.mjs"
         ],
         "urls": [
           "/index.html"

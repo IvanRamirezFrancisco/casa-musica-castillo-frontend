@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { PasswordResetService } from './password-reset.service';
 import { environment } from '../../environments/environment';
@@ -8,7 +8,7 @@ describe('Authentication hardening recovery compatibility',()=>{
   let service: PasswordResetService;
   let http: HttpTestingController;
   beforeEach(()=>{
-    TestBed.configureTestingModule({providers:[PasswordResetService,provideHttpClient(),provideHttpClientTesting()]});
+    TestBed.configureTestingModule({providers:[PasswordResetService,provideHttpClient(withXhr()),provideHttpClientTesting()]});
     service=TestBed.inject(PasswordResetService);http=TestBed.inject(HttpTestingController);
   });
   afterEach(()=>http.verify());

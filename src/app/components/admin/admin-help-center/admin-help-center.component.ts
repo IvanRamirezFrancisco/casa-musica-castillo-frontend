@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { HelpCenterService } from '../../../services/help-center.service';
@@ -24,8 +24,9 @@ interface IconOption {
 @Component({
   selector: 'app-admin-help-center',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './admin-help-center.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-help-center.component.css']
 })
 export class AdminHelpCenterComponent implements OnInit, OnDestroy {

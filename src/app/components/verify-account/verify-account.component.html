@@ -1,56 +1,59 @@
 <!-- Verificación de Cuenta -->
 <div class="verify-container">
   <div class="verify-card">
-    
+
     <!-- Loading State -->
-    <div *ngIf="loading" class="loading-section">
-      <div class="spinner"></div>
-      <h2>Verificando tu cuenta...</h2>
-      <p>Por favor espera mientras procesamos tu verificación.</p>
-    </div>
+    @if (loading) {
+      <div class="loading-section">
+        <div class="spinner"></div>
+        <h2>Verificando tu cuenta...</h2>
+        <p>Por favor espera mientras procesamos tu verificación.</p>
+      </div>
+    }
 
     <!-- Success State -->
-    <div *ngIf="!loading && verified" class="success-section">
-      <div class="success-icon">
-        <span class="material-symbols-outlined">check_circle</span>
+    @if (!loading && verified) {
+      <div class="success-section">
+        <div class="success-icon">
+          <span class="material-symbols-outlined">check_circle</span>
+        </div>
+        <h2>¡Cuenta Verificada!</h2>
+        <p class="success-message">{{ message }}</p>
+        <p class="redirect-info">Serás redirigido al login en unos segundos...</p>
+        <div class="action-buttons">
+          <button (click)="goToLogin()" class="btn btn-primary">
+            Ir al Login
+          </button>
+        </div>
       </div>
-      <h2>¡Cuenta Verificada!</h2>
-      <p class="success-message">{{ message }}</p>
-      <p class="redirect-info">Serás redirigido al login en unos segundos...</p>
-      
-      <div class="action-buttons">
-        <button (click)="goToLogin()" class="btn btn-primary">
-          Ir al Login
-        </button>
-      </div>
-    </div>
+    }
 
     <!-- Error State -->
-    <div *ngIf="!loading && !verified && error" class="error-section">
-      <div class="error-icon">
-        <span class="material-symbols-outlined">error</span>
+    @if (!loading && !verified && error) {
+      <div class="error-section">
+        <div class="error-icon">
+          <span class="material-symbols-outlined">error</span>
+        </div>
+        <h2>Error de Verificación</h2>
+        <p class="error-message">{{ error }}</p>
+        <div class="error-suggestions">
+          <h3>¿Qué puedes hacer?</h3>
+          <ul>
+            <li>Verificar que el enlace esté completo y no se haya cortado</li>
+            <li>Solicitar un nuevo enlace de verificación</li>
+            <li>Contactar soporte si el problema persiste</li>
+          </ul>
+        </div>
+        <div class="action-buttons">
+          <button (click)="goToLogin()" class="btn btn-secondary">
+            Ir al Login
+          </button>
+          <button (click)="resendVerification()" class="btn btn-primary">
+            Reenviar Verificación
+          </button>
+        </div>
       </div>
-      <h2>Error de Verificación</h2>
-      <p class="error-message">{{ error }}</p>
-      
-      <div class="error-suggestions">
-        <h3>¿Qué puedes hacer?</h3>
-        <ul>
-          <li>Verificar que el enlace esté completo y no se haya cortado</li>
-          <li>Solicitar un nuevo enlace de verificación</li>
-          <li>Contactar soporte si el problema persiste</li>
-        </ul>
-      </div>
-      
-      <div class="action-buttons">
-        <button (click)="goToLogin()" class="btn btn-secondary">
-          Ir al Login
-        </button>
-        <button (click)="resendVerification()" class="btn btn-primary">
-          Reenviar Verificación
-        </button>
-      </div>
-    </div>
+    }
 
   </div>
 </div>

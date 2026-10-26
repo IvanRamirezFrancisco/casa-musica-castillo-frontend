@@ -107,18 +107,20 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div *ngFor="let item of processSteps" class="relative bg-[#FCFAF7] rounded-xl p-5 border border-[#E5E0D8]">
-          <div class="flex items-center justify-between mb-3">
-            <span class="w-10 h-10 rounded-lg bg-[#722F37] text-white flex items-center justify-center">
-              <span class="material-icons text-xl" aria-hidden="true">{{ item.icon }}</span>
-            </span>
-            <span class="text-xs font-mono font-bold text-[#C5A059] bg-white px-2.5 py-1 rounded-full border border-[#C5A059]/30">
-              Paso {{ item.step }}
-            </span>
+        @for (item of processSteps; track item) {
+          <div class="relative bg-[#FCFAF7] rounded-xl p-5 border border-[#E5E0D8]">
+            <div class="flex items-center justify-between mb-3">
+              <span class="w-10 h-10 rounded-lg bg-[#722F37] text-white flex items-center justify-center">
+                <span class="material-icons text-xl" aria-hidden="true">{{ item.icon }}</span>
+              </span>
+              <span class="text-xs font-mono font-bold text-[#C5A059] bg-white px-2.5 py-1 rounded-full border border-[#C5A059]/30">
+                Paso {{ item.step }}
+              </span>
+            </div>
+            <h3 class="text-base font-bold text-[#292524] mb-1.5">{{ item.title }}</h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{{ item.desc }}</p>
           </div>
-          <h3 class="text-base font-bold text-[#292524] mb-1.5">{{ item.title }}</h3>
-          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{{ item.desc }}</p>
-        </div>
+        }
       </div>
     </section>
 
@@ -129,13 +131,15 @@
         <h2 class="text-2xl font-bold text-[#292524]">Recomendaciones al recibir tu pedido</h2>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div *ngFor="let tip of receptionTips" class="flex items-start gap-3.5 p-4 rounded-xl bg-[#FCFAF7] border border-slate-200/70">
-          <span class="material-icons text-[#722F37] text-2xl shrink-0 mt-0.5" aria-hidden="true">{{ tip.icon }}</span>
-          <div>
-            <h3 class="text-sm font-bold text-[#292524] mb-1">{{ tip.title }}</h3>
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{{ tip.text }}</p>
+        @for (tip of receptionTips; track tip) {
+          <div class="flex items-start gap-3.5 p-4 rounded-xl bg-[#FCFAF7] border border-slate-200/70">
+            <span class="material-icons text-[#722F37] text-2xl shrink-0 mt-0.5" aria-hidden="true">{{ tip.icon }}</span>
+            <div>
+              <h3 class="text-sm font-bold text-[#292524] mb-1">{{ tip.title }}</h3>
+              <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{{ tip.text }}</p>
+            </div>
           </div>
-        </div>
+        }
       </div>
     </section>
 
@@ -153,27 +157,31 @@
       </div>
 
       <div class="space-y-3">
-        <div *ngFor="let faq of shippingFaqs; let i = index"
-             class="border border-[#E5E0D8] rounded-xl overflow-hidden transition-colors"
-             [ngClass]="faq.isOpen ? 'border-[#722F37]/50 bg-[#FCFAF7]' : 'bg-white'">
-          <button type="button"
-                  (click)="toggleFaq(i)"
-                  [attr.aria-expanded]="faq.isOpen"
-                  [attr.aria-controls]="'shipping-faq-' + i"
-                  class="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-semibold text-sm sm:text-base text-[#292524] hover:text-[#722F37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A059]">
-            <span>{{ faq.question }}</span>
-            <span class="material-icons text-[#722F37] transition-transform duration-200 shrink-0"
-                  [class.rotate-180]="faq.isOpen"
-                  aria-hidden="true">
-              expand_more
-            </span>
-          </button>
-          <div *ngIf="faq.isOpen"
-               [id]="'shipping-faq-' + i"
-               class="px-5 pb-4 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
-            {{ faq.answer }}
+        @for (faq of shippingFaqs; track faq; let i = $index) {
+          <div
+            class="border border-[#E5E0D8] rounded-xl overflow-hidden transition-colors"
+            [ngClass]="faq.isOpen ? 'border-[#722F37]/50 bg-[#FCFAF7]' : 'bg-white'">
+            <button type="button"
+              (click)="toggleFaq(i)"
+              [attr.aria-expanded]="faq.isOpen"
+              [attr.aria-controls]="'shipping-faq-' + i"
+              class="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-semibold text-sm sm:text-base text-[#292524] hover:text-[#722F37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A059]">
+              <span>{{ faq.question }}</span>
+              <span class="material-icons text-[#722F37] transition-transform duration-200 shrink-0"
+                [class.rotate-180]="faq.isOpen"
+                aria-hidden="true">
+                expand_more
+              </span>
+            </button>
+            @if (faq.isOpen) {
+              <div
+                [id]="'shipping-faq-' + i"
+                class="px-5 pb-4 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                {{ faq.answer }}
+              </div>
+            }
           </div>
-        </div>
+        }
       </div>
     </section>
 
@@ -188,7 +196,7 @@
             <span class="material-icons" aria-hidden="true">arrow_forward</span>
           </a>
           <a routerLink="/informacion/pagos"
-             class="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg border border-[#722F37]/30 text-[#722F37] font-semibold hover:bg-[#722F37]/5 transition-colors">
+            class="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg border border-[#722F37]/30 text-[#722F37] font-semibold hover:bg-[#722F37]/5 transition-colors">
             Ver formas de pago
           </a>
         </div>

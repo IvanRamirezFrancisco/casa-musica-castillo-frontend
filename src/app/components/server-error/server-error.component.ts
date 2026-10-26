@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-server-error',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './server-error.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./server-error.component.css']
 })
 export class ServerErrorComponent {

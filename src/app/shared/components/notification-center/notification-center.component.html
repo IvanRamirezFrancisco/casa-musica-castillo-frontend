@@ -1,214 +1,233 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
-     Centro de Notificaciones — Topbar global
-     Seguridad: solo muestra notificaciones autorizadas según el rol
-     ═══════════════════════════════════════════════════════════════════════ -->
+Centro de Notificaciones — Topbar global
+Seguridad: solo muestra notificaciones autorizadas según el rol
+═══════════════════════════════════════════════════════════════════════ -->
 <div class="nc" [class.nc--open]="isOpen">
 
   <!-- ── Botón campana ─────────────────────────────────────────────────── -->
   <button class="nc__trigger"
-          (click)="toggle($event)"
-          [class.nc__trigger--active]="isOpen"
-          [attr.aria-label]="'Notificaciones'"
-          aria-haspopup="true"
-          [attr.aria-expanded]="isOpen">
+    (click)="toggle($event)"
+    [class.nc__trigger--active]="isOpen"
+    [attr.aria-label]="'Notificaciones'"
+    aria-haspopup="true"
+    [attr.aria-expanded]="isOpen">
 
     <svg class="nc__bell" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="2"
-         stroke-linecap="round" stroke-linejoin="round">
+      stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
       <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
     </svg>
 
-    <span class="nc__badge"
-          *ngIf="(notifService.unreadCount$ | async) as count"
-          @badgePulse>
-      {{ count > 9 ? '9+' : count }}
-    </span>
+    @if ((notifService.unreadCount$ | async); as count) {
+      <span class="nc__badge"
+        @badgePulse>
+        {{ count > 9 ? '9+' : count }}
+      </span>
+    }
   </button>
 
   <!-- ── Panel desplegable ─────────────────────────────────────────────── -->
-  <div class="nc__panel" *ngIf="isOpen" @slideDown role="dialog" aria-label="Panel de notificaciones">
-
-    <!-- Header -->
-    <div class="nc__header">
-      <div class="nc__header-top">
-        <h3 class="nc__title">Notificaciones</h3>
-        <div class="nc__header-actions">
-          <button class="nc__mark-all"
-                  *ngIf="(notifService.unreadCount$ | async)! > 0"
-                  (click)="markAllRead()">
-            Marcar todas como leídas
-          </button>
-          <button class="nc__close-btn" (click)="close()" aria-label="Cerrar">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M1 1l12 12M13 1L1 13"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Filtros por categoría -->
-      <div class="nc__filters" role="tablist">
-        <button class="nc__filter"
-                role="tab"
-                [class.nc__filter--active]="activeFilter === 'all'"
-                (click)="setFilter('all')">
-          Todas
-          <span class="nc__filter-badge"
-                *ngIf="(notifService.unreadCount$ | async) as count">
-            {{ count }}
-          </span>
-        </button>
-
-        <button class="nc__filter"
-                role="tab"
-                [class.nc__filter--active]="activeFilter === 'database'"
-                (click)="setFilter('database')">
-          Base de Datos
-          <span class="nc__filter-badge"
-                *ngIf="(notifService.unreadByCategory$ | async) as cats">
-            <ng-container *ngIf="cats.database > 0">{{ cats.database }}</ng-container>
-          </span>
-        </button>
-
-        <button class="nc__filter"
-                role="tab"
-                [class.nc__filter--active]="activeFilter === 'inventory'"
-                (click)="setFilter('inventory')">
-          Inventario
-          <span class="nc__filter-badge"
-                *ngIf="(notifService.unreadByCategory$ | async) as cats">
-            <ng-container *ngIf="cats.inventory > 0">{{ cats.inventory }}</ng-container>
-          </span>
-        </button>
-
-        <button class="nc__filter"
-                role="tab"
-                [class.nc__filter--active]="activeFilter === 'users'"
-                (click)="setFilter('users')">
-          Usuarios
-          <span class="nc__filter-badge"
-                *ngIf="(notifService.unreadByCategory$ | async) as cats">
-            <ng-container *ngIf="cats.users > 0">{{ cats.users }}</ng-container>
-          </span>
-        </button>
-
-        <button class="nc__filter"
-                role="tab"
-                [class.nc__filter--active]="activeFilter === 'orders'"
-                (click)="setFilter('orders')">
-          Órdenes
-          <span class="nc__filter-badge"
-                *ngIf="(notifService.unreadByCategory$ | async) as cats">
-            <ng-container *ngIf="cats.orders > 0">{{ cats.orders }}</ng-container>
-          </span>
-        </button>
-
-        <button class="nc__filter"
-                role="tab"
-                [class.nc__filter--active]="activeFilter === 'system'"
-                (click)="setFilter('system')">
-          Sistema
-          <span class="nc__filter-badge"
-                *ngIf="(notifService.unreadByCategory$ | async) as cats">
-            <ng-container *ngIf="cats.system > 0">{{ cats.system }}</ng-container>
-          </span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Lista de notificaciones -->
-    <div class="nc__list" role="list">
-      <ng-container *ngIf="filteredNotifications$ | async as items">
-
-        <!-- Estado vacío -->
-        <div class="nc__empty" *ngIf="items.length === 0">
-          <div class="nc__empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.5" width="36" height="36"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
+  @if (isOpen) {
+    <div class="nc__panel" @slideDown role="dialog" aria-label="Panel de notificaciones">
+      <!-- Header -->
+      <div class="nc__header">
+        <div class="nc__header-top">
+          <h3 class="nc__title">Notificaciones</h3>
+          <div class="nc__header-actions">
+            @if ((notifService.unreadCount$ | async)! > 0) {
+              <button class="nc__mark-all"
+                (click)="markAllRead()">
+                Marcar todas como leídas
+              </button>
+            }
+            <button class="nc__close-btn" (click)="close()" aria-label="Cerrar">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M1 1l12 12M13 1L1 13"/>
+              </svg>
+            </button>
           </div>
-          <p class="nc__empty-title">Sin notificaciones</p>
-          <p class="nc__empty-sub">Todo está funcionando correctamente</p>
         </div>
-
-        <!-- Item individual -->
-        <div class="nc__item"
-             role="listitem"
-             *ngFor="let notif of items; trackBy: trackById"
-             [class.nc__item--unread]="!notif.read"
-             [class.nc__item--error]="notif.level === 'error'"
-             [class.nc__item--warning]="notif.level === 'warning'"
-             [class.nc__item--success]="notif.level === 'success'"
-             [class.nc__item--info]="notif.level === 'info'"
-             (click)="onItemClick(notif)">
-
-          <!-- Indicador de nivel -->
-          <div class="nc__item-indicator">
-            <span class="nc__item-dot"
+        <!-- Filtros por categoría -->
+        <div class="nc__filters" role="tablist">
+          <button class="nc__filter"
+            role="tab"
+            [class.nc__filter--active]="activeFilter === 'all'"
+            (click)="setFilter('all')">
+            Todas
+            @if ((notifService.unreadCount$ | async); as count) {
+              <span class="nc__filter-badge"
+                >
+                {{ count }}
+              </span>
+            }
+          </button>
+          <button class="nc__filter"
+            role="tab"
+            [class.nc__filter--active]="activeFilter === 'database'"
+            (click)="setFilter('database')">
+            Base de Datos
+            @if ((notifService.unreadByCategory$ | async); as cats) {
+              <span class="nc__filter-badge"
+                >
+                @if (cats.database > 0) {
+                  {{ cats.database }}
+                }
+              </span>
+            }
+          </button>
+          <button class="nc__filter"
+            role="tab"
+            [class.nc__filter--active]="activeFilter === 'inventory'"
+            (click)="setFilter('inventory')">
+            Inventario
+            @if ((notifService.unreadByCategory$ | async); as cats) {
+              <span class="nc__filter-badge"
+                >
+                @if (cats.inventory > 0) {
+                  {{ cats.inventory }}
+                }
+              </span>
+            }
+          </button>
+          <button class="nc__filter"
+            role="tab"
+            [class.nc__filter--active]="activeFilter === 'users'"
+            (click)="setFilter('users')">
+            Usuarios
+            @if ((notifService.unreadByCategory$ | async); as cats) {
+              <span class="nc__filter-badge"
+                >
+                @if (cats.users > 0) {
+                  {{ cats.users }}
+                }
+              </span>
+            }
+          </button>
+          <button class="nc__filter"
+            role="tab"
+            [class.nc__filter--active]="activeFilter === 'orders'"
+            (click)="setFilter('orders')">
+            Órdenes
+            @if ((notifService.unreadByCategory$ | async); as cats) {
+              <span class="nc__filter-badge"
+                >
+                @if (cats.orders > 0) {
+                  {{ cats.orders }}
+                }
+              </span>
+            }
+          </button>
+          <button class="nc__filter"
+            role="tab"
+            [class.nc__filter--active]="activeFilter === 'system'"
+            (click)="setFilter('system')">
+            Sistema
+            @if ((notifService.unreadByCategory$ | async); as cats) {
+              <span class="nc__filter-badge"
+                >
+                @if (cats.system > 0) {
+                  {{ cats.system }}
+                }
+              </span>
+            }
+          </button>
+        </div>
+      </div>
+      <!-- Lista de notificaciones -->
+      <div class="nc__list" role="list">
+        @if (filteredNotifications$ | async; as items) {
+          <!-- Estado vacío -->
+          @if (items.length === 0) {
+            <div class="nc__empty">
+              <div class="nc__empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.5" width="36" height="36"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              </div>
+              <p class="nc__empty-title">Sin notificaciones</p>
+              <p class="nc__empty-sub">Todo está funcionando correctamente</p>
+            </div>
+          }
+          <!-- Item individual -->
+          @for (notif of items; track trackById($index, notif)) {
+            <div class="nc__item"
+              role="listitem"
+              [class.nc__item--unread]="!notif.read"
+              [class.nc__item--error]="notif.level === 'error'"
+              [class.nc__item--warning]="notif.level === 'warning'"
+              [class.nc__item--success]="notif.level === 'success'"
+              [class.nc__item--info]="notif.level === 'info'"
+              (click)="onItemClick(notif)">
+              <!-- Indicador de nivel -->
+              <div class="nc__item-indicator">
+                <span class="nc__item-dot"
                   [class.nc__item-dot--error]="notif.level === 'error'"
                   [class.nc__item-dot--warning]="notif.level === 'warning'"
                   [class.nc__item-dot--success]="notif.level === 'success'"
                   [class.nc__item-dot--info]="notif.level === 'info'">
-            </span>
-            <span class="nc__item-unread-dot" *ngIf="!notif.read"></span>
-          </div>
-
-          <!-- Contenido -->
-          <div class="nc__item-body">
-            <div class="nc__item-row">
-              <span class="nc__item-title">{{ notif.title }}</span>
-              <span class="nc__item-time">{{ notif.timestamp | timeAgo }}</span>
-            </div>
-            <p class="nc__item-message">{{ notif.message }}</p>
-            <div class="nc__item-footer">
-              <span class="nc__item-chip"
+                </span>
+                @if (!notif.read) {
+                  <span class="nc__item-unread-dot"></span>
+                }
+              </div>
+              <!-- Contenido -->
+              <div class="nc__item-body">
+                <div class="nc__item-row">
+                  <span class="nc__item-title">{{ notif.title }}</span>
+                  <span class="nc__item-time">{{ notif.timestamp | timeAgo }}</span>
+                </div>
+                <p class="nc__item-message">{{ notif.message }}</p>
+                <div class="nc__item-footer">
+                  <span class="nc__item-chip"
                     [class.nc__item-chip--database]="notif.category === 'database'"
                     [class.nc__item-chip--inventory]="notif.category === 'inventory'"
                     [class.nc__item-chip--users]="notif.category === 'users'"
                     [class.nc__item-chip--orders]="notif.category === 'orders'"
                     [class.nc__item-chip--system]="notif.category === 'system'">
-                {{ categoryLabel(notif.category) }}
-              </span>
-              <button class="nc__item-action"
-                      *ngIf="notif.actionLabel"
+                    {{ categoryLabel(notif.category) }}
+                  </span>
+                  @if (notif.actionLabel) {
+                    <button class="nc__item-action"
                       (click)="onAction($event, notif)">
-                {{ notif.actionLabel }}
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                  <path d="M2.5 6h7M6.5 3l3 3-3 3"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Botón descartar -->
-          <button class="nc__item-dismiss"
-                  *ngIf="!notif.persistent"
+                      {{ notif.actionLabel }}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M2.5 6h7M6.5 3l3 3-3 3"/>
+                      </svg>
+                    </button>
+                  }
+                </div>
+              </div>
+              <!-- Botón descartar -->
+              @if (!notif.persistent) {
+                <button class="nc__item-dismiss"
                   (click)="onDismiss($event, notif.id)"
                   title="Descartar"
                   aria-label="Descartar notificación">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M1 1l8 8M9 1l-8 8"/>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M1 1l8 8M9 1l-8 8"/>
+                  </svg>
+                </button>
+              }
+            </div>
+          }
+        }
+      </div>
+      <!-- Footer -->
+      @if ((filteredNotifications$ | async)?.length) {
+        <div class="nc__footer"
+          >
+          <button class="nc__clear" (click)="clearAll()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <path d="M1 3.5h12M5.5 3.5V2a1 1 0 011-1h1a1 1 0 011 1v1.5M11 3.5l-.5 8a1.5 1.5 0 01-1.5 1.5H5A1.5 1.5 0 013.5 11.5L3 3.5"/>
             </svg>
+            Limpiar notificaciones leídas
           </button>
         </div>
-
-      </ng-container>
+      }
     </div>
-
-    <!-- Footer -->
-    <div class="nc__footer"
-         *ngIf="(filteredNotifications$ | async)?.length">
-      <button class="nc__clear" (click)="clearAll()">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-          <path d="M1 3.5h12M5.5 3.5V2a1 1 0 011-1h1a1 1 0 011 1v1.5M11 3.5l-.5 8a1.5 1.5 0 01-1.5 1.5H5A1.5 1.5 0 013.5 11.5L3 3.5"/>
-        </svg>
-        Limpiar notificaciones leídas
-      </button>
-    </div>
-
-  </div>
+  }
 </div>

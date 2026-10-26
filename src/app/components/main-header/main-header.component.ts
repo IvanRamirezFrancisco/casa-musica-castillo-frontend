@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -11,9 +11,10 @@ import { Subscription, filter } from 'rxjs';
 
 @Component({
   selector: 'app-main-header',
-  imports: [CommonModule, RouterModule, FormsModule, GlobalSearchComponent],
+  imports: [RouterModule, FormsModule, GlobalSearchComponent],
   templateUrl: './main-header.component.html',
   styleUrl: './main-header.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '(document:click)': 'onDocumentClick($event)'
   }
@@ -168,8 +169,8 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
     }, 150); // Debounce moderado
   }
 
-  @HostListener('window:keydown.escape', ['$event'])
-  onEscape(event: KeyboardEvent): void {
+  @HostListener('window:keydown.escape')
+  onEscape(): void {
     if (this.showInfoMenu) {
       this.closeInfoMenu();
     }
@@ -277,8 +278,8 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
     document.body.style.overflow = '';
   }
 
-  @HostListener('window:keydown.Escape', ['$event'])
-  onEscapePress(event: KeyboardEvent): void {
+  @HostListener('window:keydown.Escape')
+  onEscapePress(): void {
     if (this.isMobileMenuOpen) {
       this.closeMobileMenu();
     }

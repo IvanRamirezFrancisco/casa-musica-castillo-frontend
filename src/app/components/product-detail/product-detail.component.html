@@ -1,504 +1,534 @@
 <!-- ══════════════════════════════════════════════════════════════════════
-     ESTADO 1: CARGANDO (SKELETON ESTRUCTURADO + AVISO DE COLD START)
-     ══════════════════════════════════════════════════════════════════════ -->
-<div *ngIf="loading" class="min-h-screen bg-[#FAF8F5] py-6 lg:py-10">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-    <!-- Aviso calmado si el servidor de Render está despertando (> 3.2s) -->
-    <div *ngIf="serverWaking"
-         class="mb-6 p-4 bg-[#FAF6F0] border border-[#C5A059]/50 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 shadow-sm">
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-xl bg-[#722F37]/10 text-[#722F37] flex items-center justify-center flex-shrink-0">
-          <span class="material-symbols-outlined text-xl animate-spin">sync</span>
-        </div>
-        <div class="text-xs sm:text-sm">
-          <p class="font-bold text-[#722F37]">Conectando con Casa de Música Castillo...</p>
-          <p class="text-slate-600">El servidor está despertando. Estamos preparando la ficha técnica e imágenes de tu instrumento.</p>
-        </div>
-      </div>
-      <button (click)="retryLoadProduct()"
-              class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#C5A059]/50 text-[#722F37] text-xs font-semibold hover:bg-[#FAF6F0] transition-colors shrink-0">
-        <span class="material-symbols-outlined text-sm">refresh</span>
-        Reintentar ahora
-      </button>
-    </div>
-
-    <!-- Breadcrumb Skeleton -->
-    <div class="flex items-center justify-between mb-6 animate-pulse">
-      <div class="flex items-center gap-2">
-        <div class="h-4 w-16 bg-slate-200 rounded"></div>
-        <div class="h-4 w-24 bg-slate-200 rounded"></div>
-        <div class="h-4 w-40 bg-slate-200 rounded hidden sm:block"></div>
-      </div>
-      <div class="h-9 w-36 bg-slate-200 rounded-xl"></div>
-    </div>
-
-    <!-- Hero Card Skeleton (2 Columnas Desktop / 1 Columna Móvil) -->
-    <div class="bg-white rounded-3xl border border-slate-200/70 shadow-sm p-5 sm:p-8 lg:p-10 mb-8 animate-pulse">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        <!-- Columna Izquierda: Galería Skeleton -->
-        <div class="lg:col-span-6 space-y-4">
-          <div class="aspect-square w-full bg-slate-100 rounded-2xl"></div>
-          <div class="flex gap-3">
-            <div class="w-20 h-20 bg-slate-100 rounded-xl"></div>
-            <div class="w-20 h-20 bg-slate-100 rounded-xl"></div>
-            <div class="w-20 h-20 bg-slate-100 rounded-xl"></div>
-          </div>
-        </div>
-        <!-- Columna Derecha: Buy Box Skeleton -->
-        <div class="lg:col-span-6 flex flex-col justify-between space-y-6">
-          <div class="space-y-4">
-            <div class="flex gap-2">
-              <div class="h-6 w-24 bg-slate-100 rounded-full"></div>
-              <div class="h-6 w-28 bg-slate-100 rounded-full"></div>
+ESTADO 1: CARGANDO (SKELETON ESTRUCTURADO + AVISO DE COLD START)
+══════════════════════════════════════════════════════════════════════ -->
+@if (loading) {
+  <div class="min-h-screen bg-[#FAF8F5] py-6 lg:py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Aviso calmado si el servidor de Render está despertando (> 3.2s) -->
+      @if (serverWaking) {
+        <div
+          class="mb-6 p-4 bg-[#FAF6F0] border border-[#C5A059]/50 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 shadow-sm">
+          <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-[#722F37]/10 text-[#722F37] flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined text-xl animate-spin">sync</span>
             </div>
-            <div class="h-9 w-5/6 bg-slate-200 rounded-lg"></div>
-            <div class="h-5 w-1/3 bg-slate-100 rounded"></div>
-            <div class="h-24 w-full bg-slate-100 rounded-2xl"></div>
-            <div class="space-y-2 pt-2">
-              <div class="h-4 w-full bg-slate-100 rounded"></div>
-              <div class="h-4 w-11/12 bg-slate-100 rounded"></div>
-              <div class="h-4 w-3/4 bg-slate-100 rounded"></div>
+            <div class="text-xs sm:text-sm">
+              <p class="font-bold text-[#722F37]">Conectando con Casa de Música Castillo...</p>
+              <p class="text-slate-600">El servidor está despertando. Estamos preparando la ficha técnica e imágenes de tu instrumento.</p>
             </div>
           </div>
-          <div class="space-y-4 pt-4 border-t border-slate-100">
-            <div class="flex gap-4">
-              <div class="h-12 w-32 bg-slate-100 rounded-xl"></div>
-              <div class="h-12 flex-1 bg-slate-200 rounded-xl"></div>
+          <button (click)="retryLoadProduct()"
+            class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#C5A059]/50 text-[#722F37] text-xs font-semibold hover:bg-[#FAF6F0] transition-colors shrink-0">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            Reintentar ahora
+          </button>
+        </div>
+      }
+      <!-- Breadcrumb Skeleton -->
+      <div class="flex items-center justify-between mb-6 animate-pulse">
+        <div class="flex items-center gap-2">
+          <div class="h-4 w-16 bg-slate-200 rounded"></div>
+          <div class="h-4 w-24 bg-slate-200 rounded"></div>
+          <div class="h-4 w-40 bg-slate-200 rounded hidden sm:block"></div>
+        </div>
+        <div class="h-9 w-36 bg-slate-200 rounded-xl"></div>
+      </div>
+      <!-- Hero Card Skeleton (2 Columnas Desktop / 1 Columna Móvil) -->
+      <div class="bg-white rounded-3xl border border-slate-200/70 shadow-sm p-5 sm:p-8 lg:p-10 mb-8 animate-pulse">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          <!-- Columna Izquierda: Galería Skeleton -->
+          <div class="lg:col-span-6 space-y-4">
+            <div class="aspect-square w-full bg-slate-100 rounded-2xl"></div>
+            <div class="flex gap-3">
+              <div class="w-20 h-20 bg-slate-100 rounded-xl"></div>
+              <div class="w-20 h-20 bg-slate-100 rounded-xl"></div>
+              <div class="w-20 h-20 bg-slate-100 rounded-xl"></div>
             </div>
-            <div class="grid grid-cols-3 gap-3 pt-2">
-              <div class="h-14 bg-slate-100 rounded-xl"></div>
-              <div class="h-14 bg-slate-100 rounded-xl"></div>
-              <div class="h-14 bg-slate-100 rounded-xl"></div>
+          </div>
+          <!-- Columna Derecha: Buy Box Skeleton -->
+          <div class="lg:col-span-6 flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex gap-2">
+                <div class="h-6 w-24 bg-slate-100 rounded-full"></div>
+                <div class="h-6 w-28 bg-slate-100 rounded-full"></div>
+              </div>
+              <div class="h-9 w-5/6 bg-slate-200 rounded-lg"></div>
+              <div class="h-5 w-1/3 bg-slate-100 rounded"></div>
+              <div class="h-24 w-full bg-slate-100 rounded-2xl"></div>
+              <div class="space-y-2 pt-2">
+                <div class="h-4 w-full bg-slate-100 rounded"></div>
+                <div class="h-4 w-11/12 bg-slate-100 rounded"></div>
+                <div class="h-4 w-3/4 bg-slate-100 rounded"></div>
+              </div>
+            </div>
+            <div class="space-y-4 pt-4 border-t border-slate-100">
+              <div class="flex gap-4">
+                <div class="h-12 w-32 bg-slate-100 rounded-xl"></div>
+                <div class="h-12 flex-1 bg-slate-200 rounded-xl"></div>
+              </div>
+              <div class="grid grid-cols-3 gap-3 pt-2">
+                <div class="h-14 bg-slate-100 rounded-xl"></div>
+                <div class="h-14 bg-slate-100 rounded-xl"></div>
+                <div class="h-14 bg-slate-100 rounded-xl"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Descripción y Especificaciones Skeleton -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse">
-      <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200/70 p-6 sm:p-8 space-y-4">
-        <div class="h-7 w-56 bg-slate-200 rounded"></div>
-        <div class="h-4 w-full bg-slate-100 rounded"></div>
-        <div class="h-4 w-11/12 bg-slate-100 rounded"></div>
-        <div class="h-4 w-4/5 bg-slate-100 rounded"></div>
+      <!-- Descripción y Especificaciones Skeleton -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse">
+        <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200/70 p-6 sm:p-8 space-y-4">
+          <div class="h-7 w-56 bg-slate-200 rounded"></div>
+          <div class="h-4 w-full bg-slate-100 rounded"></div>
+          <div class="h-4 w-11/12 bg-slate-100 rounded"></div>
+          <div class="h-4 w-4/5 bg-slate-100 rounded"></div>
+        </div>
+        <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200/70 p-6 sm:p-8 space-y-3">
+          <div class="h-7 w-52 bg-slate-200 rounded mb-2"></div>
+          <div class="h-10 w-full bg-slate-100 rounded-lg"></div>
+          <div class="h-10 w-full bg-slate-100 rounded-lg"></div>
+          <div class="h-10 w-full bg-slate-100 rounded-lg"></div>
+          <div class="h-10 w-full bg-slate-100 rounded-lg"></div>
+        </div>
       </div>
-      <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200/70 p-6 sm:p-8 space-y-3">
-        <div class="h-7 w-52 bg-slate-200 rounded mb-2"></div>
-        <div class="h-10 w-full bg-slate-100 rounded-lg"></div>
-        <div class="h-10 w-full bg-slate-100 rounded-lg"></div>
-        <div class="h-10 w-full bg-slate-100 rounded-lg"></div>
-        <div class="h-10 w-full bg-slate-100 rounded-lg"></div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════════════════
-     ESTADO 2: ERROR / SIN CACHÉ OFFLINE / 404
-     ══════════════════════════════════════════════════════════════════════ -->
-<div *ngIf="!loading && error" class="min-h-[75vh] bg-[#FAF8F5] flex items-center justify-center px-4 py-12">
-  <div class="bg-white border border-slate-200/80 rounded-3xl shadow-sm p-8 sm:p-10 max-w-md w-full text-center">
-    <div class="w-16 h-16 rounded-2xl mx-auto mb-5 flex items-center justify-center"
-         [ngClass]="!isOnline ? 'bg-[#FAF6F0] text-[#722F37]' : 'bg-red-50 text-[#722F37]'">
-      <span class="material-symbols-outlined text-4xl">
-        {{ !isOnline ? 'wifi_off' : (error === 'Producto no encontrado' ? 'inventory_2' : 'cloud_sync') }}
-      </span>
-    </div>
-    <h2 class="text-xl font-bold text-slate-900 mb-2">
-      {{ !isOnline ? 'Producto no disponible sin conexión' : (error === 'Producto no encontrado' ? 'Producto no encontrado' : 'Conexión lenta con el servidor') }}
-    </h2>
-    <p class="text-slate-600 mb-7 text-sm leading-relaxed">{{ error }}</p>
-    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-      <button *ngIf="error !== 'Producto no encontrado'"
-              (click)="retryLoadProduct()"
-              class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#722F37] text-white font-semibold rounded-xl hover:bg-[#5a252c] transition-colors text-sm shadow-sm">
-        <span class="material-symbols-outlined text-base">refresh</span>
-        Reintentar
-      </button>
-      <button (click)="goBack()"
-              class="inline-flex items-center justify-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm">
-        <span class="material-symbols-outlined text-base">arrow_back</span>
-        Volver al catálogo
-      </button>
     </div>
   </div>
-</div>
+}
 
 <!-- ══════════════════════════════════════════════════════════════════════
-     ESTADO 3: CONTENIDO PRINCIPAL DEL PRODUCTO (CARGA PROGRESIVA)
-     ══════════════════════════════════════════════════════════════════════ -->
-<div *ngIf="!loading && !error && product" class="min-h-screen bg-[#FAF8F5] py-6 lg:py-10">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-    <!-- ── 1. BARRA DE NAVEGACIÓN CONTEXTUAL Y MIGAJAS DE PAN ─────────────── -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-      <nav aria-label="Ruta de navegación" class="flex items-center flex-wrap gap-1.5 text-xs sm:text-sm text-slate-500">
-        <a routerLink="/home" class="hover:text-[#722F37] transition-colors font-medium">Inicio</a>
-        <span class="text-slate-300 select-none">/</span>
-        <a routerLink="/catalogo" class="hover:text-[#722F37] transition-colors font-medium">Catálogo</a>
-        <ng-container *ngIf="product.category">
-          <span class="text-slate-300 select-none">/</span>
-          <a [routerLink]="['/catalogo']"
-             [queryParams]="{ categoryId: product.category.id }"
-             class="hover:text-[#722F37] transition-colors font-medium">
-            {{ product.category.name }}
-          </a>
-        </ng-container>
-        <span class="text-slate-300 select-none">/</span>
-        <span class="text-slate-800 font-semibold truncate max-w-[200px] sm:max-w-xs" [title]="product.name">
-          {{ product.name }}
+ESTADO 2: ERROR / SIN CACHÉ OFFLINE / 404
+══════════════════════════════════════════════════════════════════════ -->
+@if (!loading && error) {
+  <div class="min-h-[75vh] bg-[#FAF8F5] flex items-center justify-center px-4 py-12">
+    <div class="bg-white border border-slate-200/80 rounded-3xl shadow-sm p-8 sm:p-10 max-w-md w-full text-center">
+      <div class="w-16 h-16 rounded-2xl mx-auto mb-5 flex items-center justify-center"
+        [ngClass]="!isOnline ? 'bg-[#FAF6F0] text-[#722F37]' : 'bg-red-50 text-[#722F37]'">
+        <span class="material-symbols-outlined text-4xl">
+          {{ !isOnline ? 'wifi_off' : (error === 'Producto no encontrado' ? 'inventory_2' : 'cloud_sync') }}
         </span>
-      </nav>
-
-      <button (click)="goBack()"
-              type="button"
-              class="self-start sm:self-auto inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200/90 text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#722F37] hover:border-[#722F37]/30 shadow-sm transition-all">
-        <span class="material-symbols-outlined text-base">arrow_back</span>
-        Volver al catálogo
-      </button>
-    </div>
-
-    <!-- ── AVISO DISCRETO DE CONSULTA OFFLINE ─────────────────────────────── -->
-    <div *ngIf="!isOnline"
-         class="mb-6 p-4 bg-[#FAF6F0] border border-[#C5A059]/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 text-xs sm:text-sm shadow-sm">
-      <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined text-[#722F37] text-xl flex-shrink-0">wifi_off</span>
-        <div>
-          <span class="font-bold text-[#722F37] block sm:inline">Información guardada en tu dispositivo.</span>
-          <span class="text-slate-600 text-xs sm:ml-1.5 block sm:inline">La disponibilidad y el precio pueden haber cambiado. Conéctate a Internet para agregar al carrito o comprar.</span>
-        </div>
       </div>
-      <button (click)="retryLoadProduct()"
-              class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#722F37] text-white text-xs font-semibold hover:bg-[#5a252c] transition-colors shrink-0">
-        <span class="material-symbols-outlined text-sm">refresh</span>
-        Reintentar
-      </button>
+      <h2 class="text-xl font-bold text-slate-900 mb-2">
+        {{ !isOnline ? 'Producto no disponible sin conexión' : (error === 'Producto no encontrado' ? 'Producto no encontrado' : 'Conexión lenta con el servidor') }}
+      </h2>
+      <p class="text-slate-600 mb-7 text-sm leading-relaxed">{{ error }}</p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        @if (error !== 'Producto no encontrado') {
+          <button
+            (click)="retryLoadProduct()"
+            class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#722F37] text-white font-semibold rounded-xl hover:bg-[#5a252c] transition-colors text-sm shadow-sm">
+            <span class="material-symbols-outlined text-base">refresh</span>
+            Reintentar
+          </button>
+        }
+        <button (click)="goBack()"
+          class="inline-flex items-center justify-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm">
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+          Volver al catálogo
+        </button>
+      </div>
     </div>
+  </div>
+}
 
-    <!-- ══════════════════════════════════════════════════════════════════════
-         2. BLOQUE COMERCIAL PRINCIPAL (GALERÍA + BUY BOX)
-         ══════════════════════════════════════════════════════════════════════ -->
-    <section class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5 sm:p-8 lg:p-10 mb-8">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-
-        <!-- ── COLUMNA IZQUIERDA (6/12): GALERÍA DEL PRODUCTO ─────────────── -->
-        <div class="lg:col-span-6 lg:sticky lg:top-24">
-
-          <!-- Visor de Imagen Principal -->
-          <div class="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-50 to-[#FAF8F5] border border-slate-200/70 flex items-center justify-center group"
-               [class.cursor-zoom-in]="allImages.length > 0"
-               (click)="openGallery()">
-
-            <img *ngIf="allImages.length > 0"
-                 [src]="currentImage"
-                 [alt]="product.name"
-                 (error)="onProductImageError($event)"
-                 class="w-full h-full object-contain p-4 sm:p-6 transition-transform duration-500 ease-out group-hover:scale-[1.03]" />
-
-            <div *ngIf="allImages.length === 0"
-                 class="flex flex-col items-center justify-center text-slate-300 gap-2 p-8 text-center">
-              <img [src]="fallbackImageUrl"
-                   [alt]="product.name"
-                   class="w-40 h-40 object-contain opacity-75" />
-              <span class="text-xs font-medium text-slate-400">Imagen referencial del catálogo</span>
+<!-- ══════════════════════════════════════════════════════════════════════
+ESTADO 3: CONTENIDO PRINCIPAL DEL PRODUCTO (CARGA PROGRESIVA)
+══════════════════════════════════════════════════════════════════════ -->
+@if (!loading && !error && product) {
+  <div class="min-h-screen bg-[#FAF8F5] py-6 lg:py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- ── 1. BARRA DE NAVEGACIÓN CONTEXTUAL Y MIGAJAS DE PAN ─────────────── -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <nav aria-label="Ruta de navegación" class="flex items-center flex-wrap gap-1.5 text-xs sm:text-sm text-slate-500">
+          <a routerLink="/home" class="hover:text-[#722F37] transition-colors font-medium">Inicio</a>
+          <span class="text-slate-300 select-none">/</span>
+          <a routerLink="/catalogo" class="hover:text-[#722F37] transition-colors font-medium">Catálogo</a>
+          @if (product.category) {
+            <span class="text-slate-300 select-none">/</span>
+            <a [routerLink]="['/catalogo']"
+              [queryParams]="{ categoryId: product.category.id }"
+              class="hover:text-[#722F37] transition-colors font-medium">
+              {{ product.category.name }}
+            </a>
+          }
+          <span class="text-slate-300 select-none">/</span>
+          <span class="text-slate-800 font-semibold truncate max-w-[200px] sm:max-w-xs" [title]="product.name">
+            {{ product.name }}
+          </span>
+        </nav>
+        <button (click)="goBack()"
+          type="button"
+          class="self-start sm:self-auto inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200/90 text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#722F37] hover:border-[#722F37]/30 shadow-sm transition-all">
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+          Volver al catálogo
+        </button>
+      </div>
+      <!-- ── AVISO DISCRETO DE CONSULTA OFFLINE ─────────────────────────────── -->
+      @if (!isOnline) {
+        <div
+          class="mb-6 p-4 bg-[#FAF6F0] border border-[#C5A059]/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 text-xs sm:text-sm shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#722F37] text-xl flex-shrink-0">wifi_off</span>
+            <div>
+              <span class="font-bold text-[#722F37] block sm:inline">Información guardada en tu dispositivo.</span>
+              <span class="text-slate-600 text-xs sm:ml-1.5 block sm:inline">La disponibilidad y el precio pueden haber cambiado. Conéctate a Internet para agregar al carrito o comprar.</span>
             </div>
-
-            <!-- Badges superiores sobre la imagen -->
-            <div class="absolute top-3.5 left-3.5 flex flex-col gap-2 pointer-events-none">
-              <span *ngIf="discountPercent > 0"
-                    class="inline-flex items-center gap-1 bg-[#722F37] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
-                <span class="material-symbols-outlined text-xs">sell</span>
-                -{{ discountPercent }}% DESCUENTO
-              </span>
-
-              <span *ngIf="product.featured"
-                    class="inline-flex items-center gap-1 bg-[#1E293B] text-[#E5C158] text-xs font-bold px-3 py-1.5 rounded-full shadow-md border border-[#C5A059]/30">
-                <span class="material-symbols-outlined text-xs">workspace_premium</span>
-                Selección Casa Castillo
-              </span>
-
-              <span *ngIf="trendStatus?.trending"
-                    class="inline-flex items-center gap-1 bg-amber-500 text-slate-950 text-xs font-extrabold px-3 py-1.5 rounded-full shadow-md">
-                <span class="material-symbols-outlined text-xs">trending_up</span>
-                {{ trendStatus?.label || 'En tendencia' }}
-              </span>
-            </div>
-
-            <!-- Controles Anterior / Siguiente en galería -->
-            <button *ngIf="allImages.length > 1"
+          </div>
+          <button (click)="retryLoadProduct()"
+            class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#722F37] text-white text-xs font-semibold hover:bg-[#5a252c] transition-colors shrink-0">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            Reintentar
+          </button>
+        </div>
+      }
+      <!-- ══════════════════════════════════════════════════════════════════════
+      2. BLOQUE COMERCIAL PRINCIPAL (GALERÍA + BUY BOX)
+      ══════════════════════════════════════════════════════════════════════ -->
+      <section class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5 sm:p-8 lg:p-10 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          <!-- ── COLUMNA IZQUIERDA (6/12): GALERÍA DEL PRODUCTO ─────────────── -->
+          <div class="lg:col-span-6 lg:sticky lg:top-24">
+            <!-- Visor de Imagen Principal -->
+            <div class="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-50 to-[#FAF8F5] border border-slate-200/70 flex items-center justify-center group"
+              [class.cursor-zoom-in]="allImages.length > 0"
+              (click)="openGallery()">
+              @if (allImages.length > 0) {
+                <img
+                  [src]="currentImage"
+                  [alt]="product.name"
+                  (error)="onProductImageError($event)"
+                  class="w-full h-full object-contain p-4 sm:p-6 transition-transform duration-500 ease-out group-hover:scale-[1.03]" />
+              }
+              @if (allImages.length === 0) {
+                <div
+                  class="flex flex-col items-center justify-center text-slate-300 gap-2 p-8 text-center">
+                  <img [src]="fallbackImageUrl"
+                    [alt]="product.name"
+                    class="w-40 h-40 object-contain opacity-75" />
+                    <span class="text-xs font-medium text-slate-400">Imagen referencial del catálogo</span>
+                  </div>
+                }
+                <!-- Badges superiores sobre la imagen -->
+                <div class="absolute top-3.5 left-3.5 flex flex-col gap-2 pointer-events-none">
+                  @if (discountPercent > 0) {
+                    <span
+                      class="inline-flex items-center gap-1 bg-[#722F37] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+                      <span class="material-symbols-outlined text-xs">sell</span>
+                      -{{ discountPercent }}% DESCUENTO
+                    </span>
+                  }
+                  @if (product.featured) {
+                    <span
+                      class="inline-flex items-center gap-1 bg-[#1E293B] text-[#E5C158] text-xs font-bold px-3 py-1.5 rounded-full shadow-md border border-[#C5A059]/30">
+                      <span class="material-symbols-outlined text-xs">workspace_premium</span>
+                      Selección Casa Castillo
+                    </span>
+                  }
+                  @if (trendStatus?.trending) {
+                    <span
+                      class="inline-flex items-center gap-1 bg-amber-500 text-slate-950 text-xs font-extrabold px-3 py-1.5 rounded-full shadow-md">
+                      <span class="material-symbols-outlined text-xs">trending_up</span>
+                      {{ trendStatus?.label || 'En tendencia' }}
+                    </span>
+                  }
+                </div>
+                <!-- Controles Anterior / Siguiente en galería -->
+                @if (allImages.length > 1) {
+                  <button
                     type="button"
                     (click)="previousImage($event)"
                     aria-label="Imagen anterior"
                     class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-md border border-slate-200/80 flex items-center justify-center text-slate-700 hover:text-[#722F37] transition-all">
-              <span class="material-symbols-outlined text-xl">chevron_left</span>
-            </button>
-            <button *ngIf="allImages.length > 1"
+                    <span class="material-symbols-outlined text-xl">chevron_left</span>
+                  </button>
+                }
+                @if (allImages.length > 1) {
+                  <button
                     type="button"
                     (click)="nextImage($event)"
                     aria-label="Imagen siguiente"
                     class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-md border border-slate-200/80 flex items-center justify-center text-slate-700 hover:text-[#722F37] transition-all">
-              <span class="material-symbols-outlined text-xl">chevron_right</span>
-            </button>
-
-            <!-- Botón Ampliar Imagen -->
-            <button *ngIf="allImages.length > 0"
+                    <span class="material-symbols-outlined text-xl">chevron_right</span>
+                  </button>
+                }
+                <!-- Botón Ampliar Imagen -->
+                @if (allImages.length > 0) {
+                  <button
                     type="button"
                     (click)="openGallery(); $event.stopPropagation()"
                     class="absolute bottom-3.5 right-3.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/75 hover:bg-slate-900 text-white text-xs font-medium backdrop-blur-sm transition-all shadow-sm">
-              <span class="material-symbols-outlined text-sm">zoom_in</span>
-              <span class="hidden sm:inline">Ampliar imagen</span>
-              <span *ngIf="allImages.length > 1" class="text-white/75 ml-0.5">({{ selectedImageIndex + 1 }}/{{ allImages.length }})</span>
-            </button>
-          </div>
-
-          <!-- Tira de Miniaturas -->
-          <div *ngIf="allImages.length > 1"
-               class="flex gap-3 mt-4 overflow-x-auto pb-1">
-            <button *ngFor="let img of allImages; let i = index"
-                    type="button"
-                    (click)="selectImage(i)"
-                    [attr.aria-label]="'Ver imagen ' + (i + 1)"
+                    <span class="material-symbols-outlined text-sm">zoom_in</span>
+                    <span class="hidden sm:inline">Ampliar imagen</span>
+                    @if (allImages.length > 1) {
+                      <span class="text-white/75 ml-0.5">({{ selectedImageIndex + 1 }}/{{ allImages.length }})</span>
+                    }
+                  </button>
+                }
+              </div>
+              <!-- Tira de Miniaturas -->
+              @if (allImages.length > 1) {
+                <div
+                  class="flex gap-3 mt-4 overflow-x-auto pb-1">
+                  @for (img of allImages; track img; let i = $index) {
+                    <button
+                      type="button"
+                      (click)="selectImage(i)"
+                      [attr.aria-label]="'Ver imagen ' + (i + 1)"
                     [ngClass]="i === selectedImageIndex
                       ? 'border-[#722F37] ring-2 ring-[#722F37]/25 bg-white'
                       : 'border-slate-200 opacity-75 hover:opacity-100 bg-slate-50'"
-                    class="w-20 h-20 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all duration-150 p-1">
-              <img [src]="img"
-                   [alt]="product.name + ' miniatura ' + (i + 1)"
-                   (error)="onProductImageError($event)"
-                   class="w-full h-full object-contain" />
-            </button>
-          </div>
-
-        </div>
-
-        <!-- ── COLUMNA DERECHA (6/12): TARJETA COMERCIAL / BUY BOX ────────── -->
-        <div class="lg:col-span-6 flex flex-col">
-
-          <!-- 1. Categoría, Marca y SKU -->
-          <div class="flex flex-wrap items-center gap-2 mb-3">
-            <a *ngIf="product.category"
-               [routerLink]="['/catalogo']"
-               [queryParams]="{ categoryId: product.category.id }"
-               class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF6F0] text-[#722F37] border border-[#C5A059]/40 hover:bg-[#722F37] hover:text-white transition-colors">
-              <span class="material-symbols-outlined text-xs">category</span>
-              {{ product.category.name }}
-            </a>
-
-            <span *ngIf="product.brand"
-                  class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200/80">
-              <span class="material-symbols-outlined text-xs text-[#C5A059]">verified</span>
-              {{ product.brand.name }}
-            </span>
-
-            <span *ngIf="product.sku"
-                  class="text-xs text-slate-400 font-mono ml-auto">
-              SKU: <strong class="text-slate-600">{{ product.sku }}</strong>
-            </span>
-          </div>
-
-          <!-- 2. Nombre del Producto (H1) -->
-          <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-900 leading-tight tracking-tight mb-3">
-            {{ product.name }}
-          </h1>
-
-          <!-- 3. Calificación y Disponibilidad en línea -->
-          <div class="flex flex-wrap items-center gap-3 pb-5 mb-5 border-b border-slate-100">
-            <!-- Estrellas -->
-            <a href="#reviews" class="inline-flex items-center gap-1.5 group">
-              <div class="flex items-center">
-                <span *ngFor="let filled of getStars(product.averageRating)"
-                      class="text-base leading-none"
-                      [class.text-amber-400]="filled"
-                      [class.text-slate-200]="!filled">★</span>
+                      class="w-20 h-20 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all duration-150 p-1">
+                      <img [src]="img"
+                        [alt]="product.name + ' miniatura ' + (i + 1)"
+                        (error)="onProductImageError($event)"
+                        class="w-full h-full object-contain" />
+                      </button>
+                    }
+                  </div>
+                }
               </div>
-              <span *ngIf="product.averageRating > 0" class="text-xs font-bold text-slate-800">
-                {{ product.averageRating | number:'1.1-1' }}
-              </span>
-              <span class="text-xs text-slate-500 group-hover:text-[#722F37] transition-colors">
-                ({{ product.reviewCount || 0 }} {{ (product.reviewCount === 1) ? 'reseña' : 'reseñas' }})
-              </span>
-            </a>
-
-            <span class="text-slate-200 select-none">|</span>
-
-            <!-- Badge de Disponibilidad -->
-            <div class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
+              <!-- ── COLUMNA DERECHA (6/12): TARJETA COMERCIAL / BUY BOX ────────── -->
+              <div class="lg:col-span-6 flex flex-col">
+                <!-- 1. Categoría, Marca y SKU -->
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                  @if (product.category) {
+                    <a
+                      [routerLink]="['/catalogo']"
+                      [queryParams]="{ categoryId: product.category.id }"
+                      class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF6F0] text-[#722F37] border border-[#C5A059]/40 hover:bg-[#722F37] hover:text-white transition-colors">
+                      <span class="material-symbols-outlined text-xs">category</span>
+                      {{ product.category.name }}
+                    </a>
+                  }
+                  @if (product.brand) {
+                    <span
+                      class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200/80">
+                      <span class="material-symbols-outlined text-xs text-[#C5A059]">verified</span>
+                      {{ product.brand.name }}
+                    </span>
+                  }
+                  @if (product.sku) {
+                    <span
+                      class="text-xs text-slate-400 font-mono ml-auto">
+                      SKU: <strong class="text-slate-600">{{ product.sku }}</strong>
+                    </span>
+                  }
+                </div>
+                <!-- 2. Nombre del Producto (H1) -->
+                <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-900 leading-tight tracking-tight mb-3">
+                  {{ product.name }}
+                </h1>
+                <!-- 3. Calificación y Disponibilidad en línea -->
+                <div class="flex flex-wrap items-center gap-3 pb-5 mb-5 border-b border-slate-100">
+                  <!-- Estrellas -->
+                  <a href="#reviews" class="inline-flex items-center gap-1.5 group">
+                    <div class="flex items-center">
+                      @for (filled of getStars(product.averageRating); track filled) {
+                        <span
+                          class="text-base leading-none"
+                          [class.text-amber-400]="filled"
+                        [class.text-slate-200]="!filled">★</span>
+                      }
+                    </div>
+                    @if (product.averageRating > 0) {
+                      <span class="text-xs font-bold text-slate-800">
+                        {{ product.averageRating | number:'1.1-1' }}
+                      </span>
+                    }
+                    <span class="text-xs text-slate-500 group-hover:text-[#722F37] transition-colors">
+                      ({{ product.reviewCount || 0 }} {{ (product.reviewCount === 1) ? 'reseña' : 'reseñas' }})
+                    </span>
+                  </a>
+                  <span class="text-slate-200 select-none">|</span>
+                  <!-- Badge de Disponibilidad -->
+                  <div class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
                  [ngClass]="inStock
                    ? (product.stock <= 5 ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200')
                    : 'bg-red-50 text-red-700 border border-red-200'">
-              <span class="w-2 h-2 rounded-full"
+                    <span class="w-2 h-2 rounded-full"
                     [ngClass]="inStock ? (product.stock <= 5 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500') : 'bg-red-500'"></span>
-              <span *ngIf="inStock && product.stock > 5">En existencia ({{ product.stock }} disponibles)</span>
-              <span *ngIf="inStock && product.stock <= 5">¡Últimas {{ product.stock }} {{ product.stock === 1 ? 'unidad disponible' : 'unidades disponibles' }}!</span>
-              <span *ngIf="!inStock">Agotado temporalmente</span>
-            </div>
-          </div>
-
-          <!-- 4. Bloque Comercial de Precio -->
-          <div class="bg-[#FAF8F5] border border-[#C5A059]/30 rounded-2xl p-4 sm:p-5 mb-5">
-            <div class="flex flex-wrap items-baseline gap-3">
-              <span class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                ${{ effectivePrice | number:'1.2-2' }}
-              </span>
-              <span class="text-xs font-bold text-slate-500 uppercase">MXN</span>
-
-              <span *ngIf="product.discountPrice && product.discountPrice < product.price"
-                    class="text-base sm:text-lg text-slate-400 line-through font-medium">
-                ${{ product.price | number:'1.2-2' }}
-              </span>
-
-              <span *ngIf="savingsAmount > 0"
-                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                Ahorras ${{ savingsAmount | number:'1.2-2' }}
-              </span>
-            </div>
-            <p class="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-sm text-[#722F37]">verified_user</span>
-              IVA incluido · Facturación disponible · Instrumento revisado antes de envío
-            </p>
-          </div>
-
-          <!-- 5. Resumen breve del producto -->
-          <p *ngIf="hasTextDescription"
-             class="text-slate-600 text-sm sm:text-base leading-relaxed mb-5 line-clamp-3">
-            {{ product.description }}
-          </p>
-
-          <!-- 6. Píldoras rápidas de especificaciones clave en el Buy Box -->
-          <div *ngIf="product.brand?.name || product.model || product.dimensions || product.weight != null"
-               class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-6">
-            <div *ngIf="product.brand?.name" class="bg-slate-50 border border-slate-200/70 rounded-xl px-3 py-2">
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Marca</span>
-              <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate block">{{ product.brand!.name }}</span>
-            </div>
-            <div *ngIf="product.model" class="bg-slate-50 border border-slate-200/70 rounded-xl px-3 py-2">
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Modelo</span>
-              <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate block">{{ product.model }}</span>
-            </div>
-            <div *ngIf="product.dimensions" class="bg-slate-50 border border-slate-200/70 rounded-xl px-3 py-2">
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Dimensiones</span>
-              <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate block">{{ product.dimensions }}</span>
-            </div>
-            <div *ngIf="product.weight != null && product.weight > 0" class="bg-slate-50 border border-slate-200/70 rounded-xl px-3 py-2">
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Peso</span>
-              <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate block">{{ product.weight }} kg</span>
-            </div>
-          </div>
-
-          <!-- 7. Selector de Cantidad + CTA Primario (Agregar al carrito) -->
-          <div class="pt-2 mb-6">
-            <div *ngIf="inStock" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
-              <!-- Control de cantidad -->
-              <div class="flex items-center justify-between sm:justify-start border-2 border-slate-200 rounded-xl bg-white px-2 py-1 shrink-0">
-                <span class="text-xs font-semibold text-slate-500 px-2 sm:hidden">Cantidad:</span>
-                <div class="flex items-center">
-                  <button type="button"
-                          (click)="decrementQuantity()"
-                          [disabled]="quantity <= 1"
-                          aria-label="Disminuir cantidad"
-                          class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 disabled:opacity-35 disabled:cursor-not-allowed transition-colors font-bold text-lg">
-                    −
-                  </button>
-                  <input type="number"
-                         [(ngModel)]="quantity"
-                         (change)="normalizeQuantity()"
-                         (blur)="normalizeQuantity()"
-                         min="1"
-                         [max]="product.stock"
-                         aria-label="Cantidad de unidades"
-                         class="w-12 text-center font-bold text-slate-900 text-base border-0 focus:ring-0 focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                  <button type="button"
-                          (click)="incrementQuantity()"
-                          [disabled]="quantity >= product.stock"
-                          aria-label="Aumentar cantidad"
-                          class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 disabled:opacity-35 disabled:cursor-not-allowed transition-colors font-bold text-lg">
-                    +
-                  </button>
+                    @if (inStock && product.stock > 5) {
+                      <span>En existencia ({{ product.stock }} disponibles)</span>
+                    }
+                    @if (inStock && product.stock <= 5) {
+                      <span>¡Últimas {{ product.stock }} {{ product.stock === 1 ? 'unidad disponible' : 'unidades disponibles' }}!</span>
+                    }
+                    @if (!inStock) {
+                      <span>Agotado temporalmente</span>
+                    }
+                  </div>
                 </div>
-              </div>
-
-              <!-- CTA Primario Institucional -->
-              <button type="button"
-                      (click)="addToCart($event)"
-                      [disabled]="addingToCart || !isOnline"
-                      [title]="!isOnline ? 'Conéctate a Internet para agregar productos al carrito' : 'Agregar al carrito'"
-                      class="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold text-base text-white shadow-md transition-all duration-200"
+                <!-- 4. Bloque Comercial de Precio -->
+                <div class="bg-[#FAF8F5] border border-[#C5A059]/30 rounded-2xl p-4 sm:p-5 mb-5">
+                  <div class="flex flex-wrap items-baseline gap-3">
+                    <span class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                      ${{ effectivePrice | number:'1.2-2' }}
+                    </span>
+                    <span class="text-xs font-bold text-slate-500 uppercase">MXN</span>
+                    @if (product.discountPrice && product.discountPrice < product.price) {
+                      <span
+                        class="text-base sm:text-lg text-slate-400 line-through font-medium">
+                        ${{ product.price | number:'1.2-2' }}
+                      </span>
+                    }
+                    @if (savingsAmount > 0) {
+                      <span
+                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                        Ahorras ${{ savingsAmount | number:'1.2-2' }}
+                      </span>
+                    }
+                  </div>
+                  <p class="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-[#722F37]">verified_user</span>
+                    IVA incluido · Facturación disponible · Instrumento revisado antes de envío
+                  </p>
+                </div>
+                <!-- 5. Resumen breve del producto -->
+                @if (hasTextDescription) {
+                  <p
+                    class="text-slate-600 text-sm sm:text-base leading-relaxed mb-5 line-clamp-3">
+                    {{ product.description }}
+                  </p>
+                }
+                <!-- 6. Píldoras rápidas de especificaciones clave en el Buy Box -->
+                @if (product.brand?.name || product.model || product.dimensions || product.weight != null) {
+                  <div
+                    class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-6">
+                    @if (product.brand?.name) {
+                      <div class="bg-slate-50 border border-slate-200/70 rounded-xl px-3 py-2">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Marca</span>
+                        <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate block">{{ product.brand!.name }}</span>
+                      </div>
+                    }
+                    @if (product.model) {
+                      <div class="bg-slate-50 border border-slate-200/70 rounded-xl px-3 py-2">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Modelo</span>
+                        <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate block">{{ product.model }}</span>
+                      </div>
+                    }
+                    @if (product.dimensions) {
+                      <div class="bg-slate-50 border border-slate-200/70 rounded-xl px-3 py-2">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Dimensiones</span>
+                        <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate block">{{ product.dimensions }}</span>
+                      </div>
+                    }
+                    @if (product.weight != null && product.weight > 0) {
+                      <div class="bg-slate-50 border border-slate-200/70 rounded-xl px-3 py-2">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Peso</span>
+                        <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate block">{{ product.weight }} kg</span>
+                      </div>
+                    }
+                  </div>
+                }
+                <!-- 7. Selector de Cantidad + CTA Primario (Agregar al carrito) -->
+                <div class="pt-2 mb-6">
+                  @if (inStock) {
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+                      <!-- Control de cantidad -->
+                      <div class="flex items-center justify-between sm:justify-start border-2 border-slate-200 rounded-xl bg-white px-2 py-1 shrink-0">
+                        <span class="text-xs font-semibold text-slate-500 px-2 sm:hidden">Cantidad:</span>
+                        <div class="flex items-center">
+                          <button type="button"
+                            (click)="decrementQuantity()"
+                            [disabled]="quantity <= 1"
+                            aria-label="Disminuir cantidad"
+                            class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 disabled:opacity-35 disabled:cursor-not-allowed transition-colors font-bold text-lg">
+                            −
+                          </button>
+                          <input type="number"
+                            [(ngModel)]="quantity"
+                            (change)="normalizeQuantity()"
+                            (blur)="normalizeQuantity()"
+                            min="1"
+                            [max]="product.stock"
+                            aria-label="Cantidad de unidades"
+                            class="w-12 text-center font-bold text-slate-900 text-base border-0 focus:ring-0 focus:outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <button type="button"
+                              (click)="incrementQuantity()"
+                              [disabled]="quantity >= product.stock"
+                              aria-label="Aumentar cantidad"
+                              class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 disabled:opacity-35 disabled:cursor-not-allowed transition-colors font-bold text-lg">
+                              +
+                            </button>
+                          </div>
+                        </div>
+                        <!-- CTA Primario Institucional -->
+                        <button type="button"
+                          (click)="addToCart($event)"
+                          [disabled]="addingToCart || !isOnline"
+                          [title]="!isOnline ? 'Conéctate a Internet para agregar productos al carrito' : 'Agregar al carrito'"
+                          class="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold text-base text-white shadow-md transition-all duration-200"
                       [ngClass]="!isOnline
                         ? 'bg-slate-300 text-slate-600 cursor-not-allowed shadow-none'
                         : 'bg-[#722F37] hover:bg-[#5a252c] active:scale-[0.99] hover:shadow-lg'">
-                <span class="material-symbols-outlined text-xl">
-                  {{ !isOnline ? 'wifi_off' : (addingToCart ? 'check_circle' : 'shopping_cart') }}
-                </span>
-                <span>
-                  {{ !isOnline ? 'Requiere conexión a Internet' : (addingToCart ? '¡Agregado al carrito!' : 'Agregar al carrito') }}
-                </span>
-              </button>
-            </div>
-
-            <!-- Producto Agotado -->
-            <div *ngIf="!inStock" class="p-4 rounded-2xl bg-slate-100 border border-slate-200 text-center">
-              <p class="text-sm font-bold text-slate-700">Este artículo se encuentra temporalmente agotado</p>
-              <p class="text-xs text-slate-500 mt-1">Explora instrumentos similares en nuestro catálogo o consulta disponibilidad en tienda.</p>
-            </div>
-
-            <p *ngIf="!isLoggedIn && inStock && isOnline" class="text-xs text-slate-500 mt-2.5 flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-sm text-[#C5A059]">info</span>
-              <span>Para guardar tu carrito y realizar tu pedido, te pediremos <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/producto/' + product.id }" class="text-[#722F37] font-semibold underline hover:text-[#5a252c]">iniciar sesión</a>.</span>
-            </p>
-          </div>
-
-          <!-- 8. Garantías Institucionales y Respaldo Casa Castillo -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-slate-100 text-xs">
-            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
-              <span class="material-symbols-outlined text-lg text-[#722F37] shrink-0">local_shipping</span>
-              <div>
-                <p class="font-bold text-slate-800">Envío Protegido</p>
-                <p class="text-slate-500 leading-snug mt-0.5">Embalaje especializado para instrumentos a todo México.</p>
+                          <span class="material-symbols-outlined text-xl">
+                            {{ !isOnline ? 'wifi_off' : (addingToCart ? 'check_circle' : 'shopping_cart') }}
+                          </span>
+                          <span>
+                            {{ !isOnline ? 'Requiere conexión a Internet' : (addingToCart ? '¡Agregado al carrito!' : 'Agregar al carrito') }}
+                          </span>
+                        </button>
+                      </div>
+                    }
+                    <!-- Producto Agotado -->
+                    @if (!inStock) {
+                      <div class="p-4 rounded-2xl bg-slate-100 border border-slate-200 text-center">
+                        <p class="text-sm font-bold text-slate-700">Este artículo se encuentra temporalmente agotado</p>
+                        <p class="text-xs text-slate-500 mt-1">Explora instrumentos similares en nuestro catálogo o consulta disponibilidad en tienda.</p>
+                      </div>
+                    }
+                    @if (!isLoggedIn && inStock && isOnline) {
+                      <p class="text-xs text-slate-500 mt-2.5 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm text-[#C5A059]">info</span>
+                        <span>Para guardar tu carrito y realizar tu pedido, te pediremos <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/producto/' + product.id }" class="text-[#722F37] font-semibold underline hover:text-[#5a252c]">iniciar sesión</a>.</span>
+                      </p>
+                    }
+                  </div>
+                  <!-- 8. Garantías Institucionales y Respaldo Casa Castillo -->
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-slate-100 text-xs">
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
+                      <span class="material-symbols-outlined text-lg text-[#722F37] shrink-0">local_shipping</span>
+                      <div>
+                        <p class="font-bold text-slate-800">Envío Protegido</p>
+                        <p class="text-slate-500 leading-snug mt-0.5">Embalaje especializado para instrumentos a todo México.</p>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
+                      <span class="material-symbols-outlined text-lg text-[#722F37] shrink-0">payments</span>
+                      <div>
+                        <p class="font-bold text-slate-800">Pago 100% Seguro</p>
+                        <p class="text-slate-500 leading-snug mt-0.5">Mercado Pago, tarjetas o transferencia bancaria.</p>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
+                      <span class="material-symbols-outlined text-lg text-[#722F37] shrink-0">verified</span>
+                      <div>
+                        <p class="font-bold text-slate-800">Garantía Castillo</p>
+                        <p class="text-slate-500 leading-snug mt-0.5">Calibración y control de calidad por especialistas.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
-              <span class="material-symbols-outlined text-lg text-[#722F37] shrink-0">payments</span>
-              <div>
-                <p class="font-bold text-slate-800">Pago 100% Seguro</p>
-                <p class="text-slate-500 leading-snug mt-0.5">Mercado Pago, tarjetas o transferencia bancaria.</p>
-              </div>
-            </div>
-            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
-              <span class="material-symbols-outlined text-lg text-[#722F37] shrink-0">verified</span>
-              <div>
-                <p class="font-bold text-slate-800">Garantía Castillo</p>
-                <p class="text-slate-500 leading-snug mt-0.5">Calibración y control de calidad por especialistas.</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         3. DESCRIPCIÓN DEL PRODUCTO + FICHA DE ESPECIFICACIONES TÉCNICAS
-         (Siempre visible antes de Recomendaciones y Reseñas)
-         ══════════════════════════════════════════════════════════════════════ -->
-    <section id="especificaciones" class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10 items-start">
-
-      <!-- Columna Izquierda (7/12): Descripción del Producto -->
-      <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
-        <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
-          <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] border border-[#C5A059]/40 flex items-center justify-center text-[#722F37] shrink-0">
-            <span class="material-symbols-outlined text-xl">description</span>
-          </div>
-          <div>
-            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Descripción del Producto</h2>
-            <p class="text-xs text-slate-500">Características acústicas, construcción y detalles del artículo</p>
-          </div>
-        </div>
-
-        <!-- Caso A: Existe detailedDescription (HTML enriquecido sanitizado) -->
-        <div *ngIf="safeDetailedDescription"
+            </section>
+            <!-- ══════════════════════════════════════════════════════════════════════
+            3. DESCRIPCIÓN DEL PRODUCTO + FICHA DE ESPECIFICACIONES TÉCNICAS
+            (Siempre visible antes de Recomendaciones y Reseñas)
+            ══════════════════════════════════════════════════════════════════════ -->
+            <section id="especificaciones" class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10 items-start">
+              <!-- Columna Izquierda (7/12): Descripción del Producto -->
+              <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
+                  <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] border border-[#C5A059]/40 flex items-center justify-center text-[#722F37] shrink-0">
+                    <span class="material-symbols-outlined text-xl">description</span>
+                  </div>
+                  <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-900">Descripción del Producto</h2>
+                    <p class="text-xs text-slate-500">Características acústicas, construcción y detalles del artículo</p>
+                  </div>
+                </div>
+                <!-- Caso A: Existe detailedDescription (HTML enriquecido sanitizado) -->
+                @if (safeDetailedDescription) {
+                  <div
              class="text-slate-600 text-sm sm:text-base leading-relaxed space-y-4
                     [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-5 [&_h2]:mb-2
                     [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-slate-800 [&_h3]:mt-4
@@ -507,327 +537,343 @@
                     [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1.5
                     [&_strong]:font-semibold [&_strong]:text-slate-800
                     [&_a]:text-[#722F37] [&_a]:underline"
-             [innerHTML]="safeDetailedDescription">
-        </div>
-
-        <!-- Caso B: No hay detailedDescription pero sí description de texto -->
-        <div *ngIf="!safeDetailedDescription && hasTextDescription"
-             class="text-slate-600 text-sm sm:text-base leading-relaxed space-y-4 whitespace-pre-line">
-          {{ product.description }}
-        </div>
-
-        <!-- Caso C: Ninguna descripción detallada registrada -->
-        <div *ngIf="!safeDetailedDescription && !hasTextDescription"
-             class="bg-[#FAF8F5] border border-slate-200/70 rounded-2xl p-5 text-slate-600 text-sm leading-relaxed">
-          <p class="font-semibold text-slate-800 mb-1">{{ product.name }}</p>
-          <p>
-            Artículo original disponible en el catálogo de <strong>Casa de Música Castillo</strong>
-            <ng-container *ngIf="product.category?.name"> dentro de la categoría <strong>{{ product.category?.name }}</strong></ng-container>
-            <ng-container *ngIf="product.brand?.name"> de la marca <strong>{{ product.brand?.name }}</strong></ng-container>.
-            Consulta la ficha de especificaciones técnicas contigua para conocer su código SKU, dimensiones y disponibilidad.
-          </p>
-        </div>
-      </div>
-
-      <!-- Columna Derecha (5/12): Especificaciones Técnicas -->
-      <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
-        <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
-          <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] border border-[#C5A059]/40 flex items-center justify-center text-[#722F37] shrink-0">
-            <span class="material-symbols-outlined text-xl">assignment</span>
+                    [innerHTML]="safeDetailedDescription">
+                  </div>
+                }
+                <!-- Caso B: No hay detailedDescription pero sí description de texto -->
+                @if (!safeDetailedDescription && hasTextDescription) {
+                  <div
+                    class="text-slate-600 text-sm sm:text-base leading-relaxed space-y-4 whitespace-pre-line">
+                    {{ product.description }}
+                  </div>
+                }
+                <!-- Caso C: Ninguna descripción detallada registrada -->
+                @if (!safeDetailedDescription && !hasTextDescription) {
+                  <div
+                    class="bg-[#FAF8F5] border border-slate-200/70 rounded-2xl p-5 text-slate-600 text-sm leading-relaxed">
+                    <p class="font-semibold text-slate-800 mb-1">{{ product.name }}</p>
+                    <p>
+                      Artículo original disponible en el catálogo de <strong>Casa de Música Castillo</strong>
+                      @if (product.category?.name) {
+                        dentro de la categoría <strong>{{ product.category?.name }}</strong>
+                      }
+                      @if (product.brand?.name) {
+                        de la marca <strong>{{ product.brand?.name }}</strong>
+                        }.
+                        Consulta la ficha de especificaciones técnicas contigua para conocer su código SKU, dimensiones y disponibilidad.
+                      </p>
+                    </div>
+                  }
+                </div>
+                <!-- Columna Derecha (5/12): Especificaciones Técnicas -->
+                <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
+                  <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
+                    <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] border border-[#C5A059]/40 flex items-center justify-center text-[#722F37] shrink-0">
+                      <span class="material-symbols-outlined text-xl">assignment</span>
+                    </div>
+                    <div>
+                      <h2 class="text-lg sm:text-xl font-bold text-slate-900">Especificaciones Técnicas</h2>
+                      <p class="text-xs text-slate-500">Ficha oficial de datos del producto</p>
+                    </div>
+                  </div>
+                  <!-- Tabla semántica de 2 columnas (Etiqueta | Valor) -->
+                  <dl class="divide-y divide-slate-100 text-sm">
+                    @for (spec of technicalSpecs; track spec; let odd = $odd) {
+                      <div
+                        class="grid grid-cols-12 items-center gap-3 py-3 px-3 rounded-xl transition-colors"
+                        [class.bg-slate-50]="odd">
+                        <dt class="col-span-5 flex items-center gap-2 text-slate-500 font-medium">
+                          <span class="material-symbols-outlined text-base text-[#722F37]/80 shrink-0">{{ spec.icon }}</span>
+                          <span>{{ spec.label }}</span>
+                        </dt>
+                        <dd class="col-span-7 text-right font-semibold text-slate-800 break-words">
+                          @if (spec.isCode) {
+                            <span class="font-mono text-xs bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md text-slate-700">
+                              {{ spec.value }}
+                            </span>
+                          }
+                          @if (spec.isStatus) {
+                            <span
+                              class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full"
+                              [ngClass]="spec.inStock ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'">
+                              {{ spec.value }}
+                            </span>
+                          }
+                          @if (!spec.isCode && !spec.isStatus) {
+                            <span>{{ spec.value }}</span>
+                          }
+                        </dd>
+                      </div>
+                    }
+                  </dl>
+                  <!-- Nota honesta cuando el producto no tiene atributos físicos/personalizados adicionales -->
+                  @if (!hasExtendedPhysicalOrCustomSpecs) {
+                    <div
+                      class="mt-4 p-3.5 rounded-xl bg-[#FAF8F5] border border-slate-200/70 flex items-start gap-2.5 text-xs text-slate-500">
+                      <span class="material-symbols-outlined text-base text-[#C5A059] shrink-0">info</span>
+                      <span>No se han registrado especificaciones adicionales para este producto.</span>
+                    </div>
+                  }
+                </div>
+              </section>
+              <!-- ══════════════════════════════════════════════════════════════════════
+              4. INFORMACIÓN INSTITUCIONAL DE COMPRA, ENVÍO Y MEDIOS DE PAGO
+              ══════════════════════════════════════════════════════════════════════ -->
+              <section class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 mb-10">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div class="flex items-start gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#722F37] flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-xl">package_2</span>
+                    </div>
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-900 mb-1">Envíos y Empaque Especializado</h3>
+                      <p class="text-xs text-slate-600 leading-relaxed mb-2">
+                        Cada instrumento se inspecciona y empaca con protección acústica antes de salir de Huejutla de Reyes hacia tu domicilio.
+                      </p>
+                      <a routerLink="/informacion/envios" class="inline-flex items-center gap-1 text-xs font-bold text-[#722F37] hover:underline">
+                        Consultar política de envíos
+                        <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#722F37] flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-xl">credit_score</span>
+                    </div>
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-900 mb-1">Medios de Pago Aceptados</h3>
+                      <p class="text-xs text-slate-600 leading-relaxed mb-2">
+                        Paga con tarjeta de crédito, débito o saldo en Mercado Pago, o mediante transferencia bancaria SPEI verificada.
+                      </p>
+                      <a routerLink="/informacion/pagos" class="inline-flex items-center gap-1 text-xs font-bold text-[#722F37] hover:underline">
+                        Ver formas de pago
+                        <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#722F37] flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-xl">assignment_return</span>
+                    </div>
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-900 mb-1">Cambios, Devoluciones y Garantía</h3>
+                      <p class="text-xs text-slate-600 leading-relaxed mb-2">
+                        Respaldamos tu compra ante cualquier defecto de fabricación o daño en tránsito conforme a nuestras políticas.
+                      </p>
+                      <a routerLink="/informacion/cancelaciones" class="inline-flex items-center gap-1 text-xs font-bold text-[#722F37] hover:underline">
+                        Política de devoluciones
+                        <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <!-- ══════════════════════════════════════════════════════════════════════
+              5. PRODUCTOS COMPLEMENTARIOS / RECOMENDADOS (CARGA SECUNDARIA)
+              ══════════════════════════════════════════════════════════════════════ -->
+              @if (loadingRecommendations || recommendations.length > 0) {
+                <section
+                  aria-labelledby="recommendations-heading"
+                  class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 mb-10">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] border border-[#C5A059]/40 flex items-center justify-center text-[#722F37] shrink-0">
+                      <span class="material-symbols-outlined text-xl">auto_awesome</span>
+                    </div>
+                    <div>
+                      <h2 id="recommendations-heading" class="text-lg sm:text-xl font-bold text-slate-900">
+                        Completa tu compra
+                      </h2>
+                      <p class="text-xs text-slate-500">Artículos frecuentemente adquiridos junto con este producto</p>
+                    </div>
+                  </div>
+                  <!-- Skeleton de Recomendaciones -->
+                  @if (loadingRecommendations) {
+                    <div
+                      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                      @for (i of [1, 2, 3, 4]; track i) {
+                        <div
+                          class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-[340px] flex flex-col animate-pulse">
+                          <div class="w-full h-40 bg-slate-200 rounded-xl mb-4"></div>
+                          <div class="w-1/3 h-3 bg-slate-200 rounded mb-2"></div>
+                          <div class="w-3/4 h-4 bg-slate-200 rounded mb-2"></div>
+                          <div class="w-1/2 h-4 bg-slate-200 rounded mb-auto"></div>
+                          <div class="w-full h-10 bg-slate-200 rounded-xl mt-4"></div>
+                        </div>
+                      }
+                    </div>
+                  }
+                  <!-- Grid de Recomendaciones -->
+                  @if (!loadingRecommendations && recommendations.length > 0) {
+                    <div
+                      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+                      @for (rec of recommendations; track rec) {
+                        <app-product-recommendation-card
+                          [recommendation]="rec"
+                          [addingToCart]="addingToCartMap[rec.productId] || false"
+                          (addClick)="onAddRecommendationToCart($event)"
+                          class="w-full">
+                        </app-product-recommendation-card>
+                      }
+                    </div>
+                  }
+                </section>
+              }
+              <!-- ══════════════════════════════════════════════════════════════════════
+              6. RESEÑAS DE CLIENTES (CARGA SECUNDARIA NO BLOQUEANTE)
+              ══════════════════════════════════════════════════════════════════════ -->
+              <app-product-reviews [product]="product"></app-product-reviews>
+            </div>
           </div>
-          <div>
-            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Especificaciones Técnicas</h2>
-            <p class="text-xs text-slate-500">Ficha oficial de datos del producto</p>
+        }
+
+        <!-- ══════════════════════════════════════════════════════════════════════
+        MODAL DE GALERÍA DE IMÁGENES (LIGHTBOX UX PRO MAX)
+        ══════════════════════════════════════════════════════════════════════ -->
+        @if (showGalleryModal) {
+          <div
+            class="cmc-lightbox-overlay text-white"
+            role="dialog"
+            aria-modal="true"
+            [attr.aria-label]="'Visor de imágenes: ' + product?.name"
+            cdkTrapFocus
+            [cdkTrapFocusAutoCapture]="true"
+            (keydown.escape)="closeGallery()"
+            (keydown.arrowLeft)="previousImage($event)"
+            (keydown.arrowRight)="nextImage($event)">
+            <!-- Entrance Wrapper (Aisla la animación de CSS Transform) -->
+            <div class="lightbox-entrance-wrapper" (click)="onBackdropClick($event)">
+              <!-- ARIA Live region (oculto visualmente) -->
+              <div aria-live="polite" class="sr-only">
+                Imagen {{ selectedImageIndex + 1 }} de {{ allImages.length }}.
+              </div>
+              <!-- Controles Superiores -->
+              <div class="lightbox-toolbar w-full flex flex-col md:flex-row justify-between items-center bg-gradient-to-b from-black/80 to-transparent p-4 gap-4 pointer-events-none">
+                <!-- Izquierda: Información -->
+                <div class="flex items-center gap-3 pointer-events-auto max-w-full md:max-w-[50%]">
+                  <h2 class="text-sm font-medium text-white/90 truncate drop-shadow-md" [title]="$safeNavigationMigration(product?.name)">
+                    {{ product?.name }}
+                  </h2>
+                  @if (allImages.length > 1) {
+                    <div class="shrink-0 text-white/80 text-xs font-semibold tracking-wide bg-black/40 px-2 py-1 rounded border border-white/10">
+                      {{ selectedImageIndex + 1 }} de {{ allImages.length }}
+                    </div>
+                  }
+                </div>
+                <!-- Derecha: Controles de Zoom y Cerrar -->
+                <div class="flex items-center gap-2 md:gap-4 pointer-events-auto">
+                  <!-- Zoom Controls -->
+                  <div class="flex items-center bg-[#1a1a1a]/80 rounded border border-white/10 shadow-lg text-white">
+                    <button (click)="zoomOut()"
+                      [disabled]="zoomScale <= 1"
+                      class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059] disabled:opacity-30 disabled:cursor-not-allowed"
+                      aria-label="Alejar imagen">
+                      <span class="material-symbols-outlined text-[20px]">remove</span>
+                    </button>
+                    <div class="px-2 md:px-3 text-xs md:text-sm font-medium text-center min-w-[3.5rem] md:min-w-[4rem] select-none text-white/90">
+                      {{ zoomScale * 100 | number:'1.0-0' }}%
+                    </div>
+                    <button (click)="zoomIn()"
+                      [disabled]="zoomScale >= 4"
+                      class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059] disabled:opacity-30 disabled:cursor-not-allowed border-r border-white/10"
+                      aria-label="Acercar imagen">
+                      <span class="material-symbols-outlined text-[20px]">add</span>
+                    </button>
+                    @if (zoomScale > 1 || panX !== 0 || panY !== 0) {
+                      <button
+                        (click)="resetZoom()"
+                        class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
+                        aria-label="Restablecer zoom y posición"
+                        title="Restablecer">
+                        <span class="material-symbols-outlined text-[20px]">center_focus_strong</span>
+                      </button>
+                    }
+                  </div>
+                  <!-- Cerrar -->
+                  <button (click)="closeGallery()"
+                    class="flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded bg-[#1a1a1a]/80 hover:bg-red-600/90 text-white transition-colors border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
+                    aria-label="Cerrar visualizador">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                  </button>
+                </div>
+              </div>
+              <!-- Image Viewport -->
+              <div class="lightbox-viewport w-full"
+                (wheel)="onWheel($event)"
+                (pointerdown)="onPointerDown($event)"
+                (pointermove)="onPointerMove($event)"
+                (pointerup)="onPointerUp($event)"
+                (pointercancel)="onPointerUp($event)"
+                (pointerleave)="onPointerUp($event)">
+                <!-- Controles de navegación lateral (Solo si hay > 1 imagen) -->
+                @if (allImages.length > 1) {
+                  <button
+                    (click)="previousImage($event)"
+                    class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-black/60 text-white hover:bg-[#C5A059] transition-all z-10 border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059] pointer-events-auto"
+                    aria-label="Imagen anterior">
+                    <span class="material-symbols-outlined text-2xl md:text-3xl">chevron_left</span>
+                  </button>
+                }
+                @if (allImages.length > 1) {
+                  <button
+                    (click)="nextImage($event)"
+                    class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-black/60 text-white hover:bg-[#C5A059] transition-all z-10 border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059] pointer-events-auto"
+                    aria-label="Siguiente imagen">
+                    <span class="material-symbols-outlined text-2xl md:text-3xl">chevron_right</span>
+                  </button>
+                }
+                <!-- Stage protegido del Pan para asegurar el Padding -->
+                <div class="lightbox-image-stage">
+                  <!-- Loading State -->
+                  @if (isLightboxImageLoading) {
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <div class="w-12 h-12 border-4 border-white/20 border-t-[#C5A059] rounded-full animate-spin shadow-lg"></div>
+                    </div>
+                  }
+                  <!-- Error State -->
+                  @if (lightboxImageError) {
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10 bg-black/40 rounded-xl backdrop-blur-sm pointer-events-auto m-auto max-w-sm">
+                      <span class="material-symbols-outlined text-red-400 text-5xl mb-3">broken_image</span>
+                      <p class="text-white font-medium mb-4">No fue posible cargar esta imagen.</p>
+                      <button (click)="retryLightboxImage()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059]">
+                        Reintentar
+                      </button>
+                    </div>
+                  }
+                  <!-- Imagen principal -->
+                  @if (!lightboxImageError) {
+                    <img
+                      [src]="allImages[selectedImageIndex]"
+                      [alt]="'Imagen ampliada de ' + $safeNavigationMigration(product?.name)"
+                      class="w-full h-full object-contain pointer-events-none"
+                      [style.transform]="'translate3d(' + panX + 'px, ' + panY + 'px, 0) scale(' + zoomScale + ')'"
+                      [class.cursor-grab]="zoomScale > 1 && !isPanning"
+                      [class.cursor-grabbing]="isPanning"
+                      [style.opacity]="isLightboxImageLoading ? 0.3 : 1"
+                      (load)="onLightboxImageLoad()"
+                      (error)="onLightboxImageError()"
+                      (dblclick)="onImageDoubleClick($event)"
+                      draggable="false"
+                      style="pointer-events: auto;">
+                  }
+                </div>
+              </div>
+              <!-- Bottom Area (Thumbnails) -->
+              @if (allImages.length > 1) {
+                <div class="lightbox-bottom-area w-full flex justify-center items-center pointer-events-auto" (click)="$event.stopPropagation()">
+                  <div class="lightbox-thumbnails-scroll">
+                    @for (img of allImages; track img; let i = $index) {
+                      <button
+                        (click)="selectImage(i)"
+                        [attr.aria-current]="i === selectedImageIndex ? 'true' : 'false'"
+                        [attr.aria-label]="'Ver imagen ' + (i + 1)"
+                        class="relative overflow-hidden rounded border-2 shrink-0 transition-all focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
+                        [ngClass]="i === selectedImageIndex ? 'border-[#C5A059] scale-105 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'">
+                        <img [src]="img" class="w-16 h-16 object-cover bg-white" alt="Miniatura">
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
           </div>
-        </div>
-
-        <!-- Tabla semántica de 2 columnas (Etiqueta | Valor) -->
-        <dl class="divide-y divide-slate-100 text-sm">
-          <div *ngFor="let spec of technicalSpecs; let odd = odd"
-               class="grid grid-cols-12 items-center gap-3 py-3 px-3 rounded-xl transition-colors"
-               [class.bg-slate-50]="odd">
-            <dt class="col-span-5 flex items-center gap-2 text-slate-500 font-medium">
-              <span class="material-symbols-outlined text-base text-[#722F37]/80 shrink-0">{{ spec.icon }}</span>
-              <span>{{ spec.label }}</span>
-            </dt>
-            <dd class="col-span-7 text-right font-semibold text-slate-800 break-words">
-              <span *ngIf="spec.isCode" class="font-mono text-xs bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md text-slate-700">
-                {{ spec.value }}
-              </span>
-              <span *ngIf="spec.isStatus"
-                    class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full"
-                    [ngClass]="spec.inStock ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'">
-                {{ spec.value }}
-              </span>
-              <span *ngIf="!spec.isCode && !spec.isStatus">{{ spec.value }}</span>
-            </dd>
-          </div>
-        </dl>
-
-        <!-- Nota honesta cuando el producto no tiene atributos físicos/personalizados adicionales -->
-        <div *ngIf="!hasExtendedPhysicalOrCustomSpecs"
-             class="mt-4 p-3.5 rounded-xl bg-[#FAF8F5] border border-slate-200/70 flex items-start gap-2.5 text-xs text-slate-500">
-          <span class="material-symbols-outlined text-base text-[#C5A059] shrink-0">info</span>
-          <span>No se han registrado especificaciones adicionales para este producto.</span>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         4. INFORMACIÓN INSTITUCIONAL DE COMPRA, ENVÍO Y MEDIOS DE PAGO
-         ══════════════════════════════════════════════════════════════════════ -->
-    <section class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 mb-10">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#722F37] flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-xl">package_2</span>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 mb-1">Envíos y Empaque Especializado</h3>
-            <p class="text-xs text-slate-600 leading-relaxed mb-2">
-              Cada instrumento se inspecciona y empaca con protección acústica antes de salir de Huejutla de Reyes hacia tu domicilio.
-            </p>
-            <a routerLink="/informacion/envios" class="inline-flex items-center gap-1 text-xs font-bold text-[#722F37] hover:underline">
-              Consultar política de envíos
-              <span class="material-symbols-outlined text-xs">arrow_forward</span>
-            </a>
-          </div>
-        </div>
-
-        <div class="flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#722F37] flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-xl">credit_score</span>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 mb-1">Medios de Pago Aceptados</h3>
-            <p class="text-xs text-slate-600 leading-relaxed mb-2">
-              Paga con tarjeta de crédito, débito o saldo en Mercado Pago, o mediante transferencia bancaria SPEI verificada.
-            </p>
-            <a routerLink="/informacion/pagos" class="inline-flex items-center gap-1 text-xs font-bold text-[#722F37] hover:underline">
-              Ver formas de pago
-              <span class="material-symbols-outlined text-xs">arrow_forward</span>
-            </a>
-          </div>
-        </div>
-
-        <div class="flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#722F37] flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-xl">assignment_return</span>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 mb-1">Cambios, Devoluciones y Garantía</h3>
-            <p class="text-xs text-slate-600 leading-relaxed mb-2">
-              Respaldamos tu compra ante cualquier defecto de fabricación o daño en tránsito conforme a nuestras políticas.
-            </p>
-            <a routerLink="/informacion/cancelaciones" class="inline-flex items-center gap-1 text-xs font-bold text-[#722F37] hover:underline">
-              Política de devoluciones
-              <span class="material-symbols-outlined text-xs">arrow_forward</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         5. PRODUCTOS COMPLEMENTARIOS / RECOMENDADOS (CARGA SECUNDARIA)
-         ══════════════════════════════════════════════════════════════════════ -->
-    <section *ngIf="loadingRecommendations || recommendations.length > 0"
-             aria-labelledby="recommendations-heading"
-             class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 mb-10">
-
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 rounded-xl bg-[#FAF6F0] border border-[#C5A059]/40 flex items-center justify-center text-[#722F37] shrink-0">
-          <span class="material-symbols-outlined text-xl">auto_awesome</span>
-        </div>
-        <div>
-          <h2 id="recommendations-heading" class="text-lg sm:text-xl font-bold text-slate-900">
-            Completa tu compra
-          </h2>
-          <p class="text-xs text-slate-500">Artículos frecuentemente adquiridos junto con este producto</p>
-        </div>
-      </div>
-
-      <!-- Skeleton de Recomendaciones -->
-      <div *ngIf="loadingRecommendations"
-           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div *ngFor="let i of [1, 2, 3, 4]"
-             class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-[340px] flex flex-col animate-pulse">
-          <div class="w-full h-40 bg-slate-200 rounded-xl mb-4"></div>
-          <div class="w-1/3 h-3 bg-slate-200 rounded mb-2"></div>
-          <div class="w-3/4 h-4 bg-slate-200 rounded mb-2"></div>
-          <div class="w-1/2 h-4 bg-slate-200 rounded mb-auto"></div>
-          <div class="w-full h-10 bg-slate-200 rounded-xl mt-4"></div>
-        </div>
-      </div>
-
-      <!-- Grid de Recomendaciones -->
-      <div *ngIf="!loadingRecommendations && recommendations.length > 0"
-           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
-        <app-product-recommendation-card
-          *ngFor="let rec of recommendations"
-          [recommendation]="rec"
-          [addingToCart]="addingToCartMap[rec.productId] || false"
-          (addClick)="onAddRecommendationToCart($event)"
-          class="w-full">
-        </app-product-recommendation-card>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-         6. RESEÑAS DE CLIENTES (CARGA SECUNDARIA NO BLOQUEANTE)
-         ══════════════════════════════════════════════════════════════════════ -->
-    <app-product-reviews [product]="product"></app-product-reviews>
-
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════════════════
-     MODAL DE GALERÍA DE IMÁGENES (LIGHTBOX UX PRO MAX)
-     ══════════════════════════════════════════════════════════════════════ -->
-<div *ngIf="showGalleryModal"
-     class="cmc-lightbox-overlay text-white"
-     role="dialog"
-     aria-modal="true"
-     [attr.aria-label]="'Visor de imágenes: ' + product?.name"
-     cdkTrapFocus
-     [cdkTrapFocusAutoCapture]="true"
-     (keydown.escape)="closeGallery()"
-     (keydown.arrowLeft)="previousImage($event)"
-     (keydown.arrowRight)="nextImage($event)">
-     
-  <!-- Entrance Wrapper (Aisla la animación de CSS Transform) -->
-  <div class="lightbox-entrance-wrapper" (click)="onBackdropClick($event)">
-  
-    <!-- ARIA Live region (oculto visualmente) -->
-    <div aria-live="polite" class="sr-only">
-      Imagen {{ selectedImageIndex + 1 }} de {{ allImages.length }}.
-    </div>
-
-    <!-- Controles Superiores -->
-    <div class="lightbox-toolbar w-full flex flex-col md:flex-row justify-between items-center bg-gradient-to-b from-black/80 to-transparent p-4 gap-4 pointer-events-none">
-      
-      <!-- Izquierda: Información -->
-      <div class="flex items-center gap-3 pointer-events-auto max-w-full md:max-w-[50%]">
-        <h2 class="text-sm font-medium text-white/90 truncate drop-shadow-md" [title]="product?.name">
-          {{ product?.name }}
-        </h2>
-        <div *ngIf="allImages.length > 1" class="shrink-0 text-white/80 text-xs font-semibold tracking-wide bg-black/40 px-2 py-1 rounded border border-white/10">
-          {{ selectedImageIndex + 1 }} de {{ allImages.length }}
-        </div>
-      </div>
-      
-      <!-- Derecha: Controles de Zoom y Cerrar -->
-      <div class="flex items-center gap-2 md:gap-4 pointer-events-auto">
-        <!-- Zoom Controls -->
-        <div class="flex items-center bg-[#1a1a1a]/80 rounded border border-white/10 shadow-lg text-white">
-          <button (click)="zoomOut()" 
-                  [disabled]="zoomScale <= 1"
-                  class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059] disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Alejar imagen">
-            <span class="material-symbols-outlined text-[20px]">remove</span>
-          </button>
-          
-          <div class="px-2 md:px-3 text-xs md:text-sm font-medium text-center min-w-[3.5rem] md:min-w-[4rem] select-none text-white/90">
-            {{ zoomScale * 100 | number:'1.0-0' }}%
-          </div>
-          
-          <button (click)="zoomIn()" 
-                  [disabled]="zoomScale >= 4"
-                  class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059] disabled:opacity-30 disabled:cursor-not-allowed border-r border-white/10"
-                  aria-label="Acercar imagen">
-            <span class="material-symbols-outlined text-[20px]">add</span>
-          </button>
-          
-          <button *ngIf="zoomScale > 1 || panX !== 0 || panY !== 0"
-                  (click)="resetZoom()" 
-                  class="p-2 md:p-3 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
-                  aria-label="Restablecer zoom y posición"
-                  title="Restablecer">
-            <span class="material-symbols-outlined text-[20px]">center_focus_strong</span>
-          </button>
-        </div>
-        
-        <!-- Cerrar -->
-        <button (click)="closeGallery()"
-                class="flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded bg-[#1a1a1a]/80 hover:bg-red-600/90 text-white transition-colors border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
-                aria-label="Cerrar visualizador">
-          <span class="material-symbols-outlined text-2xl">close</span>
-        </button>
-      </div>
-    </div>
-    
-    <!-- Image Viewport -->
-    <div class="lightbox-viewport w-full"
-         (wheel)="onWheel($event)"
-         (pointerdown)="onPointerDown($event)"
-         (pointermove)="onPointerMove($event)"
-         (pointerup)="onPointerUp($event)"
-         (pointercancel)="onPointerUp($event)"
-         (pointerleave)="onPointerUp($event)">
-         
-      <!-- Controles de navegación lateral (Solo si hay > 1 imagen) -->
-      <button *ngIf="allImages.length > 1"
-              (click)="previousImage($event)"
-              class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-black/60 text-white hover:bg-[#C5A059] transition-all z-10 border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059] pointer-events-auto"
-              aria-label="Imagen anterior">
-        <span class="material-symbols-outlined text-2xl md:text-3xl">chevron_left</span>
-      </button>
-      
-      <button *ngIf="allImages.length > 1"
-              (click)="nextImage($event)"
-              class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-black/60 text-white hover:bg-[#C5A059] transition-all z-10 border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C5A059] pointer-events-auto"
-              aria-label="Siguiente imagen">
-        <span class="material-symbols-outlined text-2xl md:text-3xl">chevron_right</span>
-      </button>
-
-      <!-- Stage protegido del Pan para asegurar el Padding -->
-      <div class="lightbox-image-stage">
-      
-        <!-- Loading State -->
-        <div *ngIf="isLightboxImageLoading" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div class="w-12 h-12 border-4 border-white/20 border-t-[#C5A059] rounded-full animate-spin shadow-lg"></div>
-        </div>
-        
-        <!-- Error State -->
-        <div *ngIf="lightboxImageError" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10 bg-black/40 rounded-xl backdrop-blur-sm pointer-events-auto m-auto max-w-sm">
-          <span class="material-symbols-outlined text-red-400 text-5xl mb-3">broken_image</span>
-          <p class="text-white font-medium mb-4">No fue posible cargar esta imagen.</p>
-          <button (click)="retryLightboxImage()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[#C5A059]">
-            Reintentar
-          </button>
-        </div>
-
-        <!-- Imagen principal -->
-        <img *ngIf="!lightboxImageError"
-             [src]="allImages[selectedImageIndex]" 
-             [alt]="'Imagen ampliada de ' + product?.name"
-             class="w-full h-full object-contain pointer-events-none"
-             [style.transform]="'translate3d(' + panX + 'px, ' + panY + 'px, 0) scale(' + zoomScale + ')'"
-             [class.cursor-grab]="zoomScale > 1 && !isPanning"
-             [class.cursor-grabbing]="isPanning"
-             [style.opacity]="isLightboxImageLoading ? 0.3 : 1"
-             (load)="onLightboxImageLoad()"
-             (error)="onLightboxImageError()"
-             (dblclick)="onImageDoubleClick($event)"
-             draggable="false"
-             style="pointer-events: auto;">
-      </div>
-    </div>
-    
-    <!-- Bottom Area (Thumbnails) -->
-    <div *ngIf="allImages.length > 1" class="lightbox-bottom-area w-full flex justify-center items-center pointer-events-auto" (click)="$event.stopPropagation()">
-      <div class="lightbox-thumbnails-scroll">
-        <button *ngFor="let img of allImages; let i = index"
-                (click)="selectImage(i)"
-                [attr.aria-current]="i === selectedImageIndex ? 'true' : 'false'"
-                [attr.aria-label]="'Ver imagen ' + (i + 1)"
-                class="relative overflow-hidden rounded border-2 shrink-0 transition-all focus:outline-none focus:ring-2 focus:ring-[#C5A059]"
-                [ngClass]="i === selectedImageIndex ? 'border-[#C5A059] scale-105 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'">
-          <img [src]="img" class="w-16 h-16 object-cover bg-white" alt="Miniatura">
-        </button>
-      </div>
-    </div>
-    
-  </div>
-</div>
+        }

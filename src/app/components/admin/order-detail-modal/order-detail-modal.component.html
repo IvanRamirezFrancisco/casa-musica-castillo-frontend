@@ -38,14 +38,18 @@
     </div>
 
     <!-- Alertas -->
-    <div *ngIf="successMessage" class="flex items-center gap-2 px-6 py-2.5 bg-green-50 border-b border-green-200 text-green-700 text-sm font-medium flex-shrink-0">
-      <i class="fa-solid fa-circle-check text-green-500"></i>
-      {{ successMessage }}
-    </div>
-    <div *ngIf="error" class="flex items-center gap-2 px-6 py-2.5 bg-red-50 border-b border-red-200 text-red-700 text-sm font-medium flex-shrink-0">
-      <i class="fa-solid fa-circle-exclamation text-red-500"></i>
-      {{ error }}
-    </div>
+    @if (successMessage) {
+      <div class="flex items-center gap-2 px-6 py-2.5 bg-green-50 border-b border-green-200 text-green-700 text-sm font-medium flex-shrink-0">
+        <i class="fa-solid fa-circle-check text-green-500"></i>
+        {{ successMessage }}
+      </div>
+    }
+    @if (error) {
+      <div class="flex items-center gap-2 px-6 py-2.5 bg-red-50 border-b border-red-200 text-red-700 text-sm font-medium flex-shrink-0">
+        <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+        {{ error }}
+      </div>
+    }
 
     <!-- BODY SCROLLABLE -->
     <div class="modal-body px-6 py-5 space-y-5">
@@ -74,30 +78,38 @@
             </div>
           </div>
           <!-- Teléfono -->
-          <div class="flex items-start gap-2.5" *ngIf="order.customerPhone">
-            <i class="fa-solid fa-phone text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
-            <div>
-              <p class="text-xs text-gray-500">Teléfono</p>
-              <p class="text-sm text-gray-800">{{ order.customerPhone }}</p>
+          @if (order.customerPhone) {
+            <div class="flex items-start gap-2.5">
+              <i class="fa-solid fa-phone text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
+              <div>
+                <p class="text-xs text-gray-500">Teléfono</p>
+                <p class="text-sm text-gray-800">{{ order.customerPhone }}</p>
+              </div>
             </div>
-          </div>
+          }
           <!-- Dirección -->
-          <div class="flex items-start gap-2.5" *ngIf="order.shippingAddress">
-            <i class="fa-solid fa-location-dot text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
-            <div>
-              <p class="text-xs text-gray-500">Dirección de Envío</p>
-              <p class="text-sm text-gray-800">{{ order.shippingAddress }}</p>
+          @if (order.shippingAddress) {
+            <div class="flex items-start gap-2.5">
+              <i class="fa-solid fa-location-dot text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
+              <div>
+                <p class="text-xs text-gray-500">Dirección de Envío</p>
+                <p class="text-sm text-gray-800">{{ order.shippingAddress }}</p>
+              </div>
             </div>
-          </div>
+          }
           <!-- Método de Pago -->
-          <div class="flex items-start gap-2.5" *ngIf="order.paymentMethod">
-            <i class="fa-solid fa-credit-card text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
-            <div>
-              <p class="text-xs text-gray-500">Método de Pago</p>
-              <p class="text-sm text-gray-800">{{ order.paymentMethod }}</p>
-              <p class="text-xs text-gray-500" *ngIf="order.transactionId">ID: {{ order.transactionId }}</p>
+          @if (order.paymentMethod) {
+            <div class="flex items-start gap-2.5">
+              <i class="fa-solid fa-credit-card text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
+              <div>
+                <p class="text-xs text-gray-500">Método de Pago</p>
+                <p class="text-sm text-gray-800">{{ order.paymentMethod }}</p>
+                @if (order.transactionId) {
+                  <p class="text-xs text-gray-500">ID: {{ order.transactionId }}</p>
+                }
+              </div>
             </div>
-          </div>
+          }
           <!-- Fecha -->
           <div class="flex items-start gap-2.5">
             <i class="fa-solid fa-calendar text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
@@ -109,18 +121,22 @@
         </div>
 
         <!-- Notas -->
-        <div *ngIf="order.cancellationReason" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p class="text-xs font-semibold text-red-700 mb-1 flex items-center gap-1">
-            <i class="fa-solid fa-ban"></i> Razón de Cancelación
-          </p>
-          <p class="text-sm text-red-600">{{ order.cancellationReason }}</p>
-        </div>
-        <div *ngIf="order.customerNotes" class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p class="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1">
-            <i class="fa-solid fa-comment"></i> Notas del Cliente
-          </p>
-          <p class="text-sm text-amber-800">{{ order.customerNotes }}</p>
-        </div>
+        @if (order.cancellationReason) {
+          <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-xs font-semibold text-red-700 mb-1 flex items-center gap-1">
+              <i class="fa-solid fa-ban"></i> Razón de Cancelación
+            </p>
+            <p class="text-sm text-red-600">{{ order.cancellationReason }}</p>
+          </div>
+        }
+        @if (order.customerNotes) {
+          <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p class="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1">
+              <i class="fa-solid fa-comment"></i> Notas del Cliente
+            </p>
+            <p class="text-sm text-amber-800">{{ order.customerNotes }}</p>
+          </div>
+        }
       </div>
 
       <!-- SECCIÓN: INFORMACIÓN DE ENTREGA -->
@@ -135,64 +151,82 @@
             <div>
               <p class="text-xs text-gray-500">Método de Entrega</p>
               <p class="text-sm font-semibold text-gray-800">
-                <span *ngIf="order.deliveryType === 'PICKUP_STORE'">Recolección en Tienda</span>
-                <span *ngIf="order.deliveryType === 'LOCAL_DELIVERY'">Envío Local</span>
-                <span *ngIf="order.deliveryType === 'EXTERNAL_SHIPPING_QUOTE'">Envío Foráneo (Cotización)</span>
-                <span *ngIf="!order.deliveryType">No especificado</span>
+                @if (order.deliveryType === 'PICKUP_STORE') {
+                  <span>Recolección en Tienda</span>
+                }
+                @if (order.deliveryType === 'LOCAL_DELIVERY') {
+                  <span>Envío Local</span>
+                }
+                @if (order.deliveryType === 'EXTERNAL_SHIPPING_QUOTE') {
+                  <span>Envío Foráneo (Cotización)</span>
+                }
+                @if (!order.deliveryType) {
+                  <span>No especificado</span>
+                }
               </p>
             </div>
           </div>
-          
+
           <!-- Detalles para PICKUP_STORE -->
-          <div *ngIf="order.deliveryType === 'PICKUP_STORE'" class="mt-2 space-y-4">
-            
-            <div class="flex items-start gap-2.5">
-              <i class="fa-solid fa-store text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
-              <div>
-                <p class="text-xs text-gray-500">Estado de Recolección</p>
-                <p class="text-sm font-semibold text-gray-800">{{ translatePickupStatus(order.pickupStatus) }}</p>
-              </div>
-            </div>
-
-            <div *ngIf="order.pickupCodeLast4" class="flex items-start gap-2.5">
-              <i class="fa-solid fa-hashtag text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
-              <div>
-                <p class="text-xs text-gray-500">Últimos 4 dígitos del código de recolección</p>
-                <p class="text-sm font-bold text-gray-800 font-mono tracking-wider">{{ order.pickupCodeLast4 }}</p>
-              </div>
-            </div>
-
-            <div *ngIf="order.authorizedPersons && order.authorizedPersons.length > 0">
-              <p class="text-xs text-gray-500 mb-2">Personas Autorizadas para Recoger:</p>
-              <div class="bg-white border border-gray-200 rounded-lg p-3 space-y-2">
-                <div *ngFor="let person of order.authorizedPersons" class="flex items-center gap-2 text-sm text-gray-700">
-                  <i class="fa-solid fa-id-card text-gray-400"></i>
-                  <span>{{ person.fullName }}</span>
-                  <span *ngIf="person.ineHash" class="text-xs text-gray-400 font-mono" title="Hash INE">({{ person.ineHash }})</span>
+          @if (order.deliveryType === 'PICKUP_STORE') {
+            <div class="mt-2 space-y-4">
+              <div class="flex items-start gap-2.5">
+                <i class="fa-solid fa-store text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500">Estado de Recolección</p>
+                  <p class="text-sm font-semibold text-gray-800">{{ translatePickupStatus(order.pickupStatus) }}</p>
                 </div>
               </div>
+              @if (order.pickupCodeLast4) {
+                <div class="flex items-start gap-2.5">
+                  <i class="fa-solid fa-hashtag text-gray-400 mt-0.5 w-4 text-sm flex-shrink-0"></i>
+                  <div>
+                    <p class="text-xs text-gray-500">Últimos 4 dígitos del código de recolección</p>
+                    <p class="text-sm font-bold text-gray-800 font-mono tracking-wider">{{ order.pickupCodeLast4 }}</p>
+                  </div>
+                </div>
+              }
+              @if (order.authorizedPersons && order.authorizedPersons.length > 0) {
+                <div>
+                  <p class="text-xs text-gray-500 mb-2">Personas Autorizadas para Recoger:</p>
+                  <div class="bg-white border border-gray-200 rounded-lg p-3 space-y-2">
+                    @for (person of order.authorizedPersons; track person) {
+                      <div class="flex items-center gap-2 text-sm text-gray-700">
+                        <i class="fa-solid fa-id-card text-gray-400"></i>
+                        <span>{{ person.fullName }}</span>
+                        @if (person.ineHash) {
+                          <span class="text-xs text-gray-400 font-mono" title="Hash INE">({{ person.ineHash }})</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+              <!-- Acciones de Pickup -->
+              @if (order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && order.deliveryType === 'PICKUP_STORE' && order.paymentStatus === 'PAID') {
+                <div class="flex gap-2 mt-2 pt-3 border-t border-gray-200">
+                  @if (order.pickupStatus === 'PAID_WAITING_PREPARATION') {
+                    <button
+                      (click)="markReadyForPickup()"
+                      [disabled]="loading"
+                      class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5">
+                      <i class="fa-solid fa-box-open"></i>
+                      Marcar Listo para Recolección
+                    </button>
+                  }
+                  @if (order.pickupStatus === 'READY_FOR_PICKUP' && order.authorizedPersons && order.authorizedPersons.length > 0) {
+                    <button
+                      (click)="verifyPickupCode()"
+                      [disabled]="loading"
+                      class="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5">
+                      <i class="fa-solid fa-qrcode"></i>
+                      Verificar Código y Entregar
+                    </button>
+                  }
+                </div>
+              }
             </div>
-
-            <!-- Acciones de Pickup -->
-            <div class="flex gap-2 mt-2 pt-3 border-t border-gray-200" *ngIf="order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && order.deliveryType === 'PICKUP_STORE' && order.paymentStatus === 'PAID'">
-              <button 
-                *ngIf="order.pickupStatus === 'PAID_WAITING_PREPARATION'"
-                (click)="markReadyForPickup()"
-                [disabled]="loading"
-                class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5">
-                <i class="fa-solid fa-box-open"></i>
-                Marcar Listo para Recolección
-              </button>
-              <button 
-                *ngIf="order.pickupStatus === 'READY_FOR_PICKUP' && order.authorizedPersons && order.authorizedPersons.length > 0"
-                (click)="verifyPickupCode()"
-                [disabled]="loading"
-                class="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5">
-                <i class="fa-solid fa-qrcode"></i>
-                Verificar Código y Entregar
-              </button>
-            </div>
-          </div>
+          }
         </div>
       </div>
 
@@ -211,18 +245,23 @@
               [(ngModel)]="selectedOrderStatus"
               (change)="updateOrderStatus()"
               [disabled]="loading || loadingTransitions || (allowedTransitions ? !allowedTransitions.canUpdateOrderStatus : false)">
-              
-              <ng-container *ngIf="allowedTransitions; else fallbackOrderOptions">
-                <option *ngFor="let s of allowedTransitions.allowedOrderStatuses" [ngValue]="s">{{ translateOrderStatus(s) }}</option>
-              </ng-container>
-              <ng-template #fallbackOrderOptions>
-                <option *ngFor="let s of orderStatusOptions" [ngValue]="s">{{ translateOrderStatus(s) }}</option>
-              </ng-template>
+
+              @if (allowedTransitions) {
+                @for (s of allowedTransitions.allowedOrderStatuses; track s) {
+                  <option [ngValue]="s">{{ translateOrderStatus(s) }}</option>
+                }
+              } @else {
+                @for (s of orderStatusOptions; track s) {
+                  <option [ngValue]="s">{{ translateOrderStatus(s) }}</option>
+                }
+              }
             </select>
-            <p *ngIf="allowedTransitions?.orderStatusHelpMessage" class="mt-1 text-xs text-gray-500 italic flex items-start gap-1">
-              <i class="fa-solid fa-circle-info mt-0.5"></i>
-              {{ allowedTransitions?.orderStatusHelpMessage }}
-            </p>
+            @if (allowedTransitions?.orderStatusHelpMessage) {
+              <p class="mt-1 text-xs text-gray-500 italic flex items-start gap-1">
+                <i class="fa-solid fa-circle-info mt-0.5"></i>
+                {{ allowedTransitions?.orderStatusHelpMessage }}
+              </p>
+            }
           </div>
           <!-- Estado Pago -->
           <div>
@@ -232,15 +271,19 @@
                 class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 text-gray-500 cursor-not-allowed"
                 [(ngModel)]="selectedPaymentStatus"
                 disabled>
-                <option *ngFor="let s of paymentStatusOptions" [ngValue]="s">{{ translatePaymentStatus(s) }}</option>
+                @for (s of paymentStatusOptions; track s) {
+                  <option [ngValue]="s">{{ translatePaymentStatus(s) }}</option>
+                }
               </select>
-              <button *ngIf="order.paymentMethod === 'MERCADO_PAGO'"
-                      (click)="requeryPayment()"
-                      [disabled]="loading"
-                      title="Sincronizar con Mercado Pago"
-                      class="px-3 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 disabled:opacity-50 transition-colors flex items-center justify-center">
-                <i class="fa-solid fa-rotate" [class.fa-spin]="loading"></i>
-              </button>
+              @if (order.paymentMethod === 'MERCADO_PAGO') {
+                <button
+                  (click)="requeryPayment()"
+                  [disabled]="loading"
+                  title="Sincronizar con Mercado Pago"
+                  class="px-3 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 disabled:opacity-50 transition-colors flex items-center justify-center">
+                  <i class="fa-solid fa-rotate" [class.fa-spin]="loading"></i>
+                </button>
+              }
             </div>
           </div>
           <!-- Estado Envío -->
@@ -251,18 +294,23 @@
               [(ngModel)]="selectedShippingStatus"
               (change)="updateShippingStatus()"
               [disabled]="loading || loadingTransitions || (allowedTransitions ? !allowedTransitions.canUpdateShippingStatus : false)">
-              
-              <ng-container *ngIf="allowedTransitions; else fallbackShippingOptions">
-                <option *ngFor="let s of allowedTransitions.allowedShippingStatuses" [ngValue]="s">{{ translateShippingStatus(s) }}</option>
-              </ng-container>
-              <ng-template #fallbackShippingOptions>
-                <option *ngFor="let s of shippingStatusOptions" [ngValue]="s">{{ translateShippingStatus(s) }}</option>
-              </ng-template>
+
+              @if (allowedTransitions) {
+                @for (s of allowedTransitions.allowedShippingStatuses; track s) {
+                  <option [ngValue]="s">{{ translateShippingStatus(s) }}</option>
+                }
+              } @else {
+                @for (s of shippingStatusOptions; track s) {
+                  <option [ngValue]="s">{{ translateShippingStatus(s) }}</option>
+                }
+              }
             </select>
-            <p *ngIf="allowedTransitions?.shippingStatusHelpMessage" class="mt-1 text-xs text-gray-500 italic flex items-start gap-1">
-              <i class="fa-solid fa-circle-info mt-0.5"></i>
-              {{ allowedTransitions?.shippingStatusHelpMessage }}
-            </p>
+            @if (allowedTransitions?.shippingStatusHelpMessage) {
+              <p class="mt-1 text-xs text-gray-500 italic flex items-start gap-1">
+                <i class="fa-solid fa-circle-info mt-0.5"></i>
+                {{ allowedTransitions?.shippingStatusHelpMessage }}
+              </p>
+            }
           </div>
         </div>
         <!-- Tracking -->
@@ -290,348 +338,393 @@
       </div>
 
       <!-- SECCIÓN: REVISIÓN DE COMPROBANTE DE PAGO -->
-      <div class="bg-gray-50 rounded-xl border border-gray-200 p-4" *ngIf="order.paymentMethod === 'BANK_TRANSFER' || order.paymentMethod === 'TRANSFER'">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <i class="fa-solid fa-file-invoice-dollar text-[#C5A059]"></i>
-          Comprobante de Pago
-        </h3>
-
-        <!-- Loading -->
-        <div *ngIf="proofLoading" class="flex justify-center p-4">
-          <div class="w-6 h-6 border-2 border-gray-200 border-t-[#800020] rounded-full animate-spin"></div>
-        </div>
-
-        <div *ngIf="!proofLoading">
-          <!-- Sin comprobante -->
-          <div *ngIf="!order.hasPaymentProof" class="text-sm text-gray-500 italic bg-white p-3 rounded border border-dashed border-gray-300 text-center">
-            El cliente aún no ha subido comprobante.
-          </div>
-
-          <!-- Con comprobante -->
-          <div *ngIf="order.hasPaymentProof && proofMetadata">
-            <!-- PENDING_REVIEW -->
-            <div *ngIf="order.paymentProofStatus === 'PENDING_REVIEW' && order.paymentStatus !== 'PAID' && order.status !== 'CANCELLED' && order.status !== 'COMPLETED'" class="space-y-4">
-              <div class="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
-                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
-                <p><strong>Comprobante en revisión.</strong> Revisa los datos y aprueba o rechaza el pago.</p>
-              </div>
-              
-              <div class="grid grid-cols-2 gap-y-2 text-sm bg-white p-3 border border-gray-200 rounded-lg">
-                <div class="text-gray-500">Subido el:</div><div class="font-medium text-gray-800">{{ orderService.formatDate(proofMetadata.uploadedAt) }}</div>
-                <div class="text-gray-500">Banco:</div><div class="font-medium text-gray-800">{{ proofMetadata.bankName || 'No especificado' }}</div>
-                <div class="text-gray-500">Referencia:</div><div class="font-medium text-gray-800">{{ proofMetadata.referenceNumber || 'No especificado' }}</div>
-                <div class="text-gray-500">Monto reportado:</div><div class="font-medium text-gray-800">{{ proofMetadata.amountDeclared ? orderService.formatCurrency(proofMetadata.amountDeclared) : 'No especificado' }}</div>
-                <div class="text-gray-500">Fecha transferencia:</div><div class="font-medium text-gray-800">{{ proofMetadata.transferDate || 'No especificada' }}</div>
-                <div class="text-gray-500">Notas:</div><div class="font-medium text-gray-800 col-span-2 italic text-xs">{{ proofMetadata.notes || 'Sin notas' }}</div>
-              </div>
-
-              <div class="flex flex-wrap gap-2">
-                <button (click)="viewProof()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 border border-gray-300">
-                  <i class="fa-solid fa-eye text-xs"></i> Ver archivo
-                </button>
-                <ng-container *ngIf="canManagePayments(); else noManagePermissions">
-                  <button (click)="approveProof()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
-                    <i class="fa-solid fa-check text-xs"></i> Aprobar pago
-                  </button>
-                  <button (click)="rejectProof()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
-                    <i class="fa-solid fa-xmark text-xs"></i> Rechazar
-                  </button>
-                </ng-container>
-                <ng-template #noManagePermissions>
-                  <div class="px-4 py-2 text-red-600 bg-red-50 border border-red-100 rounded-lg text-sm italic">
-                    <i class="fa-solid fa-lock text-xs mr-1"></i> No tienes permisos para aprobar o rechazar comprobantes de pago.
-                  </div>
-                </ng-template>
-              </div>
+      @if (order.paymentMethod === 'BANK_TRANSFER' || order.paymentMethod === 'TRANSFER') {
+        <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
+          <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-file-invoice-dollar text-[#C5A059]"></i>
+            Comprobante de Pago
+          </h3>
+          <!-- Loading -->
+          @if (proofLoading) {
+            <div class="flex justify-center p-4">
+              <div class="w-6 h-6 border-2 border-gray-200 border-t-[#800020] rounded-full animate-spin"></div>
             </div>
-
-            <!-- APPROVED -->
-            <div *ngIf="order.paymentProofStatus === 'APPROVED' || order.paymentStatus === 'PAID'" class="space-y-3">
-              <div class="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
-                <i class="fa-solid fa-circle-check"></i>
-                <p><strong>Comprobante aprobado.</strong> El pago ha sido confirmado.</p>
-              </div>
-              <p class="text-xs text-gray-500">Aprobado el: {{ proofMetadata.reviewedAt ? orderService.formatDate(proofMetadata.reviewedAt) : '---' }}</p>
-              <button (click)="viewProof()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 border border-gray-300 w-fit">
-                <i class="fa-solid fa-eye text-xs"></i> Ver archivo
-              </button>
-            </div>
-
-            <!-- REJECTED -->
-            <div *ngIf="order.paymentProofStatus === 'REJECTED' && order.paymentStatus !== 'PAID'" class="space-y-3">
-              <div class="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-                <i class="fa-solid fa-circle-xmark mt-0.5"></i>
-                <div>
-                  <p><strong>Comprobante rechazado.</strong></p>
-                  <p class="text-xs mt-1">Motivo: {{ proofMetadata.rejectionReason }}</p>
+          }
+          @if (!proofLoading) {
+            <div>
+              <!-- Sin comprobante -->
+              @if (!order.hasPaymentProof) {
+                <div class="text-sm text-gray-500 italic bg-white p-3 rounded border border-dashed border-gray-300 text-center">
+                  El cliente aún no ha subido comprobante.
                 </div>
-              </div>
-              <p class="text-xs text-gray-500">Rechazado el: {{ proofMetadata.reviewedAt ? orderService.formatDate(proofMetadata.reviewedAt) : '---' }}</p>
-              <button (click)="viewProof()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 border border-gray-300 w-fit">
-                <i class="fa-solid fa-eye text-xs"></i> Ver archivo rechazado
-              </button>
-            </div>
-          </div>
-        </div>
-      <!-- SECCIÓN: TIMELINE (HISTORIAL) -->
-      <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-          <i class="fa-solid fa-clock-rotate-left text-[#C5A059]"></i>
-          Historial de la orden
-        </h3>
-
-        <!-- Carga / Error -->
-        <div *ngIf="loadingTimeline" class="flex justify-center p-4">
-          <div class="w-6 h-6 border-2 border-gray-200 border-t-[#800020] rounded-full animate-spin"></div>
-        </div>
-        <div *ngIf="!loadingTimeline && timelineError" class="text-sm text-gray-500 italic text-center py-4">
-          {{ timelineError }}
-        </div>
-        <div *ngIf="!loadingTimeline && !timelineError && timeline.length === 0" class="text-sm text-gray-500 italic text-center py-4 bg-white border border-dashed border-gray-300 rounded-lg">
-          Aún no hay eventos registrados para esta orden.
-        </div>
-
-        <!-- Lista de Eventos -->
-        <div *ngIf="!loadingTimeline && !timelineError && timeline.length > 0" class="relative pl-6 sm:pl-8">
-          <!-- Línea central -->
-          <div class="absolute left-2.5 sm:left-3.5 top-2 bottom-0 w-0.5 bg-gray-200"></div>
-          
-          <div *ngFor="let event of timeline; let last = last" class="relative mb-6 last:mb-0">
-            <!-- Icono -->
-            <div class="absolute -left-6 sm:-left-8 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 bg-white">
-              <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center {{ getTimelineColorClass(event.eventType) }}">
-                <span class="material-icons text-[12px] sm:text-[14px]">{{ getTimelineIcon(event.eventType) }}</span>
-              </div>
-            </div>
-
-            <!-- Contenido del evento -->
-            <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm ml-1 sm:ml-2">
-              <div class="flex justify-between items-start mb-1 gap-2 flex-wrap">
-                <span class="font-bold text-gray-800 text-sm">{{ event.title }}</span>
-                <span class="text-xs text-gray-500 font-medium whitespace-nowrap">{{ orderService.formatDate(event.createdAt) }}</span>
-              </div>
-              
-              <p class="text-sm text-gray-600 mb-2 leading-relaxed" *ngIf="event.description">{{ event.description }}</p>
-              
-              <!-- Transiciones si aplica -->
-              <div *ngIf="event.orderStatusBefore && event.orderStatusAfter" class="mt-2 text-xs bg-gray-50 p-2 rounded border border-gray-100 font-medium text-gray-700">
-                Estado: <span class="text-gray-500 line-through mr-1">{{ translateOrderStatus($any(event.orderStatusBefore)) }}</span> <i class="fa-solid fa-arrow-right mx-1 text-gray-400"></i> <span class="text-gray-900">{{ translateOrderStatus($any(event.orderStatusAfter)) }}</span>
-              </div>
-              <div *ngIf="event.paymentStatusBefore && event.paymentStatusAfter" class="mt-2 text-xs bg-gray-50 p-2 rounded border border-gray-100 font-medium text-gray-700">
-                Pago: <span class="text-gray-500 line-through mr-1">{{ translatePaymentStatus($any(event.paymentStatusBefore)) }}</span> <i class="fa-solid fa-arrow-right mx-1 text-gray-400"></i> <span class="text-gray-900">{{ translatePaymentStatus($any(event.paymentStatusAfter)) }}</span>
-              </div>
-              <div *ngIf="event.shippingStatusBefore && event.shippingStatusAfter" class="mt-2 text-xs bg-gray-50 p-2 rounded border border-gray-100 font-medium text-gray-700">
-                Envío: <span class="text-gray-500 line-through mr-1">{{ translateShippingStatus($any(event.shippingStatusBefore)) }}</span> <i class="fa-solid fa-arrow-right mx-1 text-gray-400"></i> <span class="text-gray-900">{{ translateShippingStatus($any(event.shippingStatusAfter)) }}</span>
-              </div>
-
-              <!-- Actor -->
-              <div class="mt-2 text-xs flex items-center gap-1.5 text-gray-400 font-medium">
-                <i class="fa-solid fa-user-tag"></i>
-                <span>Realizado por: {{ event.actorLabel || 'Sistema' }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECCIN: PRODUCTOS -->
-      <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <i class="fa-solid fa-cart-shopping text-[#C5A059]"></i>
-          Artculos de la Orden
-          <span class="ml-1 bg-gray-200 text-gray-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ calculateItemsTotal() }}</span>
-        </h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-gray-200">
-                <th class="text-left text-xs font-semibold text-gray-500 pb-2 min-w-[200px]">Producto</th>
-                <th class="text-left text-xs font-semibold text-gray-500 pb-2 hidden sm:table-cell whitespace-nowrap">SKU</th>
-                <th class="text-center text-xs font-semibold text-gray-500 pb-2 whitespace-nowrap">Cant.</th>
-                <th class="text-right text-xs font-semibold text-gray-500 pb-2 whitespace-nowrap">Precio</th>
-                <th class="text-right text-xs font-semibold text-gray-500 pb-2 whitespace-nowrap">Total</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr *ngFor="let item of order.items" class="hover:bg-white/70">
-                <td class="py-2.5 pr-3 min-w-[200px]">
-                  <div class="flex items-center gap-2.5">
-                    <img *ngIf="item.productImage"
-                      [src]="item.productImage"
-                      [alt]="item.productName"
-                      class="w-10 h-10 min-w-[40px] rounded-lg object-cover border border-gray-200 flex-shrink-0"
-                      (error)="$any($event.target).src='assets/icons/placeholder.png'" />
-                    <div *ngIf="!item.productImage"
-                      class="w-10 h-10 min-w-[40px] rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0">
-                      <i class="fa-solid fa-image text-gray-400 text-sm"></i>
+              }
+              <!-- Con comprobante -->
+              @if (order.hasPaymentProof && proofMetadata) {
+                <div>
+                  <!-- PENDING_REVIEW -->
+                  @if (order.paymentProofStatus === 'PENDING_REVIEW' && order.paymentStatus !== 'PAID' && order.status !== 'CANCELLED' && order.status !== 'COMPLETED') {
+                    <div class="space-y-4">
+                      <div class="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+                        <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                        <p><strong>Comprobante en revisión.</strong> Revisa los datos y aprueba o rechaza el pago.</p>
+                      </div>
+                      <div class="grid grid-cols-2 gap-y-2 text-sm bg-white p-3 border border-gray-200 rounded-lg">
+                        <div class="text-gray-500">Subido el:</div><div class="font-medium text-gray-800">{{ orderService.formatDate(proofMetadata.uploadedAt) }}</div>
+                        <div class="text-gray-500">Banco:</div><div class="font-medium text-gray-800">{{ proofMetadata.bankName || 'No especificado' }}</div>
+                        <div class="text-gray-500">Referencia:</div><div class="font-medium text-gray-800">{{ proofMetadata.referenceNumber || 'No especificado' }}</div>
+                        <div class="text-gray-500">Monto reportado:</div><div class="font-medium text-gray-800">{{ proofMetadata.amountDeclared ? orderService.formatCurrency(proofMetadata.amountDeclared) : 'No especificado' }}</div>
+                        <div class="text-gray-500">Fecha transferencia:</div><div class="font-medium text-gray-800">{{ proofMetadata.transferDate || 'No especificada' }}</div>
+                        <div class="text-gray-500">Notas:</div><div class="font-medium text-gray-800 col-span-2 italic text-xs">{{ proofMetadata.notes || 'Sin notas' }}</div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button (click)="viewProof()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 border border-gray-300">
+                          <i class="fa-solid fa-eye text-xs"></i> Ver archivo
+                        </button>
+                        @if (canManagePayments()) {
+                          <button (click)="approveProof()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+                            <i class="fa-solid fa-check text-xs"></i> Aprobar pago
+                          </button>
+                          <button (click)="rejectProof()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+                            <i class="fa-solid fa-xmark text-xs"></i> Rechazar
+                          </button>
+                        } @else {
+                          <div class="px-4 py-2 text-red-600 bg-red-50 border border-red-100 rounded-lg text-sm italic">
+                            <i class="fa-solid fa-lock text-xs mr-1"></i> No tienes permisos para aprobar o rechazar comprobantes de pago.
+                          </div>
+                        }
+                      </div>
                     </div>
-                    <span class="font-medium text-gray-800 text-sm leading-snug">{{ item.productName }}</span>
+                  }
+                  <!-- APPROVED -->
+                  @if (order.paymentProofStatus === 'APPROVED' || order.paymentStatus === 'PAID') {
+                    <div class="space-y-3">
+                      <div class="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <p><strong>Comprobante aprobado.</strong> El pago ha sido confirmado.</p>
+                      </div>
+                      <p class="text-xs text-gray-500">Aprobado el: {{ proofMetadata.reviewedAt ? orderService.formatDate(proofMetadata.reviewedAt) : '---' }}</p>
+                      <button (click)="viewProof()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 border border-gray-300 w-fit">
+                        <i class="fa-solid fa-eye text-xs"></i> Ver archivo
+                      </button>
+                    </div>
+                  }
+                  <!-- REJECTED -->
+                  @if (order.paymentProofStatus === 'REJECTED' && order.paymentStatus !== 'PAID') {
+                    <div class="space-y-3">
+                      <div class="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+                        <i class="fa-solid fa-circle-xmark mt-0.5"></i>
+                        <div>
+                          <p><strong>Comprobante rechazado.</strong></p>
+                          <p class="text-xs mt-1">Motivo: {{ proofMetadata.rejectionReason }}</p>
+                        </div>
+                      </div>
+                      <p class="text-xs text-gray-500">Rechazado el: {{ proofMetadata.reviewedAt ? orderService.formatDate(proofMetadata.reviewedAt) : '---' }}</p>
+                      <button (click)="viewProof()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 border border-gray-300 w-fit">
+                        <i class="fa-solid fa-eye text-xs"></i> Ver archivo rechazado
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+          <!-- SECCIÓN: TIMELINE (HISTORIAL) -->
+          <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <i class="fa-solid fa-clock-rotate-left text-[#C5A059]"></i>
+              Historial de la orden
+            </h3>
+            <!-- Carga / Error -->
+            @if (loadingTimeline) {
+              <div class="flex justify-center p-4">
+                <div class="w-6 h-6 border-2 border-gray-200 border-t-[#800020] rounded-full animate-spin"></div>
+              </div>
+            }
+            @if (!loadingTimeline && timelineError) {
+              <div class="text-sm text-gray-500 italic text-center py-4">
+                {{ timelineError }}
+              </div>
+            }
+            @if (!loadingTimeline && !timelineError && timeline.length === 0) {
+              <div class="text-sm text-gray-500 italic text-center py-4 bg-white border border-dashed border-gray-300 rounded-lg">
+                Aún no hay eventos registrados para esta orden.
+              </div>
+            }
+            <!-- Lista de Eventos -->
+            @if (!loadingTimeline && !timelineError && timeline.length > 0) {
+              <div class="relative pl-6 sm:pl-8">
+                <!-- Línea central -->
+                <div class="absolute left-2.5 sm:left-3.5 top-2 bottom-0 w-0.5 bg-gray-200"></div>
+                @for (event of timeline; track event; let last = $last) {
+                  <div class="relative mb-6 last:mb-0">
+                    <!-- Icono -->
+                    <div class="absolute -left-6 sm:-left-8 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 bg-white">
+                      <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center {{ getTimelineColorClass(event.eventType) }}">
+                        <span class="material-icons text-[12px] sm:text-[14px]">{{ getTimelineIcon(event.eventType) }}</span>
+                      </div>
+                    </div>
+                    <!-- Contenido del evento -->
+                    <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm ml-1 sm:ml-2">
+                      <div class="flex justify-between items-start mb-1 gap-2 flex-wrap">
+                        <span class="font-bold text-gray-800 text-sm">{{ event.title }}</span>
+                        <span class="text-xs text-gray-500 font-medium whitespace-nowrap">{{ orderService.formatDate(event.createdAt) }}</span>
+                      </div>
+                      @if (event.description) {
+                        <p class="text-sm text-gray-600 mb-2 leading-relaxed">{{ event.description }}</p>
+                      }
+                      <!-- Transiciones si aplica -->
+                      @if (event.orderStatusBefore && event.orderStatusAfter) {
+                        <div class="mt-2 text-xs bg-gray-50 p-2 rounded border border-gray-100 font-medium text-gray-700">
+                          Estado: <span class="text-gray-500 line-through mr-1">{{ translateOrderStatus($any(event.orderStatusBefore)) }}</span> <i class="fa-solid fa-arrow-right mx-1 text-gray-400"></i> <span class="text-gray-900">{{ translateOrderStatus($any(event.orderStatusAfter)) }}</span>
+                        </div>
+                      }
+                      @if (event.paymentStatusBefore && event.paymentStatusAfter) {
+                        <div class="mt-2 text-xs bg-gray-50 p-2 rounded border border-gray-100 font-medium text-gray-700">
+                          Pago: <span class="text-gray-500 line-through mr-1">{{ translatePaymentStatus($any(event.paymentStatusBefore)) }}</span> <i class="fa-solid fa-arrow-right mx-1 text-gray-400"></i> <span class="text-gray-900">{{ translatePaymentStatus($any(event.paymentStatusAfter)) }}</span>
+                        </div>
+                      }
+                      @if (event.shippingStatusBefore && event.shippingStatusAfter) {
+                        <div class="mt-2 text-xs bg-gray-50 p-2 rounded border border-gray-100 font-medium text-gray-700">
+                          Envío: <span class="text-gray-500 line-through mr-1">{{ translateShippingStatus($any(event.shippingStatusBefore)) }}</span> <i class="fa-solid fa-arrow-right mx-1 text-gray-400"></i> <span class="text-gray-900">{{ translateShippingStatus($any(event.shippingStatusAfter)) }}</span>
+                        </div>
+                      }
+                      <!-- Actor -->
+                      <div class="mt-2 text-xs flex items-center gap-1.5 text-gray-400 font-medium">
+                        <i class="fa-solid fa-user-tag"></i>
+                        <span>Realizado por: {{ event.actorLabel || 'Sistema' }}</span>
+                      </div>
+                    </div>
                   </div>
-                </td>
-                <td class="py-2.5 pr-3 hidden sm:table-cell">
-                  <span class="text-xs text-gray-500 font-mono">{{ item.productSku }}</span>
-                </td>
-                <td class="py-2.5 text-center">
-                  <span class="inline-block bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ item.quantity }}</span>
-                </td>
-                <td class="py-2.5 text-right text-sm text-gray-600">{{ orderService.formatCurrency(item.price) }}</td>
-                <td class="py-2.5 text-right text-sm font-semibold text-gray-800">{{ orderService.formatCurrency(item.subtotal) }}</td>
-              </tr>
-            </tbody>
-          </table>
+                }
+              </div>
+            }
+          </div>
+          <!-- SECCIN: PRODUCTOS -->
+          <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <i class="fa-solid fa-cart-shopping text-[#C5A059]"></i>
+              Artculos de la Orden
+              <span class="ml-1 bg-gray-200 text-gray-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ calculateItemsTotal() }}</span>
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-gray-200">
+                    <th class="text-left text-xs font-semibold text-gray-500 pb-2 min-w-[200px]">Producto</th>
+                    <th class="text-left text-xs font-semibold text-gray-500 pb-2 hidden sm:table-cell whitespace-nowrap">SKU</th>
+                    <th class="text-center text-xs font-semibold text-gray-500 pb-2 whitespace-nowrap">Cant.</th>
+                    <th class="text-right text-xs font-semibold text-gray-500 pb-2 whitespace-nowrap">Precio</th>
+                    <th class="text-right text-xs font-semibold text-gray-500 pb-2 whitespace-nowrap">Total</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  @for (item of order.items; track item) {
+                    <tr class="hover:bg-white/70">
+                      <td class="py-2.5 pr-3 min-w-[200px]">
+                        <div class="flex items-center gap-2.5">
+                          @if (item.productImage) {
+                            <img
+                              [src]="item.productImage"
+                              [alt]="item.productName"
+                              class="w-10 h-10 min-w-[40px] rounded-lg object-cover border border-gray-200 flex-shrink-0"
+                              (error)="$any($event.target).src='assets/icons/placeholder.png'" />
+                          }
+                          @if (!item.productImage) {
+                            <div
+                              class="w-10 h-10 min-w-[40px] rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <i class="fa-solid fa-image text-gray-400 text-sm"></i>
+                            </div>
+                          }
+                          <span class="font-medium text-gray-800 text-sm leading-snug">{{ item.productName }}</span>
+                        </div>
+                      </td>
+                      <td class="py-2.5 pr-3 hidden sm:table-cell">
+                        <span class="text-xs text-gray-500 font-mono">{{ item.productSku }}</span>
+                      </td>
+                      <td class="py-2.5 text-center">
+                        <span class="inline-block bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ item.quantity }}</span>
+                      </td>
+                      <td class="py-2.5 text-right text-sm text-gray-600">{{ orderService.formatCurrency(item.price) }}</td>
+                      <td class="py-2.5 text-right text-sm font-semibold text-gray-800">{{ orderService.formatCurrency(item.subtotal) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <!-- Totales -->
+            <div class="mt-4 pt-3 border-t border-gray-200 space-y-1.5">
+              <div class="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span>
+                <span>{{ orderService.formatCurrency(order.subtotal) }}</span>
+              </div>
+              @if (order.shipping > 0) {
+                <div class="flex justify-between text-sm text-gray-600">
+                  <span>Env�o</span>
+                  <span>{{ orderService.formatCurrency(order.shipping) }}</span>
+                </div>
+              }
+              @if (order.tax > 0) {
+                <div class="flex justify-between text-sm text-gray-600">
+                  <span>Impuestos</span>
+                  <span>{{ orderService.formatCurrency(order.tax) }}</span>
+                </div>
+              }
+              @if (order.discount > 0) {
+                <div class="flex justify-between text-sm text-green-600 font-medium">
+                  <span>Descuento</span>
+                  <span>-{{ orderService.formatCurrency(order.discount) }}</span>
+                </div>
+              }
+              <div class="flex justify-between text-base font-extrabold text-[#800020] pt-2 border-t border-gray-200 mt-1">
+                <span>Total</span>
+                <span>{{ orderService.formatCurrency(order.total) }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- SECCI�N: TIMELINE (condicional) -->
+          @if (order.shippedAt || order.deliveredAt || order.cancelledAt) {
+            <div
+              class="bg-gray-50 rounded-xl border border-gray-200 p-4">
+              <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <i class="fa-solid fa-timeline text-[#C5A059]"></i>
+                Historial de Eventos
+              </h3>
+              <div class="space-y-3">
+                @if (order.shippedAt) {
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <i class="fa-solid fa-truck text-blue-500 text-xs"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-700">Enviado</p>
+                      <p class="text-xs text-gray-500">{{ orderService.formatDate(order.shippedAt) }}</p>
+                    </div>
+                  </div>
+                }
+                @if (order.deliveredAt) {
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <i class="fa-solid fa-circle-check text-green-500 text-xs"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-700">Entregado</p>
+                      <p class="text-xs text-gray-500">{{ orderService.formatDate(order.deliveredAt) }}</p>
+                    </div>
+                  </div>
+                }
+                @if (order.cancelledAt) {
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                      <i class="fa-solid fa-ban text-[#800020] text-xs"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-700">Cancelado</p>
+                      <p class="text-xs text-gray-500">{{ orderService.formatDate(order.cancelledAt) }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
+      }
 
-        <!-- Totales -->
-        <div class="mt-4 pt-3 border-t border-gray-200 space-y-1.5">
-          <div class="flex justify-between text-sm text-gray-600">
-            <span>Subtotal</span>
-            <span>{{ orderService.formatCurrency(order.subtotal) }}</span>
-          </div>
-          <div class="flex justify-between text-sm text-gray-600" *ngIf="order.shipping > 0">
-            <span>Env�o</span>
-            <span>{{ orderService.formatCurrency(order.shipping) }}</span>
-          </div>
-          <div class="flex justify-between text-sm text-gray-600" *ngIf="order.tax > 0">
-            <span>Impuestos</span>
-            <span>{{ orderService.formatCurrency(order.tax) }}</span>
-          </div>
-          <div class="flex justify-between text-sm text-green-600 font-medium" *ngIf="order.discount > 0">
-            <span>Descuento</span>
-            <span>-{{ orderService.formatCurrency(order.discount) }}</span>
-          </div>
-          <div class="flex justify-between text-base font-extrabold text-[#800020] pt-2 border-t border-gray-200 mt-1">
-            <span>Total</span>
-            <span>{{ orderService.formatCurrency(order.total) }}</span>
-          </div>
+      <!-- FOOTER -->
+      <div class="flex justify-between px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex-shrink-0">
+        <div class="flex items-center gap-3">
+          @if (hasReportViewPermission) {
+            <button (click)="onAnalyzePattern()"
+              class="flex items-center gap-2 px-5 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-semibold rounded-lg transition-colors border border-purple-200">
+              <i class="fa-solid fa-chart-pie text-xs"></i>
+              Analizar patrón de compra
+            </button>
+          }
+          @if (allowedTransitions?.canCancelOrder) {
+            <button (click)="cancelOrder()"
+              class="flex items-center gap-2 px-5 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold rounded-lg transition-colors border border-red-200">
+              <i class="fa-solid fa-ban text-xs"></i>
+              Cancelar Orden
+            </button>
+          }
         </div>
-      </div>
-
-      <!-- SECCI�N: TIMELINE (condicional) -->
-      <div *ngIf="order.shippedAt || order.deliveredAt || order.cancelledAt"
-        class="bg-gray-50 rounded-xl border border-gray-200 p-4">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <i class="fa-solid fa-timeline text-[#C5A059]"></i>
-          Historial de Eventos
-        </h3>
-        <div class="space-y-3">
-          <div *ngIf="order.shippedAt" class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-truck text-blue-500 text-xs"></i>
-            </div>
-            <div>
-              <p class="text-sm font-semibold text-gray-700">Enviado</p>
-              <p class="text-xs text-gray-500">{{ orderService.formatDate(order.shippedAt) }}</p>
-            </div>
-          </div>
-          <div *ngIf="order.deliveredAt" class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-circle-check text-green-500 text-xs"></i>
-            </div>
-            <div>
-              <p class="text-sm font-semibold text-gray-700">Entregado</p>
-              <p class="text-xs text-gray-500">{{ orderService.formatDate(order.deliveredAt) }}</p>
-            </div>
-          </div>
-          <div *ngIf="order.cancelledAt" class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-ban text-[#800020] text-xs"></i>
-            </div>
-            <div>
-              <p class="text-sm font-semibold text-gray-700">Cancelado</p>
-              <p class="text-xs text-gray-500">{{ orderService.formatDate(order.cancelledAt) }}</p>
-            </div>
-          </div>
-        </div>
+        <button (click)="closeModal()"
+          class="flex items-center gap-2 px-5 py-2 bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold rounded-lg transition-colors">
+          <i class="fa-solid fa-xmark text-xs"></i>
+          Cerrar
+        </button>
       </div>
 
     </div>
-
-    <!-- FOOTER -->
-    <div class="flex justify-between px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex-shrink-0">
-      <div class="flex items-center gap-3">
-        <button *ngIf="hasReportViewPermission" (click)="onAnalyzePattern()"
-          class="flex items-center gap-2 px-5 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-semibold rounded-lg transition-colors border border-purple-200">
-          <i class="fa-solid fa-chart-pie text-xs"></i>
-          Analizar patrón de compra
-        </button>
-        <button *ngIf="allowedTransitions?.canCancelOrder" (click)="cancelOrder()"
-          class="flex items-center gap-2 px-5 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold rounded-lg transition-colors border border-red-200">
-          <i class="fa-solid fa-ban text-xs"></i>
-          Cancelar Orden
-        </button>
-      </div>
-      <button (click)="closeModal()"
-        class="flex items-center gap-2 px-5 py-2 bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold rounded-lg transition-colors">
-        <i class="fa-solid fa-xmark text-xs"></i>
-        Cerrar
-      </button>
-    </div>
-
   </div>
-</div>
 
-<!-- VISOR PROFESIONAL DE COMPROBANTE (ADMIN) -->
-<div class="fixed inset-0 bg-black/70 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm" *ngIf="showProofPreviewModal" (click)="closeProofPreview()">
-  <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]" (click)="$event.stopPropagation()">
-    
-    <!-- HEADER -->
-    <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-[#f0e6e7] flex items-center justify-center">
-          <i class="fa-solid fa-file-invoice text-[#722f37] text-lg"></i>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-gray-800 leading-tight">Visor de comprobante</h3>
-          <p class="text-xs text-gray-500 font-mono">Pedido #{{ proofPreviewOrderNumber }}</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-4">
+  <!-- VISOR PROFESIONAL DE COMPROBANTE (ADMIN) -->
+  @if (showProofPreviewModal) {
+    <div class="fixed inset-0 bg-black/70 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm" (click)="closeProofPreview()">
+      <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]" (click)="$event.stopPropagation()">
+        <!-- HEADER -->
+        <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-[#f0e6e7] flex items-center justify-center">
+              <i class="fa-solid fa-file-invoice text-[#722f37] text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-800 leading-tight">Visor de comprobante</h3>
+              <p class="text-xs text-gray-500 font-mono">Pedido #{{ proofPreviewOrderNumber }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
         <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider" [ngClass]="{
           'bg-amber-100 text-amber-800 border border-amber-200': proofPreviewStatus === 'PENDING_REVIEW',
           'bg-green-100 text-green-800 border border-green-200': proofPreviewStatus === 'APPROVED',
           'bg-red-100 text-red-800 border border-red-200': proofPreviewStatus === 'REJECTED'
         }">
-          {{ proofPreviewStatus === 'PENDING_REVIEW' ? 'EN REVISIÓN' : (proofPreviewStatus === 'APPROVED' ? 'APROBADO' : 'RECHAZADO') }}
-        </span>
-        <button (click)="closeProofPreview()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
+              {{ proofPreviewStatus === 'PENDING_REVIEW' ? 'EN REVISIÓN' : (proofPreviewStatus === 'APPROVED' ? 'APROBADO' : 'RECHAZADO') }}
+            </span>
+            <button (click)="closeProofPreview()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors">
+              <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+          </div>
+        </div>
+        <!-- BODY -->
+        <div class="relative bg-gray-200 flex-1 min-h-[400px] flex items-center justify-center overflow-hidden p-2">
+          @if (loadingProofPreview) {
+            <div class="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+              <div class="w-10 h-10 border-4 border-gray-200 border-t-[#722f37] rounded-full animate-spin mb-3"></div>
+              <p class="text-sm font-medium text-gray-600">Cargando comprobante...</p>
+            </div>
+          }
+          @if (!loadingProofPreview && proofPreviewError) {
+            <div class="bg-white p-6 rounded-xl shadow-sm text-center max-w-md">
+              <i class="fa-solid fa-circle-exclamation text-red-500 text-4xl mb-3"></i>
+              <p class="text-red-600 font-medium">{{ proofPreviewError }}</p>
+            </div>
+          }
+          @if (!loadingProofPreview && !proofPreviewError && proofPreviewSafeUrl) {
+            <div class="w-full h-full flex items-center justify-center">
+              @if (proofPreviewContentType === 'application/pdf') {
+                <canvas #pdfCanvas class="bg-white rounded shadow-sm max-w-full" style="border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></canvas>
+              }
+              @if (proofPreviewContentType?.startsWith('image/')) {
+                <img [src]="proofPreviewSafeUrl" alt="Comprobante" class="max-w-full max-h-[75vh] object-contain rounded shadow-md bg-white">
+              }
+            </div>
+          }
+        </div>
+        <!-- FOOTER -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
+          <div class="flex items-center gap-2 text-gray-600 font-mono text-sm">
+            <i class="fa-regular fa-file"></i>
+            {{ proofPreviewFilename }}
+          </div>
+          <div class="flex items-center gap-3">
+            <button (click)="openProofInNewTab()" [disabled]="!proofPreviewUrl" class="px-4 py-2 border border-[#722f37] text-[#722f37] rounded-lg hover:bg-red-50 font-semibold text-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir en nueva pestaña
+            </button>
+            <button (click)="downloadProof()" [disabled]="!proofPreviewUrl" class="px-5 py-2 bg-[#722f37] text-white rounded-lg hover:bg-[#5a252b] font-semibold text-sm transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fa-solid fa-download"></i> Descargar comprobante
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- BODY -->
-    <div class="relative bg-gray-200 flex-1 min-h-[400px] flex items-center justify-center overflow-hidden p-2">
-      <div *ngIf="loadingProofPreview" class="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
-        <div class="w-10 h-10 border-4 border-gray-200 border-t-[#722f37] rounded-full animate-spin mb-3"></div>
-        <p class="text-sm font-medium text-gray-600">Cargando comprobante...</p>
-      </div>
-      
-      <div *ngIf="!loadingProofPreview && proofPreviewError" class="bg-white p-6 rounded-xl shadow-sm text-center max-w-md">
-        <i class="fa-solid fa-circle-exclamation text-red-500 text-4xl mb-3"></i>
-        <p class="text-red-600 font-medium">{{ proofPreviewError }}</p>
-      </div>
-
-      <div *ngIf="!loadingProofPreview && !proofPreviewError && proofPreviewSafeUrl" class="w-full h-full flex items-center justify-center">
-        <canvas *ngIf="proofPreviewContentType === 'application/pdf'" #pdfCanvas class="bg-white rounded shadow-sm max-w-full" style="border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></canvas>
-        <img *ngIf="proofPreviewContentType?.startsWith('image/')" [src]="proofPreviewSafeUrl" alt="Comprobante" class="max-w-full max-h-[75vh] object-contain rounded shadow-md bg-white">
-      </div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-      <div class="flex items-center gap-2 text-gray-600 font-mono text-sm">
-        <i class="fa-regular fa-file"></i>
-        {{ proofPreviewFilename }}
-      </div>
-      <div class="flex items-center gap-3">
-        <button (click)="openProofInNewTab()" [disabled]="!proofPreviewUrl" class="px-4 py-2 border border-[#722f37] text-[#722f37] rounded-lg hover:bg-red-50 font-semibold text-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-          <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir en nueva pestaña
-        </button>
-        <button (click)="downloadProof()" [disabled]="!proofPreviewUrl" class="px-5 py-2 bg-[#722f37] text-white rounded-lg hover:bg-[#5a252b] font-semibold text-sm transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-          <i class="fa-solid fa-download"></i> Descargar comprobante
-        </button>
-      </div>
-    </div>
-
-  </div>
-</div>
+  }
