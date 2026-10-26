@@ -19,7 +19,7 @@ El backend mantiene AuthController, JwtTokenProvider HS512 y SessionManagementSe
 Login sin 2FA conserva el envoltorio `data.jwtResponse.accessToken/user` existente. Login pendiente devuelve exclusivamente:
 
 ```json
-{"success":true,"data":{"twoFactorRequired":true,"preAuthChallenge":"<opaque-token>","availableMethods":{"EMAIL":true,"GOOGLE_AUTHENTICATOR":true,"BACKUP_CODE":false}}}
+{ "success": true, "data": { "twoFactorRequired": true, "preAuthChallenge": "<opaque-token>", "availableMethods": { "EMAIL": true, "GOOGLE_AUTHENTICATOR": true, "BACKUP_CODE": false } } }
 ```
 
 AuthService captura el challenge y solo entrega a LoginComponent el estado pendiente y los métodos permitidos; no expone el token para renderizar. El email de la UI procede del formulario local, no autoriza al usuario.
@@ -27,13 +27,13 @@ AuthService captura el challenge y solo entrega a LoginComponent el estado pendi
 Envío:
 
 ```json
-{"preAuthChallenge":"<opaque-token>","method":"EMAIL"}
+{ "preAuthChallenge": "<opaque-token>", "method": "EMAIL" }
 ```
 
 Verificación:
 
 ```json
-{"preAuthChallenge":"<opaque-token>","method":"EMAIL","code":"<user-input>"}
+{ "preAuthChallenge": "<opaque-token>", "method": "EMAIL", "code": "<user-input>" }
 ```
 
 GOOGLE_AUTHENTICATOR y BACKUP_CODE usan el mismo contrato de verificación. No hay email/userId autorizante ni compatibilidad con verify sin challenge. La respuesta posterior a verify conserva `data.accessToken/user`.
@@ -67,7 +67,7 @@ El navegador no recibe JWT secret ni password hash. Producción exige secreto co
 
 No se encontraron consumidores de secure-login, secure-logout, refresh ni refresh-token en ambos repositorios. Se eliminaron SecureAuthController/SecureJwtService y el refresh oficial incompatible. Se retiraron además csrf-token/session-status de ese controller. Su consumidor de mantenimiento fue migrado a limpieza de sesiones persistentes.
 
-**El contrato oficial actual no incluye renovación automática de access tokens.** Un token vencido/revocado requiere login nuevo. Se conserva registro/verificación/recovery, incluidos los contratos públicos existentes de PasswordResetController y SecurePasswordResetController. Las rutas protegidas no quedan excluidas por /api/auth/**.
+**El contrato oficial actual no incluye renovación automática de access tokens.** Un token vencido/revocado requiere login nuevo. Se conserva registro/verificación/recovery, incluidos los contratos públicos existentes de PasswordResetController y SecurePasswordResetController. Las rutas protegidas no quedan excluidas por /api/auth/\*\*.
 
 ## Migración Flyway y tests backend
 
@@ -126,11 +126,11 @@ El árbol instalado que muestran npm ls/explain también contiene tar 6.2.1 medi
 - src/app/components/admin/order-detail-modal/order-detail-modal.component.ts: import y getDocument en el modal administrativo.
 - Ambos fijan el worker local `/assets/pdfjs/pdf.worker.min.js`, versión 3.11.174. La actualización requiere coordinar librería/worker y revisar APIs/ESM; no basta cambiar una versión. No se eliminó nada.
 
-| Hallazgo | Severidad/cadena | Sugerencia de npm, no aplicada |
-|---|---|---|
-| Angular core/common/compiler/service-worker: XSS, filtración de headers/XSRF y otras advisories del audit | HIGH y transitivas | Angular 22.2.3; breaking change |
-| tar: traversal de enlaces/rutas, escritura fuera del destino y DoS de parsing | CRITICAL; cadena optional de PDF.js y tooling | Resolver la cadena mediante pdfjs-dist 6.4.299; breaking change |
-| Otros: brace-expansion, minimatch, nanoid, PostCSS, source-map-js, browserslist; yaml y otros | HIGH/MODERATE según audit | Parches/actualización del árbol en tarea separada |
+| Hallazgo                                                                                                  | Severidad/cadena                              | Sugerencia de npm, no aplicada                                  |
+| --------------------------------------------------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------- |
+| Angular core/common/compiler/service-worker: XSS, filtración de headers/XSRF y otras advisories del audit | HIGH y transitivas                            | Angular 22.2.3; breaking change                                 |
+| tar: traversal de enlaces/rutas, escritura fuera del destino y DoS de parsing                             | CRITICAL; cadena optional de PDF.js y tooling | Resolver la cadena mediante pdfjs-dist 6.4.299; breaking change |
+| Otros: brace-expansion, minimatch, nanoid, PostCSS, source-map-js, browserslist; yaml y otros             | HIGH/MODERATE según audit                     | Parches/actualización del árbol en tarea separada               |
 
 Objetivos recomendados **para evaluación, no instalación aquí**: Angular 22.2.3 coherente en todos sus paquetes, TypeScript >=6.0 <6.1 conforme al compiler-cli publicado, y PDF.js 6.4.299 con worker de igual versión. Node 22.23.2 satisface los engines publicados de esos candidatos (Angular ^22.22.3; PDF.js >=22.13.0), pero eso no sustituye pruebas de compatibilidad. Material/CDK, builder, zoneless/zone, templates y tipado deben evaluarse en la rama Dependency Hardening. El estado de advisories debe reconsultarse al implementar; no se garantiza que esos candidatos por sí solos eliminen toda la deuda.
 
@@ -170,17 +170,17 @@ Se intentó el plugin Maven existente sin actualizar dependencias ni introducir 
 
 ## Validación y estado Git finales
 
-| Validación final | Resultado |
-|---|---|
-| Auth/recovery + interceptor | **30/30 PASS**, sin fallos |
-| Suite global | Compilación bloqueada antes de ejecutar tests por los **17 errores TypeScript históricos** de Global Search; no se reaplica el patch |
-| npm run build | **SUCCESS**, warnings existentes de CSS/CommonJS, sin modificar budgets |
-| npm audit --omit=dev | Exit 1: **23 vulnerabilidades (7 moderate, 15 high, 1 critical)** preexistentes; sin fixes |
-| Dependencias | package.json/package-lock.json sin diff |
-| Global Search | Archivo idéntico a deploy/vercel-frontend, fuera de Auth Hardening; patch externo intacto y git apply --check correcto |
-| git diff --check | Correcto |
-| Secret scan | 0 patrones private key/live API key/JWT firmado literal; revisión manual confirma solo fixtures sintéticos y ningún secreto real añadido |
-| Lint | No disponible en package.json de la base; no se instaló infraestructura |
+| Validación final            | Resultado                                                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth/recovery + interceptor | **30/30 PASS**, sin fallos                                                                                                               |
+| Suite global                | Compilación bloqueada antes de ejecutar tests por los **17 errores TypeScript históricos** de Global Search; no se reaplica el patch     |
+| npm run build               | **SUCCESS**, warnings existentes de CSS/CommonJS, sin modificar budgets                                                                  |
+| npm audit --omit=dev        | Exit 1: **23 vulnerabilidades (7 moderate, 15 high, 1 critical)** preexistentes; sin fixes                                               |
+| Dependencias                | package.json/package-lock.json sin diff                                                                                                  |
+| Global Search               | Archivo idéntico a deploy/vercel-frontend, fuera de Auth Hardening; patch externo intacto y git apply --check correcto                   |
+| git diff --check            | Correcto                                                                                                                                 |
+| Secret scan                 | 0 patrones private key/live API key/JWT firmado literal; revisión manual confirma solo fixtures sintéticos y ningún secreto real añadido |
+| Lint                        | No disponible en package.json de la base; no se instaló infraestructura                                                                  |
 
 Las correcciones añaden el fallback 429 y el test de claves opacas sin cambiar la limpieza del challenge tras verify fallido (MED-03). El backend termina test/verify con 205 tests y 0 failures/errors/skipped; el escaneo NVD es inconcluso por HTTP 403.
 
@@ -216,4 +216,3 @@ Patch separado: `C:\Users\ivanf\AppData\Local\Temp\auth-hardening-review-hpkepuu
 ```
 
 Stat no incluye nuevos archivos sin seguimiento. Stashes intactos; sin móvil/PWA/dependencias/producción/commit/push/PR/deploy. **Frontend dependency remediation is a deployment blocker.** Pendientes: Frontend Dependency Hardening, MED-03 UX y repetición de Dependency Check backend con acceso NVD autorizado.
-
