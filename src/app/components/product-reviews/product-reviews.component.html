@@ -21,7 +21,7 @@
           {{ (statistics?.averageRating || product.averageRating) > 0 ? ((statistics?.averageRating || product.averageRating) | number:'1.1-1') : '—' }}
         </p>
         <div class="flex gap-1">
-          @for (star of getStars(statistics?.averageRating || product.averageRating || 0); track star) {
+          @for (star of getStars(statistics?.averageRating || product.averageRating || 0); track $index) {
             <span
               class="text-3xl"
               [class.text-amber-400]="star"
@@ -184,7 +184,7 @@
               <!-- Estrellas + Título -->
               <div class="flex items-center gap-2 mb-1">
                 <div class="flex">
-                  @for (star of getStars(review.rating); track star) {
+                  @for (star of getStars(review.rating); track $index) {
                     <span
                       class="text-base"
                       [class.text-amber-400]="star"
