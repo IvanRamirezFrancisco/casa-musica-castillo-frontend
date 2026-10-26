@@ -6,32 +6,35 @@
       <h1 class="page-title">Dashboard</h1>
       <p class="page-subtitle">Bienvenido al panel de administración</p>
     </div>
-    <button *ngIf="authService.hasPermission('PRODUCT_CREATE')" class="btn-primary" routerLink="/admin/products" [queryParams]="{action: 'create'}">
-      <span class="material-icons">add</span>
-      Nuevo Producto
-    </button>
+    @if (authService.hasPermission('PRODUCT_CREATE')) {
+      <button class="btn-primary" routerLink="/admin/products" [queryParams]="{action: 'create'}">
+        <span class="material-icons">add</span>
+        Nuevo Producto
+      </button>
+    }
   </div>
 
   <!-- Stats Grid -->
   <div class="stats-grid">
-    <a 
-      *ngFor="let stat of stats" 
-      class="stat-card"
-      [style.--card-color]="stat.color"
-      [routerLink]="stat.route"
-      style="text-decoration: none; color: inherit; cursor: pointer;">
-      <div class="stat-icon">
-        <span class="material-icons">{{ stat.icon }}</span>
-      </div>
-      <div class="stat-content">
-        <span class="stat-title">{{ stat.title }}</span>
-        <h2 class="stat-value">{{ stat.value }}</h2>
-        <div class="stat-change" [class.positive]="stat.changeType === 'positive'">
-          <span class="material-icons">{{ stat.changeType === 'positive' ? 'arrow_upward' : 'arrow_downward' }}</span>
-          <span>{{ stat.change }} vs mes anterior</span>
+    @for (stat of stats; track stat) {
+      <a
+        class="stat-card"
+        [style.--card-color]="stat.color"
+        [routerLink]="stat.route"
+        style="text-decoration: none; color: inherit; cursor: pointer;">
+        <div class="stat-icon">
+          <span class="material-icons">{{ stat.icon }}</span>
         </div>
-      </div>
-    </a>
+        <div class="stat-content">
+          <span class="stat-title">{{ stat.title }}</span>
+          <h2 class="stat-value">{{ stat.value }}</h2>
+          <div class="stat-change" [class.positive]="stat.changeType === 'positive'">
+            <span class="material-icons">{{ stat.changeType === 'positive' ? 'arrow_upward' : 'arrow_downward' }}</span>
+            <span>{{ stat.change }} vs mes anterior</span>
+          </div>
+        </div>
+      </a>
+    }
   </div>
 
   <!-- Inventory Prediction Module -->
@@ -40,97 +43,105 @@
   <!-- Main Content Grid -->
   <div class="content-grid">
     <!-- Recent Orders -->
-    <div class="content-card" *ngIf="authService.hasPermission('ORDER_READ')">
-      <div class="card-header">
-        <div>
-          <h3 class="card-title">Órdenes Recientes</h3>
-          <p class="card-subtitle">Últimas 5 transacciones</p>
+    @if (authService.hasPermission('ORDER_READ')) {
+      <div class="content-card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Órdenes Recientes</h3>
+            <p class="card-subtitle">Últimas 5 transacciones</p>
+          </div>
+          <a routerLink="/admin/ordenes" class="link-button">Ver todas</a>
         </div>
-        <a routerLink="/admin/ordenes" class="link-button">Ver todas</a>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Número de Orden</th>
-              <th>Cliente</th>
-              <th>Total</th>
-              <th>Estado</th>
-              <th>Fecha</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let order of recentOrders">
-              <td class="order-id">{{ order.orderNumber }}</td>
-              <td>
-                <div class="customer-cell">
-                  <span class="material-icons">account_circle</span>
-                  <span>{{ order.customerName || 'Cliente #' + order.customerId }}</span>
-                </div>
-              </td>
-              <td class="amount">\${{ order.total | number:'1.2-2' }}</td>
-              <td>
-                <span class="status-badge" [ngClass]="getStatusClass(order.status)">
-                  {{ getStatusText(order.status) }}
-                </span>
-              </td>
-              <td>{{ order.createdAt | date:'short' }}</td>
-              <td>
-                <div class="action-buttons">
-                  <button class="icon-btn" title="Ver detalles" [routerLink]="['/admin/orders']" [queryParams]="{orderId: order.id}">
-                    <span class="material-icons">visibility</span>
-                  </button>
-                  <button class="icon-btn" title="Editar" [routerLink]="['/admin/orders']" [queryParams]="{orderId: order.id, action: 'edit'}">
-                    <span class="material-icons">edit</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <!-- Mensaje si no hay órdenes -->
-        <div *ngIf="recentOrders.length === 0" class="no-data">
-          <span class="material-icons">inbox</span>
-          <p>No hay órdenes recientes</p>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Número de Orden</th>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of recentOrders; track order) {
+                <tr>
+                  <td class="order-id">{{ order.orderNumber }}</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="material-icons">account_circle</span>
+                      <span>{{ order.customerName || 'Cliente #' + order.customerId }}</span>
+                    </div>
+                  </td>
+                  <td class="amount">\${{ order.total | number:'1.2-2' }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+                      {{ getStatusText(order.status) }}
+                    </span>
+                  </td>
+                  <td>{{ order.createdAt | date:'short' }}</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="icon-btn" title="Ver detalles" [routerLink]="['/admin/orders']" [queryParams]="{orderId: order.id}">
+                        <span class="material-icons">visibility</span>
+                      </button>
+                      <button class="icon-btn" title="Editar" [routerLink]="['/admin/orders']" [queryParams]="{orderId: order.id, action: 'edit'}">
+                        <span class="material-icons">edit</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <!-- Mensaje si no hay órdenes -->
+          @if (recentOrders.length === 0) {
+            <div class="no-data">
+              <span class="material-icons">inbox</span>
+              <p>No hay órdenes recientes</p>
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
 
     <!-- Top Products -->
-    <div class="content-card" *ngIf="authService.hasPermission('PRODUCT_READ')">
-      <div class="card-header">
-        <div>
-          <h3 class="card-title">Productos Más Vendidos</h3>
-          <p class="card-subtitle">Top 5 del mes</p>
-        </div>
-      </div>
-
-      <div class="products-list">
-        <div *ngFor="let product of topProducts; let i = index" class="product-item">
-          <div class="product-rank">{{ i + 1 }}</div>
-          <div class="product-info">
-            <h4 class="product-name">{{ product.name }}</h4>
-            <div class="product-stats">
-              <span class="product-sales">{{ product.salesCount || 0 }} ventas</span>
-              <span class="product-revenue">\${{ (product.price * (product.salesCount || 0)) | number:'1.0-0' }}</span>
-            </div>
-          </div>
-          <div class="product-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="((product.salesCount || 0) / 150) * 100"></div>
-            </div>
+    @if (authService.hasPermission('PRODUCT_READ')) {
+      <div class="content-card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Productos Más Vendidos</h3>
+            <p class="card-subtitle">Top 5 del mes</p>
           </div>
         </div>
-        
-        <!-- Mensaje si no hay productos -->
-        <div *ngIf="topProducts.length === 0" class="no-data">
-          <span class="material-icons">inventory</span>
-          <p>No hay productos disponibles</p>
+        <div class="products-list">
+          @for (product of topProducts; track product; let i = $index) {
+            <div class="product-item">
+              <div class="product-rank">{{ i + 1 }}</div>
+              <div class="product-info">
+                <h4 class="product-name">{{ product.name }}</h4>
+                <div class="product-stats">
+                  <span class="product-sales">{{ product.salesCount || 0 }} ventas</span>
+                  <span class="product-revenue">\${{ (product.price * (product.salesCount || 0)) | number:'1.0-0' }}</span>
+                </div>
+              </div>
+              <div class="product-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="((product.salesCount || 0) / 150) * 100"></div>
+                </div>
+              </div>
+            </div>
+          }
+          <!-- Mensaje si no hay productos -->
+          @if (topProducts.length === 0) {
+            <div class="no-data">
+              <span class="material-icons">inventory</span>
+              <p>No hay productos disponibles</p>
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
   </div>
 </div>

@@ -6,215 +6,228 @@
   </h2>
 
   <!-- Indicador de carga general -->
-  <div *ngIf="loading && !reviews.length" class="flex justify-center py-10 text-gray-500">
-    <div class="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
-  </div>
+  @if (loading && !reviews.length) {
+    <div class="flex justify-center py-10 text-gray-500">
+      <div class="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  }
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-10" *ngIf="!loading || reviews.length > 0">
-
-    <!-- Columna izquierda: resumen visual -->
-    <div class="flex flex-col items-center text-center gap-4 lg:border-r lg:border-gray-100 lg:pr-10">
-      
-      <!-- Nota grande -->
-      <p class="text-7xl font-extrabold text-gray-900 leading-none">
-        {{ (statistics?.averageRating || product.averageRating) > 0 ? ((statistics?.averageRating || product.averageRating) | number:'1.1-1') : '—' }}
-      </p>
-      
-      <div class="flex gap-1">
-        <span *ngFor="let star of getStars(statistics?.averageRating || product.averageRating || 0)"
+  @if (!loading || reviews.length > 0) {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <!-- Columna izquierda: resumen visual -->
+      <div class="flex flex-col items-center text-center gap-4 lg:border-r lg:border-gray-100 lg:pr-10">
+        <!-- Nota grande -->
+        <p class="text-7xl font-extrabold text-gray-900 leading-none">
+          {{ (statistics?.averageRating || product.averageRating) > 0 ? ((statistics?.averageRating || product.averageRating) | number:'1.1-1') : '—' }}
+        </p>
+        <div class="flex gap-1">
+          @for (star of getStars(statistics?.averageRating || product.averageRating || 0); track star) {
+            <span
               class="text-3xl"
               [class.text-amber-400]="star"
-              [class.text-gray-200]="!star">★</span>
-      </div>
-      <p class="text-sm text-gray-400">de 5 — {{ statistics?.totalReviews || product.reviewCount || 0 }} reseñas</p>
-
-      <!-- Barras de distribución -->
-      <div class="w-full space-y-1.5 mt-2">
-        <div *ngFor="let s of [5,4,3,2,1]"
-             class="flex items-center gap-2 text-xs text-gray-500">
-          <span class="w-4 text-right shrink-0">{{ s }}</span>
-          <span class="text-amber-400 text-xs">★</span>
-          <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div class="h-full bg-amber-400 rounded-full transition-all duration-500"
-                 [style.width.%]="getRatingBarPercent(s)">
-            </div>
-          </div>
-          <span class="w-8 text-right shrink-0">{{ getRatingBarPercent(s) }}%</span>
+            [class.text-gray-200]="!star">★</span>
+          }
         </div>
-      </div>
-
-      <!-- CTA escribir reseña -->
-      <ng-container *ngIf="isLoggedIn">
-        <ng-container *ngIf="eligibility">
-          <button *ngIf="eligibility.canReview && !showReviewForm"
-                  (click)="toggleReviewForm()"
+        <p class="text-sm text-gray-400">de 5 — {{ statistics?.totalReviews || product.reviewCount || 0 }} reseñas</p>
+        <!-- Barras de distribución -->
+        <div class="w-full space-y-1.5 mt-2">
+          @for (s of [5,4,3,2,1]; track s) {
+            <div
+              class="flex items-center gap-2 text-xs text-gray-500">
+              <span class="w-4 text-right shrink-0">{{ s }}</span>
+              <span class="text-amber-400 text-xs">★</span>
+              <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-amber-400 rounded-full transition-all duration-500"
+                  [style.width.%]="getRatingBarPercent(s)">
+                </div>
+              </div>
+              <span class="w-8 text-right shrink-0">{{ getRatingBarPercent(s) }}%</span>
+            </div>
+          }
+        </div>
+        <!-- CTA escribir reseña -->
+        @if (isLoggedIn) {
+          @if (eligibility) {
+            @if (eligibility.canReview && !showReviewForm) {
+              <button
+                (click)="toggleReviewForm()"
                   class="mt-4 w-full flex items-center justify-center gap-2 px-5 py-2.5
                          border-2 border-amber-500 text-amber-600 font-semibold rounded-lg
                          hover:bg-amber-50 transition-colors text-sm">
-            <span class="material-symbols-outlined text-base">rate_review</span>
-            Escribir una reseña
-          </button>
-
-          <!-- Si no ha comprado -->
-          <div *ngIf="!eligibility.hasPurchased && !eligibility.alreadyReviewed" 
-               class="mt-4 w-full text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
-            <span class="material-symbols-outlined text-base text-gray-400 mb-1 block">info</span>
-            Solo los clientes que han comprado este producto en nuestra tienda pueden escribir una reseña.
-          </div>
-
-          <!-- Si ya reseñó -->
-          <div *ngIf="eligibility.alreadyReviewed" 
-               class="mt-4 w-full text-sm text-green-700 bg-green-50 p-3 rounded-lg border border-green-100">
-            <span class="material-symbols-outlined text-base text-green-500 mb-1 block">check_circle</span>
-            Ya has enviado una reseña para este producto. <br>
-            <span class="font-medium">Estado: {{ eligibility.reviewStatus === 'APPROVED' ? 'Aprobada' : eligibility.reviewStatus === 'PENDING' ? 'En revisión' : 'Rechazada' }}</span>
-          </div>
-        </ng-container>
-
-        <!-- Loading elegibilidad -->
-        <div *ngIf="!eligibility" class="mt-4 text-sm text-gray-400 flex items-center justify-center gap-2">
-          <div class="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
-          Verificando...
-        </div>
-      </ng-container>
-
-      <!-- Si no está logueado -->
-      <button *ngIf="!isLoggedIn"
-         (click)="toggleReviewForm()"
+                <span class="material-symbols-outlined text-base">rate_review</span>
+                Escribir una reseña
+              </button>
+            }
+            <!-- Si no ha comprado -->
+            @if (!eligibility.hasPurchased && !eligibility.alreadyReviewed) {
+              <div
+                class="mt-4 w-full text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                <span class="material-symbols-outlined text-base text-gray-400 mb-1 block">info</span>
+                Solo los clientes que han comprado este producto en nuestra tienda pueden escribir una reseña.
+              </div>
+            }
+            <!-- Si ya reseñó -->
+            @if (eligibility.alreadyReviewed) {
+              <div
+                class="mt-4 w-full text-sm text-green-700 bg-green-50 p-3 rounded-lg border border-green-100">
+                <span class="material-symbols-outlined text-base text-green-500 mb-1 block">check_circle</span>
+                Ya has enviado una reseña para este producto. <br>
+                <span class="font-medium">Estado: {{ eligibility.reviewStatus === 'APPROVED' ? 'Aprobada' : eligibility.reviewStatus === 'PENDING' ? 'En revisión' : 'Rechazada' }}</span>
+              </div>
+            }
+          }
+          <!-- Loading elegibilidad -->
+          @if (!eligibility) {
+            <div class="mt-4 text-sm text-gray-400 flex items-center justify-center gap-2">
+              <div class="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+              Verificando...
+            </div>
+          }
+        }
+        <!-- Si no está logueado -->
+        @if (!isLoggedIn) {
+          <button
+            (click)="toggleReviewForm()"
          class="mt-4 w-full flex items-center justify-center gap-2 px-5 py-2.5
                 border-2 border-gray-300 text-gray-500 font-semibold rounded-lg
                 hover:bg-gray-50 transition-colors text-sm">
-        <span class="material-symbols-outlined text-base">login</span>
-        Inicia sesión para reseñar
-      </button>
-    </div>
-
-    <!-- Columna derecha: lista de reseñas y form -->
-    <div class="lg:col-span-2 space-y-6">
-
-      <!-- Formulario para nueva reseña -->
-      <div *ngIf="showReviewForm && eligibility?.canReview" 
-           class="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8 relative overflow-hidden">
-        
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-gray-900 text-lg">Tu Reseña</h3>
-          <button (click)="toggleReviewForm()" class="text-gray-400 hover:text-gray-600 transition-colors">
-            <span class="material-symbols-outlined">close</span>
+            <span class="material-symbols-outlined text-base">login</span>
+            Inicia sesión para reseñar
           </button>
-        </div>
-
-        <form (ngSubmit)="submitReview()" #reviewForm="ngForm" class="space-y-4">
-          <!-- Estrellas selector -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Calificación *</label>
-            <div class="flex gap-2">
-              <button *ngFor="let s of [1,2,3,4,5]" 
+        }
+      </div>
+      <!-- Columna derecha: lista de reseñas y form -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Formulario para nueva reseña -->
+        @if (showReviewForm && eligibility?.canReview) {
+          <div
+            class="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8 relative overflow-hidden">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-gray-900 text-lg">Tu Reseña</h3>
+              <button (click)="toggleReviewForm()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form (ngSubmit)="submitReview()" #reviewForm="ngForm" class="space-y-4">
+              <!-- Estrellas selector -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Calificación *</label>
+                <div class="flex gap-2">
+                  @for (s of [1,2,3,4,5]; track s) {
+                    <button
                       type="button"
                       (click)="setRating(s)"
                       (mouseenter)="setRating(s)"
                       class="text-3xl focus:outline-none transition-colors"
                       [class.text-amber-400]="s <= newReview.rating"
                       [class.text-gray-300]="s > newReview.rating">
-                ★
-              </button>
-            </div>
-          </div>
-
-          <!-- Título -->
-          <div>
-            <label for="reviewTitle" class="block text-sm font-medium text-gray-700 mb-1">Título de tu reseña *</label>
-            <input type="text" id="reviewTitle" name="reviewTitle" required minlength="3" maxlength="100"
-                   [(ngModel)]="newReview.title"
-                   class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-shadow outline-none"
-                   placeholder="Ej: Excelente calidad y sonido">
-          </div>
-
-          <!-- Comentario -->
-          <div>
-            <label for="reviewComment" class="block text-sm font-medium text-gray-700 mb-1">Comentario *</label>
-            <textarea id="reviewComment" name="reviewComment" rows="4" required minlength="10" maxlength="1000"
-                      [(ngModel)]="newReview.comment"
-                      class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-shadow outline-none resize-y"
-                      placeholder="Cuéntanos más sobre tu experiencia con el producto..."></textarea>
-          </div>
-
-          <div class="flex justify-end pt-2">
-            <button type="submit" [disabled]="!isValidReview() || submitting"
+                      ★
+                    </button>
+                  }
+                </div>
+              </div>
+              <!-- Título -->
+              <div>
+                <label for="reviewTitle" class="block text-sm font-medium text-gray-700 mb-1">Título de tu reseña *</label>
+                <input type="text" id="reviewTitle" name="reviewTitle" required minlength="3" maxlength="100"
+                  [(ngModel)]="newReview.title"
+                  class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-shadow outline-none"
+                  placeholder="Ej: Excelente calidad y sonido">
+                </div>
+                <!-- Comentario -->
+                <div>
+                  <label for="reviewComment" class="block text-sm font-medium text-gray-700 mb-1">Comentario *</label>
+                  <textarea id="reviewComment" name="reviewComment" rows="4" required minlength="10" maxlength="1000"
+                    [(ngModel)]="newReview.comment"
+                    class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-shadow outline-none resize-y"
+                  placeholder="Cuéntanos más sobre tu experiencia con el producto..."></textarea>
+                </div>
+                <div class="flex justify-end pt-2">
+                  <button type="submit" [disabled]="!isValidReview() || submitting"
                     class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg shadow-sm
                            disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2">
-              <span *ngIf="submitting" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              {{ submitting ? 'Enviando...' : 'Enviar reseña' }}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Lista de reseñas existentes -->
-      <article *ngFor="let review of reviews"
-               class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-        <!-- Cabecera de la reseña -->
-        <div class="flex items-start justify-between gap-4 mb-2">
-          <div class="flex items-center gap-3">
-            <!-- Avatar inicial -->
+                    @if (submitting) {
+                      <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    }
+                    {{ submitting ? 'Enviando...' : 'Enviar reseña' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          }
+          <!-- Lista de reseñas existentes -->
+          @for (review of reviews; track review) {
+            <article
+              class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+              <!-- Cabecera de la reseña -->
+              <div class="flex items-start justify-between gap-4 mb-2">
+                <div class="flex items-center gap-3">
+                  <!-- Avatar inicial -->
             <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center
                         justify-center text-white font-bold text-sm shrink-0">
-              {{ review.userName ? review.userName[0].toUpperCase() : 'U' }}
-            </div>
-            <div>
-              <p class="text-sm font-semibold text-gray-800">{{ review.userName || 'Usuario' }}</p>
-              <p class="text-xs text-gray-400">{{ review.createdAt | date:'longDate' }}</p>
-            </div>
-          </div>
-          <span *ngIf="review.isVerifiedPurchase"
+                    {{ review.userName ? review.userName[0].toUpperCase() : 'U' }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-800">{{ review.userName || 'Usuario' }}</p>
+                    <p class="text-xs text-gray-400">{{ review.createdAt | date:'longDate' }}</p>
+                  </div>
+                </div>
+                @if (review.isVerifiedPurchase) {
+                  <span
                 class="shrink-0 flex items-center gap-1 text-xs text-green-600
                        bg-green-50 px-2 py-1 rounded-full font-medium">
-            <span class="material-symbols-outlined text-sm">verified</span>
-            Compra verificada
-          </span>
-        </div>
-
-        <!-- Estrellas + Título -->
-        <div class="flex items-center gap-2 mb-1">
-          <div class="flex">
-            <span *ngFor="let star of getStars(review.rating)"
-                  class="text-base"
-                  [class.text-amber-400]="star"
-                  [class.text-gray-300]="!star">★</span>
-          </div>
-          <p class="text-sm font-semibold text-gray-800">{{ review.title }}</p>
-        </div>
-
-        <!-- Cuerpo -->
-        <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{{ review.comment }}</p>
-
-        <!-- Respuesta del vendedor (si existe) -->
-        <div *ngIf="review.sellerResponse" class="mt-4 bg-gray-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="material-symbols-outlined text-amber-600 text-sm">storefront</span>
-            <span class="text-sm font-bold text-gray-800">Respuesta de Casa de Música Castillo</span>
-            <span class="text-xs text-gray-400 ml-auto">{{ review.sellerResponseDate | date:'shortDate' }}</span>
-          </div>
-          <p class="text-sm text-gray-600">{{ review.sellerResponse }}</p>
-        </div>
-      </article>
-
-      <!-- Botón cargar más -->
-      <div *ngIf="hasMore" class="text-center pt-4">
-        <button (click)="loadMore()"
+                    <span class="material-symbols-outlined text-sm">verified</span>
+                    Compra verificada
+                  </span>
+                }
+              </div>
+              <!-- Estrellas + Título -->
+              <div class="flex items-center gap-2 mb-1">
+                <div class="flex">
+                  @for (star of getStars(review.rating); track star) {
+                    <span
+                      class="text-base"
+                      [class.text-amber-400]="star"
+                    [class.text-gray-300]="!star">★</span>
+                  }
+                </div>
+                <p class="text-sm font-semibold text-gray-800">{{ review.title }}</p>
+              </div>
+              <!-- Cuerpo -->
+              <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{{ review.comment }}</p>
+              <!-- Respuesta del vendedor (si existe) -->
+              @if (review.sellerResponse) {
+                <div class="mt-4 bg-gray-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-amber-600 text-sm">storefront</span>
+                    <span class="text-sm font-bold text-gray-800">Respuesta de Casa de Música Castillo</span>
+                    <span class="text-xs text-gray-400 ml-auto">{{ review.sellerResponseDate | date:'shortDate' }}</span>
+                  </div>
+                  <p class="text-sm text-gray-600">{{ review.sellerResponse }}</p>
+                </div>
+              }
+            </article>
+          }
+          <!-- Botón cargar más -->
+          @if (hasMore) {
+            <div class="text-center pt-4">
+              <button (click)="loadMore()"
                 [disabled]="loading"
                 class="px-6 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium
                        hover:bg-gray-50 transition-colors disabled:opacity-50">
-          {{ loading ? 'Cargando...' : 'Ver más reseñas' }}
-        </button>
+                {{ loading ? 'Cargando...' : 'Ver más reseñas' }}
+              </button>
+            </div>
+          }
+          <!-- Si no hay reseñas reales -->
+          @if (totalReviews === 0 && !loading) {
+            <div
+              class="text-center py-10 text-gray-400">
+              <span class="material-symbols-outlined text-5xl mb-3 block">rate_review</span>
+              <p class="text-sm">Sé el primero en opinar sobre este producto.</p>
+            </div>
+          }
+        </div>
       </div>
-
-      <!-- Si no hay reseñas reales -->
-      <div *ngIf="totalReviews === 0 && !loading"
-           class="text-center py-10 text-gray-400">
-        <span class="material-symbols-outlined text-5xl mb-3 block">rate_review</span>
-        <p class="text-sm">Sé el primero en opinar sobre este producto.</p>
-      </div>
-    </div>
-
-  </div>
-</section>
+    }
+  </section>

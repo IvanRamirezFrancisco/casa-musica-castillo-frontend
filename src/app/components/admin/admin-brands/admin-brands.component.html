@@ -1,16 +1,20 @@
 <div class="p-6 space-y-6">
 
   <!-- Toast Messages -->
-  <div *ngIf="successMessage"
-       class="flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium shadow-sm">
-    <i class="fas fa-check-circle text-green-500"></i>
-    {{ successMessage }}
-  </div>
-  <div *ngIf="errorMessage && !showCreateModal && !showEditModal && !showDeleteModal"
-       class="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium shadow-sm">
-    <i class="fas fa-exclamation-circle text-red-500"></i>
-    {{ errorMessage }}
-  </div>
+  @if (successMessage) {
+    <div
+      class="flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium shadow-sm">
+      <i class="fas fa-check-circle text-green-500"></i>
+      {{ successMessage }}
+    </div>
+  }
+  @if (errorMessage && !showCreateModal && !showEditModal && !showDeleteModal) {
+    <div
+      class="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium shadow-sm">
+      <i class="fas fa-exclamation-circle text-red-500"></i>
+      {{ errorMessage }}
+    </div>
+  }
 
   <!-- Stats Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -57,462 +61,515 @@
           (input)="onSearch()"
           (keyup.enter)="onSearch()"
           class="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] transition-colors"
-        />
-      </div>
-      <select
-        [(ngModel)]="filterActive"
-        (change)="onSearch()"
-        class="h-9 px-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] transition-colors cursor-pointer"
-      >
-        <option [ngValue]="null">Todos los estados</option>
-        <option [ngValue]="true">Activas</option>
-        <option [ngValue]="false">Inactivas</option>
-      </select>
-      <button
-        (click)="clearFilters()"
-        class="h-9 px-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors flex items-center gap-1.5"
-        title="Limpiar filtros"
-      >
-        <i class="fas fa-times text-xs"></i>
-        <span class="hidden sm:inline">Limpiar</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Brands Table -->
-  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-
-    <!-- Loading -->
-    <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 text-gray-400">
-      <div class="w-8 h-8 border-2 border-gray-200 border-t-[#800020] rounded-full animate-spin mb-3"></div>
-      <p class="text-sm">Cargando marcas...</p>
-    </div>
-
-    <!-- Table -->
-    <table *ngIf="!loading && brands.length > 0" class="w-full border-collapse">
-      <thead>
-        <tr class="bg-gray-50 border-b border-gray-200">
-          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Marca</th>
-          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Descripcion</th>
-          <th class="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Productos</th>
-          <th class="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
-          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Creacion</th>
-          <th class="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        <tr *ngFor="let brand of brands"
-            class="hover:bg-gray-50 transition-colors"
-            [class.opacity-60]="!brand.active">
-          <td class="px-6 py-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
-                <img *ngIf="brand.logoUrl" [src]="brand.logoUrl" [alt]="brand.name" class="w-full h-full object-contain" />
-                <span *ngIf="!brand.logoUrl" class="text-sm font-bold text-gray-500 uppercase">{{ brand.name.charAt(0) }}</span>
-              </div>
-              <span class="text-sm font-semibold text-gray-800">{{ brand.name }}</span>
-            </div>
-          </td>
-          <td class="px-6 py-4 max-w-xs">
-            <span *ngIf="brand.description" class="text-sm text-gray-500">{{ brand.description | slice:0:70 }}{{ brand.description.length > 70 ? '...' : '' }}</span>
-            <span *ngIf="!brand.description" class="text-xs text-gray-300 italic">Sin descripcion</span>
-          </td>
-          <td class="px-6 py-4 text-center">
-            <button
-              *ngIf="brand.productCount > 0"
-              (click)="navigateToProducts(brand.id)"
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-100 text-sm font-semibold text-gray-700 hover:bg-amber-100 transition-colors cursor-pointer"
-              title="Ver productos de esta marca"
-            >
-              <i class="fas fa-box text-[#C5A059] text-xs"></i>
-              <span>{{ brand.productCount }}</span>
-            </button>
-            <span *ngIf="brand.productCount === 0" class="text-sm text-gray-300 font-medium">-</span>
-          </td>
-          <td class="px-6 py-4 text-center">
-            <span *ngIf="brand.active" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Activa
-            </span>
-            <span *ngIf="!brand.active" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>Inactiva
-            </span>
-          </td>
-          <td class="px-6 py-4">
-            <span class="text-sm text-gray-500">{{ brand.createdAt | date:'dd/MM/yyyy' }}</span>
-          </td>
-          <td class="px-6 py-4">
-            <div class="flex items-center justify-center gap-1">
-              <button *ngIf="authService.hasPermission('BRAND_MANAGE')" (click)="toggleStatus(brand)" [title]="brand.active ? 'Desactivar' : 'Activar'"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-amber-500 hover:bg-amber-50 transition-colors">
-                <i class="fas text-sm" [class.fa-eye]="brand.active" [class.fa-eye-slash]="!brand.active"></i>
-              </button>
-              <button *ngIf="authService.hasPermission('BRAND_MANAGE')" (click)="openEditModal(brand)" title="Editar"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors">
-                <i class="fas fa-pen text-sm"></i>
-              </button>
-              <button *ngIf="authService.hasPermission('BRAND_MANAGE')" (click)="openDeleteModal(brand)" title="Eliminar"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-                <i class="fas fa-trash text-sm"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Empty State -->
-    <div *ngIf="!loading && brands.length === 0"
-         class="flex flex-col items-center justify-center py-20 text-gray-400">
-      <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <i class="fas fa-tags text-2xl text-gray-300"></i>
-      </div>
-      <p class="text-base font-semibold text-gray-500 mb-1">No hay marcas registradas</p>
-      <p class="text-sm text-gray-400 mb-5">Crea tu primera marca para comenzar a gestionar productos</p>
-      <button *ngIf="authService.hasPermission('BRAND_MANAGE')" (click)="openCreateModal()"
-        class="flex items-center gap-2 px-4 py-2 bg-[#800020] hover:bg-[#6a001a] text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
-        <i class="fas fa-plus text-xs"></i>Crear Primera Marca
-      </button>
-    </div>
-
-    <!-- Pagination Footer -->
-    <div *ngIf="!loading && totalBrands > 0"
-         class="flex items-center justify-between px-6 py-3 border-t border-gray-100 bg-gray-50">
-      <div class="flex items-center gap-3">
-        <select [value]="pageSize" (change)="changePageSize($event)"
-          class="h-8 px-2 text-xs border border-gray-200 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#800020]/30 cursor-pointer">
-          <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }} / pag</option>
-        </select>
-        <span class="text-xs text-gray-500">
-          <strong class="text-[#800020]">{{ startIndex }}</strong>-<strong class="text-[#800020]">{{ endIndex }}</strong>
-          de <strong class="text-[#800020]">{{ totalBrands }}</strong> marcas
-        </span>
-      </div>
-      <div class="flex items-center gap-1">
-        <button (click)="goToPage(0)" [disabled]="currentPage === 0"
-          class="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-white hover:border hover:border-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs">
-          <i class="fas fa-angles-left"></i>
-        </button>
-        <button (click)="previousPage()" [disabled]="currentPage === 0"
-          class="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-white hover:border hover:border-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <ng-container *ngFor="let page of pageNumbers">
-          <button (click)="goToPage(page)"
-            [class]="page === currentPage ? 'w-7 h-7 flex items-center justify-center rounded text-xs font-semibold bg-[#800020] text-white shadow-sm' : 'w-7 h-7 flex items-center justify-center rounded text-xs text-gray-600 hover:bg-white hover:border hover:border-gray-200 transition-colors'">
-            {{ page + 1 }}
-          </button>
-        </ng-container>
-        <button (click)="nextPage()" [disabled]="currentPage === totalPages - 1"
-          class="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-white hover:border hover:border-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-        <button (click)="goToPage(totalPages - 1)" [disabled]="currentPage === totalPages - 1"
-          class="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-white hover:border hover:border-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs">
-          <i class="fas fa-angles-right"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================
-     LIGHTBOX (VISTA AMPLIADA)
-     ============================================ -->
-<div *ngIf="showLightbox && lightboxImage" class="lightbox-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 40px;" (click)="closeLightbox()">
-  
-  <button type="button" class="btn-close-lightbox" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;" (click)="closeLightbox(); $event.stopPropagation()">
-    <span class="material-symbols-outlined" style="font-size: 32px;">close</span>
-  </button>
-
-  <img [src]="lightboxImage.url" [alt]="lightboxImage.name" style="max-width: 90%; max-height: 80vh; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border-radius: 8px; background: transparent;" (click)="$event.stopPropagation()">
-  
-  <div style="margin-top: 20px; color: white; text-align: center;" (click)="$event.stopPropagation()">
-    <h3 style="margin: 0 0 8px 0; font-size: 1.2rem;">{{ lightboxImage.name }}</h3>
-    <p style="margin: 0; color: #cbd5e1; font-size: 0.9rem;" *ngIf="lightboxImage.size">
-      Tamaño: {{ (lightboxImage.size / 1024).toFixed(1) }} KB <span *ngIf="lightboxImage.type">| Tipo: {{ lightboxImage.type }}</span>
-    </p>
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════════════════════════════════════
-     MODAL CREAR / EDITAR MARCA
-     z-index: 9999 → por encima del sidebar (1000) y topbar (200)
-     ══════════════════════════════════════════════════════════════ -->
-<div *ngIf="showCreateModal || showEditModal"
-     class="brand-modal-overlay"
-     (click)="confirmCloseBrandModal()">
-
-  <!-- Panel del modal -->
-  <div class="brand-modal-panel" (click)="$event.stopPropagation()">
-
-    <!-- OVERLAY DE CARGA PROFESIONAL -->
-    <div class="absolute inset-0 bg-white/80 backdrop-blur-sm z-[12000] flex flex-col items-center justify-center rounded-xl" *ngIf="isProcessingUploads">
-      <svg class="animate-spin h-10 w-10 text-[#800020] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-      </svg>
-      <h3 class="text-xl font-bold text-gray-800 mb-1">Procesando Marca</h3>
-      <p class="text-gray-600 font-medium">{{ uploadProgressMessage }}</p>
-      <div class="w-64 bg-gray-200 rounded-full h-2.5 mt-4 overflow-hidden">
-        <div class="bg-[#800020] h-2.5 rounded-full transition-all duration-300" style="width: 100%"></div>
-      </div>
-    </div>
-
-    <!-- Header -->
-    <div class="brand-modal-header">
-      <div class="brand-modal-header__icon">
-        <i class="fas fa-tags"></i>
-      </div>
-      <div class="brand-modal-header__text">
-        <h2 class="brand-modal-header__title">
-          {{ showCreateModal ? 'Nueva Marca' : 'Editar Marca' }}
-        </h2>
-        <p class="brand-modal-header__subtitle">
-          {{ showCreateModal ? 'Completa los datos para registrar una nueva marca' : 'Modifica los datos de la marca' }}
-        </p>
-      </div>
-      <button class="brand-modal-close" (click)="confirmCloseBrandModal()" [disabled]="loading || isProcessingUploads" title="Cerrar">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-    <!-- Body (scrollable) -->
-    <div class="brand-modal-body">
-
-      <!-- Error inline -->
-      <div *ngIf="errorMessage" class="brand-modal-error">
-        <i class="fas fa-exclamation-circle"></i>
-        <span>{{ errorMessage }}</span>
-      </div>
-
-      <!-- ESTADO DE ERROR PARCIAL -->
-      <div *ngIf="partialErrorState" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <span class="material-icons text-red-500" style="font-size: 1.2rem;">error_outline</span>
-          </div>
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">
-              Subida incompleta
-            </h3>
-            <div class="mt-1 text-sm text-red-700">
-              <p>
-                La marca se creó correctamente, pero el logo falló (probablemente excede tamaño o tipo incorrecto).
-                Puedes intentar subirlo nuevamente.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <form class="brand-modal-form" (ngSubmit)="saveBrand()">
-
-        <!-- Nombre -->
-        <div class="brand-field">
-          <label class="brand-field__label">
-            Nombre de la Marca <span class="brand-field__required">*</span>
-          </label>
-          <input
-            type="text"
-            [(ngModel)]="brandForm.name"
-            name="name"
-            placeholder="Ej: Fender, Gibson, Yamaha"
-            class="brand-field__input"
-            autocomplete="off"
           />
         </div>
-
-        <!-- Descripción -->
-        <div class="brand-field">
-          <label class="brand-field__label">Descripción</label>
-          <textarea
-            [(ngModel)]="brandForm.description"
-            name="description"
-            placeholder="Describe la marca..."
-            rows="3"
-            class="brand-field__input brand-field__textarea"
-          ></textarea>
-        </div>
-
-        <!-- Estado en 1 columna -->
-        <div class="brand-field-row">
-          <div class="brand-field">
-            <label class="brand-field__label">Estado</label>
-            <label class="brand-toggle">
-              <input
-                type="checkbox"
-                [(ngModel)]="brandForm.active"
-                name="active"
-                class="brand-toggle__input"
-              />
-              <span class="brand-toggle__track"></span>
-              <span class="brand-toggle__label">{{ brandForm.active ? 'Activa' : 'Inactiva' }}</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Subir Logo -->
-        <div class="brand-field" style="margin-top: 16px;">
-          <label class="brand-field__label">Subir Logo (PNG / JPG / WEBP)</label>
-          <p *ngIf="!selectedBrand" style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">
-            Puedes seleccionar el logo ahora. Se subirá automáticamente cuando guardes la marca.
-          </p>
-          
-          <div style="display: flex; flex-direction: column; gap: 16px;">
-            <!-- Opciones de archivo -->
-            <label class="brand-upload-zone" *ngIf="!pendingBrandLogo">
-              <i class="fas fa-cloud-upload-alt brand-upload-zone__icon"></i>
-              <span class="brand-upload-zone__text">Seleccionar archivo...</span>
-              <input type="file" accept=".png,.jpg,.jpeg,.webp" class="brand-upload-zone__input" (change)="onLogoFileSelected($event)" />
-            </label>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center;" *ngIf="!pendingBrandLogo">
-              <span class="brand-field__hint">Solo PNG, JPG o WEBP. Tamaño máximo 5 MB.</span>
-            </div>
-
-            <!-- Previsualización Pendiente -->
-            <div *ngIf="pendingBrandLogo" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #fff; display: flex; align-items: center; gap: 16px;">
-              <div class="brand-logo-preview" style="width: 80px; height: 80px; background: #f8fafc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative;">
-                <img [src]="pendingBrandLogo.previewUrl" alt="Preview logo" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-                
-                <div style="position: absolute; top: -8px; right: -8px; display: flex; flex-direction: column; gap: 2px;">
-                  <span *ngIf="pendingBrandLogo.uploadStatus === 'PENDING'" style="background: #f59e0b; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                    Pendiente
-                  </span>
-                  <span *ngIf="pendingBrandLogo.uploadStatus === 'UPLOADING'" style="background: #3b82f6; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                    Subiendo...
-                  </span>
-                  <span *ngIf="pendingBrandLogo.uploadStatus === 'FAILED'" style="background: #ef4444; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                    Error
-                  </span>
-                </div>
-              </div>
-              
-              <!-- Botones de Acción -->
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: flex; gap: 4px; justify-content: flex-end;">
-                  <button type="button" (click)="openPendingLightbox()" style="background: #f1f5f9; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #475569;" title="Ver imagen">
-                    <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
-                  </button>
-                </div>
-
-                <!-- Si ya existe la marca, subida explícita -->
-                <ng-container *ngIf="selectedBrand">
-                  <button type="button" class="brand-btn brand-btn--primary" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="uploadSelectedLogo()" [disabled]="pendingBrandLogo.uploadStatus === 'UPLOADING'">
-                    <span *ngIf="pendingBrandLogo.uploadStatus === 'UPLOADING'" class="brand-btn__spinner"></span>
-                    <i *ngIf="pendingBrandLogo.uploadStatus !== 'UPLOADING'" class="fas fa-cloud-upload-alt"></i>
-                    {{ pendingBrandLogo.uploadStatus === 'UPLOADING' ? 'Subiendo...' : (pendingBrandLogo.uploadStatus === 'FAILED' ? 'Reintentar subida' : 'Subir Logo') }}
-                  </button>
-                </ng-container>
-                
-                <button type="button" class="brand-btn brand-btn--ghost" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="clearLogoSelection()" [disabled]="pendingBrandLogo.uploadStatus === 'UPLOADING'">
-                  {{ selectedBrand ? 'Cancelar' : 'Quitar logo' }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Logo Existente Guardado -->
-            <div *ngIf="!pendingBrandLogo && brandForm.logoUrl" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #fff; display: flex; align-items: center; gap: 16px;">
-              <div class="brand-logo-preview" style="width: 80px; height: 80px; background: #f8fafc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative;">
-                <img [src]="brandForm.logoUrl" alt="Logo actual" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-                
-                <!-- Badge de Cloudinary -->
-                <div *ngIf="selectedBrand?.logoProvider === 'CLOUDINARY'" style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: rgba(59, 130, 246, 0.9); color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.6rem; font-weight: 600; display: flex; align-items: center; gap: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); white-space: nowrap;">
-                  <span class="material-symbols-outlined" style="font-size: 0.7rem;">cloud</span>
-                  Cloudinary
-                </div>
-              </div>
-              
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: flex; gap: 4px; justify-content: flex-end;">
-                  <button type="button" (click)="openExistingLightbox(brandForm.logoUrl, brandForm.name)" style="background: #f1f5f9; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #475569;" title="Ver imagen">
-                    <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
-                  </button>
-                </div>
-                <button type="button" class="brand-btn brand-btn--danger" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="removeLogo()" [disabled]="loading">
-                  <i class="fas fa-trash"></i>
-                  Eliminar Logo Actual
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </form>
+        <select
+          [(ngModel)]="filterActive"
+          (change)="onSearch()"
+          class="h-9 px-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] transition-colors cursor-pointer"
+          >
+          <option [ngValue]="null">Todos los estados</option>
+          <option [ngValue]="true">Activas</option>
+          <option [ngValue]="false">Inactivas</option>
+        </select>
+        <button
+          (click)="clearFilters()"
+          class="h-9 px-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors flex items-center gap-1.5"
+          title="Limpiar filtros"
+          >
+          <i class="fas fa-times text-xs"></i>
+          <span class="hidden sm:inline">Limpiar</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Footer -->
-    <div class="brand-modal-footer" *ngIf="!isProcessingUploads">
-      <button class="brand-btn brand-btn--ghost" (click)="confirmCloseBrandModal()" [disabled]="loading || isProcessingUploads" type="button">
-        Cancelar
-      </button>
-      <button type="button" class="brand-btn brand-btn--primary" [disabled]="loading || (pendingBrandLogo?.uploadStatus === 'UPLOADING')" (click)="saveBrand()">
-        <span *ngIf="loading" class="brand-btn__spinner"></span>
-        <i *ngIf="!loading" class="fas fa-save"></i>
-        {{ loading ? 'Guardando...' : (showCreateModal ? (pendingBrandLogo ? 'Guardar Marca y subir logo' : 'Crear Marca') : 'Guardar Cambios') }}
-      </button>
-    </div>
+    <!-- Brands Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
+      <!-- Loading -->
+      @if (loading) {
+        <div class="flex flex-col items-center justify-center py-20 text-gray-400">
+          <div class="w-8 h-8 border-2 border-gray-200 border-t-[#800020] rounded-full animate-spin mb-3"></div>
+          <p class="text-sm">Cargando marcas...</p>
+        </div>
+      }
+
+      <!-- Table -->
+      @if (!loading && brands.length > 0) {
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Marca</th>
+              <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Descripcion</th>
+              <th class="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Productos</th>
+              <th class="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
+              <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Creacion</th>
+              <th class="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (brand of brands; track brand) {
+              <tr
+                class="hover:bg-gray-50 transition-colors"
+                [class.opacity-60]="!brand.active">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
+                      @if (brand.logoUrl) {
+                        <img [src]="brand.logoUrl" [alt]="brand.name" class="w-full h-full object-contain" />
+                      }
+                      @if (!brand.logoUrl) {
+                        <span class="text-sm font-bold text-gray-500 uppercase">{{ brand.name.charAt(0) }}</span>
+                      }
+                    </div>
+                    <span class="text-sm font-semibold text-gray-800">{{ brand.name }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 max-w-xs">
+                  @if (brand.description) {
+                    <span class="text-sm text-gray-500">{{ brand.description | slice:0:70 }}{{ brand.description.length > 70 ? '...' : '' }}</span>
+                  }
+                  @if (!brand.description) {
+                    <span class="text-xs text-gray-300 italic">Sin descripcion</span>
+                  }
+                </td>
+                <td class="px-6 py-4 text-center">
+                  @if (brand.productCount > 0) {
+                    <button
+                      (click)="navigateToProducts(brand.id)"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-100 text-sm font-semibold text-gray-700 hover:bg-amber-100 transition-colors cursor-pointer"
+                      title="Ver productos de esta marca"
+                      >
+                      <i class="fas fa-box text-[#C5A059] text-xs"></i>
+                      <span>{{ brand.productCount }}</span>
+                    </button>
+                  }
+                  @if (brand.productCount === 0) {
+                    <span class="text-sm text-gray-300 font-medium">-</span>
+                  }
+                </td>
+                <td class="px-6 py-4 text-center">
+                  @if (brand.active) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Activa
+                    </span>
+                  }
+                  @if (!brand.active) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200">
+                      <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>Inactiva
+                    </span>
+                  }
+                </td>
+                <td class="px-6 py-4">
+                  <span class="text-sm text-gray-500">{{ brand.createdAt | date:'dd/MM/yyyy' }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center justify-center gap-1">
+                    @if (authService.hasPermission('BRAND_MANAGE')) {
+                      <button (click)="toggleStatus(brand)" [title]="brand.active ? 'Desactivar' : 'Activar'"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-amber-500 hover:bg-amber-50 transition-colors">
+                        <i class="fas text-sm" [class.fa-eye]="brand.active" [class.fa-eye-slash]="!brand.active"></i>
+                      </button>
+                    }
+                    @if (authService.hasPermission('BRAND_MANAGE')) {
+                      <button (click)="openEditModal(brand)" title="Editar"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors">
+                        <i class="fas fa-pen text-sm"></i>
+                      </button>
+                    }
+                    @if (authService.hasPermission('BRAND_MANAGE')) {
+                      <button (click)="openDeleteModal(brand)" title="Eliminar"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                        <i class="fas fa-trash text-sm"></i>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      <!-- Empty State -->
+      @if (!loading && brands.length === 0) {
+        <div
+          class="flex flex-col items-center justify-center py-20 text-gray-400">
+          <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <i class="fas fa-tags text-2xl text-gray-300"></i>
+          </div>
+          <p class="text-base font-semibold text-gray-500 mb-1">No hay marcas registradas</p>
+          <p class="text-sm text-gray-400 mb-5">Crea tu primera marca para comenzar a gestionar productos</p>
+          @if (authService.hasPermission('BRAND_MANAGE')) {
+            <button (click)="openCreateModal()"
+              class="flex items-center gap-2 px-4 py-2 bg-[#800020] hover:bg-[#6a001a] text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
+              <i class="fas fa-plus text-xs"></i>Crear Primera Marca
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Pagination Footer -->
+      @if (!loading && totalBrands > 0) {
+        <div
+          class="flex items-center justify-between px-6 py-3 border-t border-gray-100 bg-gray-50">
+          <div class="flex items-center gap-3">
+            <select [value]="pageSize" (change)="changePageSize($event)"
+              class="h-8 px-2 text-xs border border-gray-200 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#800020]/30 cursor-pointer">
+              @for (opt of pageSizeOptions; track opt) {
+                <option [value]="opt">{{ opt }} / pag</option>
+              }
+            </select>
+            <span class="text-xs text-gray-500">
+              <strong class="text-[#800020]">{{ startIndex }}</strong>-<strong class="text-[#800020]">{{ endIndex }}</strong>
+              de <strong class="text-[#800020]">{{ totalBrands }}</strong> marcas
+            </span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button (click)="goToPage(0)" [disabled]="currentPage === 0"
+              class="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-white hover:border hover:border-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs">
+              <i class="fas fa-angles-left"></i>
+            </button>
+            <button (click)="previousPage()" [disabled]="currentPage === 0"
+              class="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-white hover:border hover:border-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            @for (page of pageNumbers; track page) {
+              <button (click)="goToPage(page)"
+                [class]="page === currentPage ? 'w-7 h-7 flex items-center justify-center rounded text-xs font-semibold bg-[#800020] text-white shadow-sm' : 'w-7 h-7 flex items-center justify-center rounded text-xs text-gray-600 hover:bg-white hover:border hover:border-gray-200 transition-colors'">
+                {{ page + 1 }}
+              </button>
+            }
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages - 1"
+              class="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-white hover:border hover:border-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+            <button (click)="goToPage(totalPages - 1)" [disabled]="currentPage === totalPages - 1"
+              class="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-white hover:border hover:border-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs">
+              <i class="fas fa-angles-right"></i>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
   </div>
-</div>
+
+  <!-- ============================================
+  LIGHTBOX (VISTA AMPLIADA)
+  ============================================ -->
+  @if (showLightbox && lightboxImage) {
+    <div class="lightbox-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 40px;" (click)="closeLightbox()">
+      <button type="button" class="btn-close-lightbox" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;" (click)="closeLightbox(); $event.stopPropagation()">
+        <span class="material-symbols-outlined" style="font-size: 32px;">close</span>
+      </button>
+      <img [src]="lightboxImage.url" [alt]="lightboxImage.name" style="max-width: 90%; max-height: 80vh; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border-radius: 8px; background: transparent;" (click)="$event.stopPropagation()">
+      <div style="margin-top: 20px; color: white; text-align: center;" (click)="$event.stopPropagation()">
+        <h3 style="margin: 0 0 8px 0; font-size: 1.2rem;">{{ lightboxImage.name }}</h3>
+        @if (lightboxImage.size) {
+          <p style="margin: 0; color: #cbd5e1; font-size: 0.9rem;">
+            Tamaño: {{ (lightboxImage.size / 1024).toFixed(1) }} KB @if (lightboxImage.type) {
+            <span>| Tipo: {{ lightboxImage.type }}</span>
+          }
+        </p>
+      }
+    </div>
+  </div>
+}
 
 
 <!-- ══════════════════════════════════════════════════════════════
-     MODAL ELIMINAR MARCA
-     ══════════════════════════════════════════════════════════════ -->
-<div *ngIf="showDeleteModal"
-     class="brand-modal-overlay"
-     (click)="closeModal()">
-
-  <div class="brand-modal-panel brand-modal-panel--sm" (click)="$event.stopPropagation()">
-
-    <!-- Header -->
-    <div class="brand-modal-header brand-modal-header--danger">
-      <div class="brand-modal-header__icon brand-modal-header__icon--danger">
-        <i class="fas fa-trash"></i>
+MODAL CREAR / EDITAR MARCA
+z-index: 9999 → por encima del sidebar (1000) y topbar (200)
+══════════════════════════════════════════════════════════════ -->
+@if (showCreateModal || showEditModal) {
+  <div
+    class="brand-modal-overlay"
+    (click)="confirmCloseBrandModal()">
+    <!-- Panel del modal -->
+    <div class="brand-modal-panel" (click)="$event.stopPropagation()">
+      <!-- OVERLAY DE CARGA PROFESIONAL -->
+      @if (isProcessingUploads) {
+        <div class="absolute inset-0 bg-white/80 backdrop-blur-sm z-[12000] flex flex-col items-center justify-center rounded-xl">
+          <svg class="animate-spin h-10 w-10 text-[#800020] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+          <h3 class="text-xl font-bold text-gray-800 mb-1">Procesando Marca</h3>
+          <p class="text-gray-600 font-medium">{{ uploadProgressMessage }}</p>
+          <div class="w-64 bg-gray-200 rounded-full h-2.5 mt-4 overflow-hidden">
+            <div class="bg-[#800020] h-2.5 rounded-full transition-all duration-300" style="width: 100%"></div>
+          </div>
+        </div>
+      }
+      <!-- Header -->
+      <div class="brand-modal-header">
+        <div class="brand-modal-header__icon">
+          <i class="fas fa-tags"></i>
+        </div>
+        <div class="brand-modal-header__text">
+          <h2 class="brand-modal-header__title">
+            {{ showCreateModal ? 'Nueva Marca' : 'Editar Marca' }}
+          </h2>
+          <p class="brand-modal-header__subtitle">
+            {{ showCreateModal ? 'Completa los datos para registrar una nueva marca' : 'Modifica los datos de la marca' }}
+          </p>
+        </div>
+        <button class="brand-modal-close" (click)="confirmCloseBrandModal()" [disabled]="loading || isProcessingUploads" title="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="brand-modal-header__text">
-        <h2 class="brand-modal-header__title">Confirmar Eliminación</h2>
-        <p class="brand-modal-header__subtitle">Esta acción no se puede deshacer</p>
+      <!-- Body (scrollable) -->
+      <div class="brand-modal-body">
+        <!-- Error inline -->
+        @if (errorMessage) {
+          <div class="brand-modal-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+        <!-- ESTADO DE ERROR PARCIAL -->
+        @if (partialErrorState) {
+          <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <span class="material-icons text-red-500" style="font-size: 1.2rem;">error_outline</span>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">
+                  Subida incompleta
+                </h3>
+                <div class="mt-1 text-sm text-red-700">
+                  <p>
+                    La marca se creó correctamente, pero el logo falló (probablemente excede tamaño o tipo incorrecto).
+                    Puedes intentar subirlo nuevamente.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        <form class="brand-modal-form" (ngSubmit)="saveBrand()">
+          <!-- Nombre -->
+          <div class="brand-field">
+            <label class="brand-field__label">
+              Nombre de la Marca <span class="brand-field__required">*</span>
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="brandForm.name"
+              name="name"
+              placeholder="Ej: Fender, Gibson, Yamaha"
+              class="brand-field__input"
+              autocomplete="off"
+              />
+            </div>
+            <!-- Descripción -->
+            <div class="brand-field">
+              <label class="brand-field__label">Descripción</label>
+              <textarea
+                [(ngModel)]="brandForm.description"
+                name="description"
+                placeholder="Describe la marca..."
+                rows="3"
+                class="brand-field__input brand-field__textarea"
+              ></textarea>
+            </div>
+            <!-- Estado en 1 columna -->
+            <div class="brand-field-row">
+              <div class="brand-field">
+                <label class="brand-field__label">Estado</label>
+                <label class="brand-toggle">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="brandForm.active"
+                    name="active"
+                    class="brand-toggle__input"
+                    />
+                    <span class="brand-toggle__track"></span>
+                    <span class="brand-toggle__label">{{ brandForm.active ? 'Activa' : 'Inactiva' }}</span>
+                  </label>
+                </div>
+              </div>
+              <!-- Subir Logo -->
+              <div class="brand-field" style="margin-top: 16px;">
+                <label class="brand-field__label">Subir Logo (PNG / JPG / WEBP)</label>
+                @if (!selectedBrand) {
+                  <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">
+                    Puedes seleccionar el logo ahora. Se subirá automáticamente cuando guardes la marca.
+                  </p>
+                }
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                  <!-- Opciones de archivo -->
+                  @if (!pendingBrandLogo) {
+                    <label class="brand-upload-zone">
+                      <i class="fas fa-cloud-upload-alt brand-upload-zone__icon"></i>
+                      <span class="brand-upload-zone__text">Seleccionar archivo...</span>
+                      <input type="file" accept=".png,.jpg,.jpeg,.webp" class="brand-upload-zone__input" (change)="onLogoFileSelected($event)" />
+                    </label>
+                  }
+                  @if (!pendingBrandLogo) {
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span class="brand-field__hint">Solo PNG, JPG o WEBP. Tamaño máximo 5 MB.</span>
+                    </div>
+                  }
+                  <!-- Previsualización Pendiente -->
+                  @if (pendingBrandLogo) {
+                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #fff; display: flex; align-items: center; gap: 16px;">
+                      <div class="brand-logo-preview" style="width: 80px; height: 80px; background: #f8fafc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <img [src]="pendingBrandLogo.previewUrl" alt="Preview logo" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                        <div style="position: absolute; top: -8px; right: -8px; display: flex; flex-direction: column; gap: 2px;">
+                          @if (pendingBrandLogo.uploadStatus === 'PENDING') {
+                            <span style="background: #f59e0b; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                              Pendiente
+                            </span>
+                          }
+                          @if (pendingBrandLogo.uploadStatus === 'UPLOADING') {
+                            <span style="background: #3b82f6; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                              Subiendo...
+                            </span>
+                          }
+                          @if (pendingBrandLogo.uploadStatus === 'FAILED') {
+                            <span style="background: #ef4444; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                              Error
+                            </span>
+                          }
+                        </div>
+                      </div>
+                      <!-- Botones de Acción -->
+                      <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                          <button type="button" (click)="openPendingLightbox()" style="background: #f1f5f9; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #475569;" title="Ver imagen">
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
+                          </button>
+                        </div>
+                        <!-- Si ya existe la marca, subida explícita -->
+                        @if (selectedBrand) {
+                          <button type="button" class="brand-btn brand-btn--primary" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="uploadSelectedLogo()" [disabled]="pendingBrandLogo.uploadStatus === 'UPLOADING'">
+                            @if (pendingBrandLogo.uploadStatus === 'UPLOADING') {
+                              <span class="brand-btn__spinner"></span>
+                            }
+                            @if (pendingBrandLogo.uploadStatus !== 'UPLOADING') {
+                              <i class="fas fa-cloud-upload-alt"></i>
+                            }
+                            {{ pendingBrandLogo.uploadStatus === 'UPLOADING' ? 'Subiendo...' : (pendingBrandLogo.uploadStatus === 'FAILED' ? 'Reintentar subida' : 'Subir Logo') }}
+                          </button>
+                        }
+                        <button type="button" class="brand-btn brand-btn--ghost" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="clearLogoSelection()" [disabled]="pendingBrandLogo.uploadStatus === 'UPLOADING'">
+                          {{ selectedBrand ? 'Cancelar' : 'Quitar logo' }}
+                        </button>
+                      </div>
+                    </div>
+                  }
+                  <!-- Logo Existente Guardado -->
+                  @if (!pendingBrandLogo && brandForm.logoUrl) {
+                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #fff; display: flex; align-items: center; gap: 16px;">
+                      <div class="brand-logo-preview" style="width: 80px; height: 80px; background: #f8fafc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <img [src]="brandForm.logoUrl" alt="Logo actual" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                        <!-- Badge de Cloudinary -->
+                        @if (selectedBrand?.logoProvider === 'CLOUDINARY') {
+                          <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: rgba(59, 130, 246, 0.9); color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.6rem; font-weight: 600; display: flex; align-items: center; gap: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); white-space: nowrap;">
+                            <span class="material-symbols-outlined" style="font-size: 0.7rem;">cloud</span>
+                            Cloudinary
+                          </div>
+                        }
+                      </div>
+                      <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                          <button type="button" (click)="openExistingLightbox(brandForm.logoUrl, brandForm.name)" style="background: #f1f5f9; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #475569;" title="Ver imagen">
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
+                          </button>
+                        </div>
+                        <button type="button" class="brand-btn brand-btn--danger" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="removeLogo()" [disabled]="loading">
+                          <i class="fas fa-trash"></i>
+                          Eliminar Logo Actual
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </form>
+          </div>
+          <!-- Footer -->
+          @if (!isProcessingUploads) {
+            <div class="brand-modal-footer">
+              <button class="brand-btn brand-btn--ghost" (click)="confirmCloseBrandModal()" [disabled]="loading || isProcessingUploads" type="button">
+                Cancelar
+              </button>
+              <button type="button" class="brand-btn brand-btn--primary" [disabled]="loading || (pendingBrandLogo?.uploadStatus === 'UPLOADING')" (click)="saveBrand()">
+                @if (loading) {
+                  <span class="brand-btn__spinner"></span>
+                }
+                @if (!loading) {
+                  <i class="fas fa-save"></i>
+                }
+                {{ loading ? 'Guardando...' : (showCreateModal ? (pendingBrandLogo ? 'Guardar Marca y subir logo' : 'Crear Marca') : 'Guardar Cambios') }}
+              </button>
+            </div>
+          }
+        </div>
       </div>
-      <button class="brand-modal-close" (click)="closeModal()" title="Cerrar">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
+    }
 
-    <!-- Body -->
-    <div class="brand-modal-body">
-      <div *ngIf="errorMessage" class="brand-modal-error">
-        <i class="fas fa-exclamation-circle"></i>
-        <span>{{ errorMessage }}</span>
+
+    <!-- ══════════════════════════════════════════════════════════════
+    MODAL ELIMINAR MARCA
+    ══════════════════════════════════════════════════════════════ -->
+    @if (showDeleteModal) {
+      <div
+        class="brand-modal-overlay"
+        (click)="closeModal()">
+        <div class="brand-modal-panel brand-modal-panel--sm" (click)="$event.stopPropagation()">
+          <!-- Header -->
+          <div class="brand-modal-header brand-modal-header--danger">
+            <div class="brand-modal-header__icon brand-modal-header__icon--danger">
+              <i class="fas fa-trash"></i>
+            </div>
+            <div class="brand-modal-header__text">
+              <h2 class="brand-modal-header__title">Confirmar Eliminación</h2>
+              <p class="brand-modal-header__subtitle">Esta acción no se puede deshacer</p>
+            </div>
+            <button class="brand-modal-close" (click)="closeModal()" title="Cerrar">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <!-- Body -->
+          <div class="brand-modal-body">
+            @if (errorMessage) {
+              <div class="brand-modal-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ errorMessage }}</span>
+              </div>
+            }
+            <p class="brand-delete-message">
+              ¿Estás seguro de que deseas eliminar la marca
+              <strong>{{ selectedBrand?.name }}</strong>?
+            </p>
+            @if (selectedBrand && selectedBrand.productCount > 0) {
+              <div class="brand-delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>
+                  Esta marca tiene <strong>{{ selectedBrand.productCount }}</strong> producto(s) asociado(s).
+                  No podrás eliminarla hasta reasignar o eliminar los productos.
+                </span>
+              </div>
+            }
+          </div>
+          <!-- Footer -->
+          <div class="brand-modal-footer">
+            <button class="brand-btn brand-btn--ghost" (click)="closeModal()" type="button">
+              Cancelar
+            </button>
+            <button class="brand-btn brand-btn--danger" (click)="deleteBrand()" [disabled]="loading" type="button">
+              @if (loading) {
+                <span class="brand-btn__spinner"></span>
+              }
+              @if (!loading) {
+                <i class="fas fa-trash"></i>
+              }
+              Eliminar Marca
+            </button>
+          </div>
+        </div>
       </div>
-
-      <p class="brand-delete-message">
-        ¿Estás seguro de que deseas eliminar la marca
-        <strong>{{ selectedBrand?.name }}</strong>?
-      </p>
-
-      <div *ngIf="selectedBrand && selectedBrand.productCount > 0" class="brand-delete-warning">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>
-          Esta marca tiene <strong>{{ selectedBrand.productCount }}</strong> producto(s) asociado(s).
-          No podrás eliminarla hasta reasignar o eliminar los productos.
-        </span>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="brand-modal-footer">
-      <button class="brand-btn brand-btn--ghost" (click)="closeModal()" type="button">
-        Cancelar
-      </button>
-      <button class="brand-btn brand-btn--danger" (click)="deleteBrand()" [disabled]="loading" type="button">
-        <span *ngIf="loading" class="brand-btn__spinner"></span>
-        <i *ngIf="!loading" class="fas fa-trash"></i>
-        Eliminar Marca
-      </button>
-    </div>
-
-  </div>
-</div>
+    }

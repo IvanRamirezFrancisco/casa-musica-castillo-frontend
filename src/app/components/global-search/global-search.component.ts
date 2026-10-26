@@ -8,6 +8,7 @@ import {
   Input,
   Output,
   EventEmitter,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -48,6 +49,7 @@ export interface NavigableSearchItem {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './global-search.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./global-search.component.css'],
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {

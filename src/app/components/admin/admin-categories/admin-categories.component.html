@@ -1,20 +1,24 @@
 <div class="admin-categories-container">
   <!-- ⚠️ MENSAJES DE ALERTA -->
   <div class="alerts-container">
-    <div *ngIf="successMessage" class="alert-box alert-success">
-      <span class="material-icons alert-icon">check_circle</span>
-      <span class="alert-text">{{ successMessage }}</span>
-      <button class="alert-close" (click)="successMessage = ''">
-        <span class="material-icons">close</span>
-      </button>
-    </div>
-    <div *ngIf="errorMessage" class="alert-box alert-error">
-      <span class="material-icons alert-icon">error</span>
-      <span class="alert-text">{{ errorMessage }}</span>
-      <button class="alert-close" (click)="errorMessage = ''">
-        <span class="material-icons">close</span>
-      </button>
-    </div>
+    @if (successMessage) {
+      <div class="alert-box alert-success">
+        <span class="material-icons alert-icon">check_circle</span>
+        <span class="alert-text">{{ successMessage }}</span>
+        <button class="alert-close" (click)="successMessage = ''">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    }
+    @if (errorMessage) {
+      <div class="alert-box alert-error">
+        <span class="material-icons alert-icon">error</span>
+        <span class="alert-text">{{ errorMessage }}</span>
+        <button class="alert-close" (click)="errorMessage = ''">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    }
   </div>
 
   <!-- 📊 ESTADÍSTICAS DESTACADAS -->
@@ -62,7 +66,7 @@
           (keyup.enter)="onSearch()"
           (input)="onSearch()"
           class="search-input-modern"
-        />
+          />
       </div>
     </div>
 
@@ -88,11 +92,13 @@
       <button class="btn-filter-clear" (click)="clearFilters()">
         <span class="material-icons">clear_all</span>
       </button>
-      
-      <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
-        class="btn-create" (click)="openCreateModal()">
-        <span class="material-icons">add</span> Nueva
-      </button>
+
+      @if (authService.hasPermission('CATEGORY_MANAGE')) {
+        <button
+          class="btn-create" (click)="openCreateModal()">
+          <span class="material-icons">add</span> Nueva
+        </button>
+      }
     </div>
   </div>
 
@@ -134,117 +140,134 @@
             </thead>
 
             <tbody class="divide-y divide-gray-100">
-              <tr *ngFor="let category of visibleCategories"
+              @for (category of visibleCategories; track category) {
+                <tr
                   class="bg-white hover:bg-gray-50 border-b border-gray-100 transition-colors duration-150"
                   [class.opacity-60]="!category.active"
                   [ngClass]="{'subcategory-row': category.level === 1}">
-
-                <!-- Expansor -->
-                <td class="px-4 py-3 text-center">
-                  <button *ngIf="category.hasChildren"
-                          (click)="toggleExpand(category.id)"
-                          class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-gray-200 text-gray-500 transition-colors">
-                    <span class="material-icons" style="font-size: 1.2rem;">
-                      {{ isExpanded(category.id) ? 'expand_more' : 'chevron_right' }}
-                    </span>
-                  </button>
-                </td>
-
-                <!-- Imagen -->
-                <td class="px-4 py-3">
-                  <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
-                    <img *ngIf="category.imageUrl"
-                         [src]="category.imageUrl"
-                         [alt]="category.name"
-                         class="w-full h-full object-cover" />
-                    <span *ngIf="!category.imageUrl"
+                  <!-- Expansor -->
+                  <td class="px-4 py-3 text-center">
+                    @if (category.hasChildren) {
+                      <button
+                        (click)="toggleExpand(category.id)"
+                        class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-gray-200 text-gray-500 transition-colors">
+                        <span class="material-icons" style="font-size: 1.2rem;">
+                          {{ isExpanded(category.id) ? 'expand_more' : 'chevron_right' }}
+                        </span>
+                      </button>
+                    }
+                  </td>
+                  <!-- Imagen -->
+                  <td class="px-4 py-3">
+                    <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      @if (category.imageUrl) {
+                        <img
+                          [src]="category.imageUrl"
+                          [alt]="category.name"
+                          class="w-full h-full object-cover" />
+                      }
+                      @if (!category.imageUrl) {
+                        <span
                           class="material-icons text-gray-400 text-xl">
-                      {{ category.parentId ? 'subdirectory_arrow_right' : 'category' }}
-                    </span>
-                  </div>
-                </td>
-
-                <!-- Nombre y jerarquía -->
-                <td class="px-6 py-3">
-                  <div class="flex items-center gap-2">
-                    <span *ngIf="category.parentId" class="material-icons text-gray-300">subdirectory_arrow_right</span>
-                    <div class="flex flex-col min-w-0">
-                      <span class="font-medium text-gray-900 truncate">{{ category.name }}</span>
-                      
-                      <!-- Contexto (breadcrumbs) si hay filtro activo y es subcategoría -->
-                      <span *ngIf="category.parentId && (searchTerm || typeFilter !== 'ALL' || childrenFilter !== 'ALL')"
-                            class="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
-                        <span class="material-icons" style="font-size: 11px;">folder</span>
-                        {{ category.parentName }} > {{ category.name }}
-                      </span>
-                      
-                      <!-- Indicador de subcategorías -->
-                      <span *ngIf="!category.parentId && category.hasChildren" 
-                            class="text-xs text-gray-500 mt-0.5">
-                        {{ category.subcategoryCount }} subcategorías
-                      </span>
+                          {{ category.parentId ? 'subdirectory_arrow_right' : 'category' }}
+                        </span>
+                      }
                     </div>
-                  </div>
-                </td>
-
-                <!-- Descripción -->
-                <td class="px-6 py-3 max-w-[220px]">
-                  <span *ngIf="category.description"
+                  </td>
+                  <!-- Nombre y jerarquía -->
+                  <td class="px-6 py-3">
+                    <div class="flex items-center gap-2">
+                      @if (category.parentId) {
+                        <span class="material-icons text-gray-300">subdirectory_arrow_right</span>
+                      }
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-medium text-gray-900 truncate">{{ category.name }}</span>
+                        <!-- Contexto (breadcrumbs) si hay filtro activo y es subcategoría -->
+                        @if (category.parentId && (searchTerm || typeFilter !== 'ALL' || childrenFilter !== 'ALL')) {
+                          <span
+                            class="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                            <span class="material-icons" style="font-size: 11px;">folder</span>
+                            {{ category.parentName }} > {{ category.name }}
+                          </span>
+                        }
+                        <!-- Indicador de subcategorías -->
+                        @if (!category.parentId && category.hasChildren) {
+                          <span
+                            class="text-xs text-gray-500 mt-0.5">
+                            {{ category.subcategoryCount }} subcategorías
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </td>
+                  <!-- Descripción -->
+                  <td class="px-6 py-3 max-w-[220px]">
+                    @if (category.description) {
+                      <span
                         class="text-gray-600 text-sm leading-relaxed line-clamp-2"
                         [title]="category.description">
-                    {{ category.description }}
-                  </span>
-                  <span *ngIf="!category.description" class="text-gray-300 text-sm italic">Sin descripción</span>
-                </td>
-
-                <!-- Productos -->
-                <td class="px-6 py-3 text-center">
-                  <span class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-xs border transition-colors"
+                        {{ category.description }}
+                      </span>
+                    }
+                    @if (!category.description) {
+                      <span class="text-gray-300 text-sm italic">Sin descripción</span>
+                    }
+                  </td>
+                  <!-- Productos -->
+                  <td class="px-6 py-3 text-center">
+                    <span class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-xs border transition-colors"
                     [ngClass]="(category.productCount || 0) > 0
                       ? 'bg-gray-50 border-gray-200 text-gray-700 font-semibold cursor-pointer hover:bg-blue-50 hover:text-blue-700'
                       : 'bg-gray-50 border-gray-100 text-gray-400 font-medium cursor-default'"
-                    (click)="(category.productCount || 0) > 0 && navigateToProducts(category.id)">
-                    {{ category.productCount || 0 }}
-                  </span>
-                </td>
-
-                <!-- Estado -->
-                <td class="px-6 py-3 text-center">
-                  <span *ngIf="category.active" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
-                    <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div> Activa
-                  </span>
-                  <span *ngIf="!category.active" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
-                    <div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div> Inactiva
-                  </span>
-                </td>
-
-                <!-- Acciones -->
-                <td class="px-6 py-3 text-center">
-                  <div class="flex items-center justify-center gap-1">
-                    <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
-                      (click)="toggleStatus(category)"
-                      [title]="category.active ? 'Desactivar' : 'Activar'"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors duration-150"
-                      [ngClass]="category.active ? 'text-gray-400 hover:text-amber-500 hover:bg-amber-50' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'">
-                      <span class="material-icons text-base">{{ category.active ? 'visibility_off' : 'visibility' }}</span>
-                    </button>
-
-                    <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
-                      (click)="openEditModal(category)"
-                      title="Editar categoría"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-amber-500 hover:bg-amber-50 transition-colors duration-150">
-                      <span class="material-icons text-base">edit</span>
-                    </button>
-
-                    <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
-                      (click)="openDeleteModal(category)"
-                      title="Eliminar categoría"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors duration-150">
-                      <span class="material-icons text-base">delete</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                      (click)="(category.productCount || 0) > 0 && navigateToProducts(category.id)">
+                      {{ category.productCount || 0 }}
+                    </span>
+                  </td>
+                  <!-- Estado -->
+                  <td class="px-6 py-3 text-center">
+                    @if (category.active) {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                        <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div> Activa
+                      </span>
+                    }
+                    @if (!category.active) {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
+                        <div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div> Inactiva
+                      </span>
+                    }
+                  </td>
+                  <!-- Acciones -->
+                  <td class="px-6 py-3 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      @if (authService.hasPermission('CATEGORY_MANAGE')) {
+                        <button
+                          (click)="toggleStatus(category)"
+                          [title]="category.active ? 'Desactivar' : 'Activar'"
+                          class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors duration-150"
+                          [ngClass]="category.active ? 'text-gray-400 hover:text-amber-500 hover:bg-amber-50' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'">
+                          <span class="material-icons text-base">{{ category.active ? 'visibility_off' : 'visibility' }}</span>
+                        </button>
+                      }
+                      @if (authService.hasPermission('CATEGORY_MANAGE')) {
+                        <button
+                          (click)="openEditModal(category)"
+                          title="Editar categoría"
+                          class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-amber-500 hover:bg-amber-50 transition-colors duration-150">
+                          <span class="material-icons text-base">edit</span>
+                        </button>
+                      }
+                      @if (authService.hasPermission('CATEGORY_MANAGE')) {
+                        <button
+                          (click)="openDeleteModal(category)"
+                          title="Eliminar categoría"
+                          class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors duration-150">
+                          <span class="material-icons text-base">delete</span>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
@@ -266,149 +289,164 @@
 </div>
 
 <!-- MODAL CREAR / EDITAR CATEGORÍA -->
-<div class="brand-modal-overlay" *ngIf="showCreateModal || showEditModal" (click)="confirmCloseCategoryModal()">
-  <div class="brand-modal-panel" (click)="$event.stopPropagation()">
-    
-    <div class="brand-modal-header">
-      <div class="brand-modal-header__icon">
-        <span class="material-icons" style="font-size:1.1rem;">category</span>
+@if (showCreateModal || showEditModal) {
+  <div class="brand-modal-overlay" (click)="confirmCloseCategoryModal()">
+    <div class="brand-modal-panel" (click)="$event.stopPropagation()">
+      <div class="brand-modal-header">
+        <div class="brand-modal-header__icon">
+          <span class="material-icons" style="font-size:1.1rem;">category</span>
+        </div>
+        <div class="brand-modal-header__text">
+          <h2 class="brand-modal-header__title">{{ showCreateModal ? 'Nueva Categoría' : 'Editar Categoría' }}</h2>
+        </div>
+        <button class="brand-modal-close" (click)="confirmCloseCategoryModal()" [disabled]="loading || isUploadingImage">
+          <span class="material-icons" style="font-size:1rem;">close</span>
+        </button>
       </div>
-      <div class="brand-modal-header__text">
-        <h2 class="brand-modal-header__title">{{ showCreateModal ? 'Nueva Categoría' : 'Editar Categoría' }}</h2>
+      <div class="brand-modal-body">
+        @if (errorMessage) {
+          <div class="brand-modal-error">
+            <span class="material-icons">error_outline</span>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+        @if (imageUploadError) {
+          <div class="brand-modal-error">
+            <span class="material-icons">error_outline</span>
+            <span>{{ imageUploadError }}</span>
+          </div>
+        }
+        <form class="brand-modal-form">
+          <div class="brand-field">
+            <label class="brand-field__label">Nombre <span class="brand-field__required">*</span></label>
+            <input type="text" [(ngModel)]="categoryForm.name" name="name" class="brand-field__input" maxlength="100" />
+          </div>
+          <div class="brand-field">
+            <label class="brand-field__label">Descripción</label>
+            <textarea [(ngModel)]="categoryForm.description" name="description" rows="2" class="brand-field__input brand-field__textarea"></textarea>
+          </div>
+          <div class="brand-field">
+            <label class="brand-field__label">
+              <span class="material-icons" style="font-size:14px;vertical-align:middle;margin-right:4px;">account_tree</span>
+              Jerarquía
+            </label>
+            <select [(ngModel)]="categoryForm.parentId" name="parentId" class="brand-field__input">
+              <option [ngValue]="null">➤ Categoría Principal (Raíz)</option>
+              <optgroup label="Asignar como subcategoría de:">
+                @for (cat of getValidParentOptions(); track cat) {
+                  <option [ngValue]="cat.id">
+                    {{ cat.name }}
+                  </option>
+                }
+              </optgroup>
+            </select>
+            @if (categoryForm.parentId) {
+              <div class="category-hierarchy-preview">
+                Se creará como: <strong>{{ getParentCategoryName(categoryForm.parentId) }}</strong> > <em>{{ categoryForm.name || 'Nueva' }}</em>
+              </div>
+            }
+          </div>
+          <!-- IMAGE UPLOAD AREA -->
+          <div class="brand-field">
+            <label class="brand-field__label">Imagen de la Categoría</label>
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/jpeg, image/png, image/webp" style="display: none;" />
+            @if (!previewUrl) {
+              <div class="image-upload-area" (click)="triggerFileInput()">
+                <span class="material-icons upload-icon">cloud_upload</span>
+                <p class="upload-text">Haz clic o arrastra una imagen aquí</p>
+                <p class="upload-hint">JPG, PNG o WEBP. Máx 2MB.</p>
+              </div>
+            }
+            @if (previewUrl) {
+              <div class="image-preview-area">
+                <img [src]="previewUrl" alt="Vista previa" />
+                <div class="image-actions">
+                  <button type="button" class="btn-img-action btn-img-change" (click)="triggerFileInput()">Cambiar</button>
+                  <button type="button" class="btn-img-action btn-img-remove" (click)="removeImage()">Eliminar</button>
+                </div>
+              </div>
+            }
+            <!-- Compatibilidad con URL (Opcional Avanzado) -->
+            @if (!previewUrl) {
+              <div class="advanced-url-area mt-2">
+                <p class="text-xs text-gray-500 mb-1">Opcional avanzado: usar URL externa</p>
+                <input type="url" [(ngModel)]="categoryForm.imageUrl" name="imageUrl" placeholder="https://..." class="brand-field__input" />
+              </div>
+            }
+          </div>
+          <div class="brand-field">
+            <label class="brand-field__label">Estado</label>
+            <label class="brand-toggle">
+              <input type="checkbox" [(ngModel)]="categoryForm.active" name="active" class="brand-toggle__input" />
+              <span class="brand-toggle__track"></span>
+              <span class="brand-toggle__label">{{ categoryForm.active ? 'Activa' : 'Inactiva' }}</span>
+            </label>
+          </div>
+        </form>
       </div>
-      <button class="brand-modal-close" (click)="confirmCloseCategoryModal()" [disabled]="loading || isUploadingImage">
-        <span class="material-icons" style="font-size:1rem;">close</span>
-      </button>
-    </div>
-
-    <div class="brand-modal-body">
-      <div *ngIf="errorMessage" class="brand-modal-error">
-        <span class="material-icons">error_outline</span>
-        <span>{{ errorMessage }}</span>
+      <div class="brand-modal-footer">
+        <button class="brand-btn brand-btn--ghost" (click)="confirmCloseCategoryModal()" [disabled]="loading || isUploadingImage" type="button">
+          Cancelar
+        </button>
+        <button class="brand-btn brand-btn--primary" (click)="saveCategory()" [disabled]="loading || isUploadingImage" type="button">
+          @if (loading || isUploadingImage) {
+            <span class="brand-btn__spinner"></span>
+          }
+          @if (!loading && !isUploadingImage) {
+            <span class="material-icons" style="font-size:1rem;">save</span>
+          }
+          {{ showCreateModal ? 'Crear Categoría' : 'Guardar Cambios' }}
+        </button>
       </div>
-      <div *ngIf="imageUploadError" class="brand-modal-error">
-        <span class="material-icons">error_outline</span>
-        <span>{{ imageUploadError }}</span>
-      </div>
-
-      <form class="brand-modal-form">
-        <div class="brand-field">
-          <label class="brand-field__label">Nombre <span class="brand-field__required">*</span></label>
-          <input type="text" [(ngModel)]="categoryForm.name" name="name" class="brand-field__input" maxlength="100" />
-        </div>
-
-        <div class="brand-field">
-          <label class="brand-field__label">Descripción</label>
-          <textarea [(ngModel)]="categoryForm.description" name="description" rows="2" class="brand-field__input brand-field__textarea"></textarea>
-        </div>
-
-        <div class="brand-field">
-          <label class="brand-field__label">
-            <span class="material-icons" style="font-size:14px;vertical-align:middle;margin-right:4px;">account_tree</span>
-            Jerarquía
-          </label>
-          <select [(ngModel)]="categoryForm.parentId" name="parentId" class="brand-field__input">
-            <option [ngValue]="null">➤ Categoría Principal (Raíz)</option>
-            <optgroup label="Asignar como subcategoría de:">
-              <option *ngFor="let cat of getValidParentOptions()" [ngValue]="cat.id">
-                {{ cat.name }}
-              </option>
-            </optgroup>
-          </select>
-          <div class="category-hierarchy-preview" *ngIf="categoryForm.parentId">
-            Se creará como: <strong>{{ getParentCategoryName(categoryForm.parentId) }}</strong> > <em>{{ categoryForm.name || 'Nueva' }}</em>
-          </div>
-        </div>
-
-        <!-- IMAGE UPLOAD AREA -->
-        <div class="brand-field">
-          <label class="brand-field__label">Imagen de la Categoría</label>
-          <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/jpeg, image/png, image/webp" style="display: none;" />
-          
-          <div class="image-upload-area" *ngIf="!previewUrl" (click)="triggerFileInput()">
-            <span class="material-icons upload-icon">cloud_upload</span>
-            <p class="upload-text">Haz clic o arrastra una imagen aquí</p>
-            <p class="upload-hint">JPG, PNG o WEBP. Máx 2MB.</p>
-          </div>
-
-          <div class="image-preview-area" *ngIf="previewUrl">
-            <img [src]="previewUrl" alt="Vista previa" />
-            <div class="image-actions">
-              <button type="button" class="btn-img-action btn-img-change" (click)="triggerFileInput()">Cambiar</button>
-              <button type="button" class="btn-img-action btn-img-remove" (click)="removeImage()">Eliminar</button>
-            </div>
-          </div>
-          
-          <!-- Compatibilidad con URL (Opcional Avanzado) -->
-          <div class="advanced-url-area mt-2" *ngIf="!previewUrl">
-            <p class="text-xs text-gray-500 mb-1">Opcional avanzado: usar URL externa</p>
-            <input type="url" [(ngModel)]="categoryForm.imageUrl" name="imageUrl" placeholder="https://..." class="brand-field__input" />
-          </div>
-        </div>
-
-        <div class="brand-field">
-          <label class="brand-field__label">Estado</label>
-          <label class="brand-toggle">
-            <input type="checkbox" [(ngModel)]="categoryForm.active" name="active" class="brand-toggle__input" />
-            <span class="brand-toggle__track"></span>
-            <span class="brand-toggle__label">{{ categoryForm.active ? 'Activa' : 'Inactiva' }}</span>
-          </label>
-        </div>
-      </form>
-    </div>
-
-    <div class="brand-modal-footer">
-      <button class="brand-btn brand-btn--ghost" (click)="confirmCloseCategoryModal()" [disabled]="loading || isUploadingImage" type="button">
-        Cancelar
-      </button>
-      <button class="brand-btn brand-btn--primary" (click)="saveCategory()" [disabled]="loading || isUploadingImage" type="button">
-        <span *ngIf="loading || isUploadingImage" class="brand-btn__spinner"></span>
-        <span *ngIf="!loading && !isUploadingImage" class="material-icons" style="font-size:1rem;">save</span>
-        {{ showCreateModal ? 'Crear Categoría' : 'Guardar Cambios' }}
-      </button>
     </div>
   </div>
-</div>
+}
 
 <!-- MODAL ELIMINAR -->
-<div class="brand-modal-overlay" *ngIf="showDeleteModal" (click)="closeModal()">
-  <div class="brand-modal-panel brand-modal-panel--sm" (click)="$event.stopPropagation()">
-    <div class="brand-modal-header brand-modal-header--danger">
-      <div class="brand-modal-header__icon brand-modal-header__icon--danger">
-        <span class="material-icons" style="font-size:1.1rem;">delete_forever</span>
+@if (showDeleteModal) {
+  <div class="brand-modal-overlay" (click)="closeModal()">
+    <div class="brand-modal-panel brand-modal-panel--sm" (click)="$event.stopPropagation()">
+      <div class="brand-modal-header brand-modal-header--danger">
+        <div class="brand-modal-header__icon brand-modal-header__icon--danger">
+          <span class="material-icons" style="font-size:1.1rem;">delete_forever</span>
+        </div>
+        <div class="brand-modal-header__text">
+          <h2 class="brand-modal-header__title">Eliminar Categoría</h2>
+        </div>
+        <button class="brand-modal-close" (click)="closeModal()" title="Cerrar">
+          <span class="material-icons">close</span>
+        </button>
       </div>
-      <div class="brand-modal-header__text">
-        <h2 class="brand-modal-header__title">Eliminar Categoría</h2>
-      </div>
-      <button class="brand-modal-close" (click)="closeModal()" title="Cerrar">
-        <span class="material-icons">close</span>
-      </button>
-    </div>
-    <div class="brand-modal-body">
-      <div class="brand-modal-error" *ngIf="errorMessage">
-        <span class="material-icons">error_outline</span>
-        <span>{{ errorMessage }}</span>
-      </div>
-      <p class="brand-delete-message">
-        ¿Eliminar permanentemente la categoría <strong>"{{ selectedCategory?.name }}"</strong>?
-      </p>
-      <div class="brand-delete-warning">
-        <span class="material-icons">warning</span>
-        <div>
-          <p style="font-weight:600;">Validaciones:</p>
-          <ul style="padding-left:1.2rem;line-height:1.8;">
-            <li>✅ Si está <strong>vacía</strong> se eliminará</li>
-            <li>❌ Si tiene <strong>subcategorías</strong> o <strong>productos</strong> debes moverlos primero</li>
-          </ul>
+      <div class="brand-modal-body">
+        @if (errorMessage) {
+          <div class="brand-modal-error">
+            <span class="material-icons">error_outline</span>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+        <p class="brand-delete-message">
+          ¿Eliminar permanentemente la categoría <strong>"{{ selectedCategory?.name }}"</strong>?
+        </p>
+        <div class="brand-delete-warning">
+          <span class="material-icons">warning</span>
+          <div>
+            <p style="font-weight:600;">Validaciones:</p>
+            <ul style="padding-left:1.2rem;line-height:1.8;">
+              <li>✅ Si está <strong>vacía</strong> se eliminará</li>
+              <li>❌ Si tiene <strong>subcategorías</strong> o <strong>productos</strong> debes moverlos primero</li>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="brand-modal-footer">
-      <button class="brand-btn brand-btn--ghost" (click)="closeModal()" [disabled]="loading" type="button">Cancelar</button>
-      <button class="brand-btn brand-btn--danger" (click)="deleteCategory()" [disabled]="loading" type="button">
-        <span *ngIf="loading" class="brand-btn__spinner"></span>
-        {{ loading ? 'Eliminando...' : 'Eliminar Permanentemente' }}
-      </button>
+      <div class="brand-modal-footer">
+        <button class="brand-btn brand-btn--ghost" (click)="closeModal()" [disabled]="loading" type="button">Cancelar</button>
+        <button class="brand-btn brand-btn--danger" (click)="deleteCategory()" [disabled]="loading" type="button">
+          @if (loading) {
+            <span class="brand-btn__spinner"></span>
+          }
+          {{ loading ? 'Eliminando...' : 'Eliminar Permanentemente' }}
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}

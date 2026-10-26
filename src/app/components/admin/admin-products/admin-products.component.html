@@ -1,17 +1,17 @@
 <div class="admin-products-container">
 
   <!-- ══════════════════════════════════════════════════════════════
-       TOAST DE NOTIFICACIÓN (superpuesto, dentro del componente)
-       ══════════════════════════════════════════════════════════════ -->
+  TOAST DE NOTIFICACIÓN (superpuesto, dentro del componente)
+  ══════════════════════════════════════════════════════════════ -->
   <div class="pm-toast-wrapper" [class.pm-toast--visible]="toast.visible" aria-live="polite">
     <div class="pm-toast" [ngClass]="'pm-toast--' + toast.type">
       <!-- Icono según tipo -->
       <div class="pm-toast__icon">
         <span class="material-icons">
           {{ toast.type === 'success' ? 'check_circle'
-           : toast.type === 'error'   ? 'error'
-           : toast.type === 'warning' ? 'warning'
-           :                            'info' }}
+          : toast.type === 'error'   ? 'error'
+          : toast.type === 'warning' ? 'warning'
+          :                            'info' }}
         </span>
       </div>
       <!-- Texto -->
@@ -71,12 +71,16 @@
   </div>
 
   <!-- Mensajes de alerta -->
-  <div *ngIf="successMessage" class="alert alert-success">
-    {{ successMessage }}
-  </div>
-  <div *ngIf="errorMessage" class="alert alert-error">
-    {{ errorMessage }}
-  </div>
+  @if (successMessage) {
+    <div class="alert alert-success">
+      {{ successMessage }}
+    </div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      {{ errorMessage }}
+    </div>
+  }
 
   <!-- ========== BARRA DE BÚSQUEDA Y FILTROS (SERVER-SIDE) ========== -->
   <div class="search-section">
@@ -88,191 +92,202 @@
         [(ngModel)]="searchTerm"
         (input)="onSearch()"
         placeholder="Buscar por nombre, SKU o descripción..."
-      />
-      <!-- Indicador de búsqueda activa -->
-      <span class="search-indicator" *ngIf="loading">
-        <span class="spinner-mini"></span>
-      </span>
-      <span class="search-badge" *ngIf="searchTerm && !loading">{{ searchTerm }}</span>
+        />
+        <!-- Indicador de búsqueda activa -->
+        @if (loading) {
+          <span class="search-indicator">
+            <span class="spinner-mini"></span>
+          </span>
+        }
+        @if (searchTerm && !loading) {
+          <span class="search-badge">{{ searchTerm }}</span>
+        }
+      </div>
+
+      <!-- Filtros en fila -->
+      <div class="filters-row">
+        <!-- Filtro de Marca -->
+        <div class="filter-group" [class.active]="filterBrandId !== null">
+          <label>
+            <span class="material-icons">business_center</span>
+            Marca
+          </label>
+          <select [(ngModel)]="filterBrandId" (change)="applyFilters()">
+            <option [ngValue]="null">Todas las marcas</option>
+            @for (brand of brands; track brand) {
+              <option [ngValue]="brand.id">{{ brand.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Filtro de Categoría -->
+        <div class="filter-group" [class.active]="filterCategoryId !== null">
+          <label>
+            <span class="material-icons">category</span>
+            Categoría
+          </label>
+          <select [(ngModel)]="filterCategoryId" (change)="applyFilters()">
+            <option [ngValue]="null">Todas las categorías</option>
+            @for (category of categories; track category) {
+              <option [ngValue]="category.id">{{ category.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Filtro de Estado -->
+        <div class="filter-group" [class.active]="filterActive !== null">
+          <label>
+            <span class="material-icons">toggle_on</span>
+            Estado
+          </label>
+          <select [(ngModel)]="filterActive" (change)="applyFilters()">
+            <option [ngValue]="null">Todos</option>
+            <option [ngValue]="true">Activos</option>
+            <option [ngValue]="false">Inactivos</option>
+          </select>
+        </div>
+
+        <!-- Acciones de filtros -->
+        <div class="filter-actions">
+          @if (searchTerm || filterBrandId !== null || filterCategoryId !== null || filterActive !== null) {
+            <button
+              class="btn-clear-compact"
+              (click)="clearFilters()"
+              title="Limpiar todos los filtros">
+              <span class="material-icons">clear_all</span>
+              Limpiar
+            </button>
+          }
+
+          <!-- Indicador de filtros activos -->
+          @if (searchTerm || filterBrandId !== null || filterCategoryId !== null || filterActive !== null) {
+            <span class="filters-badge"
+              >
+              <span class="material-icons">filter_alt</span>
+              {{ getActiveFiltersCount() }} filtro(s) activo(s)
+            </span>
+          }
+        </div>
+      </div>
     </div>
 
-    <!-- Filtros en fila -->
-    <div class="filters-row">
-      <!-- Filtro de Marca -->
-      <div class="filter-group" [class.active]="filterBrandId !== null">
-        <label>
-          <span class="material-icons">business_center</span>
-          Marca
-        </label>
-        <select [(ngModel)]="filterBrandId" (change)="applyFilters()">
-          <option [ngValue]="null">Todas las marcas</option>
-          <option *ngFor="let brand of brands" [ngValue]="brand.id">{{ brand.name }}</option>
-        </select>
-      </div>
+    <!-- ═══════════════════════════════════════════════════════════
+    TABLA DE PRODUCTOS — Diseño moderno corporativo
+    ═══════════════════════════════════════════════════════════ -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-4">
 
-      <!-- Filtro de Categoría -->
-      <div class="filter-group" [class.active]="filterCategoryId !== null">
-        <label>
-          <span class="material-icons">category</span>
-          Categoría
-        </label>
-        <select [(ngModel)]="filterCategoryId" (change)="applyFilters()">
-          <option [ngValue]="null">Todas las categorías</option>
-          <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
-        </select>
-      </div>
+      <!-- ── Overlay de carga ──────────────────────────────────── -->
+      @if (loading) {
+        <div class="flex items-center justify-center py-20 gap-3">
+          <svg class="animate-spin h-6 w-6 text-[#800020]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+          <span class="text-sm font-medium text-gray-500">Cargando productos...</span>
+        </div>
+      }
 
-      <!-- Filtro de Estado -->
-      <div class="filter-group" [class.active]="filterActive !== null">
-        <label>
-          <span class="material-icons">toggle_on</span>
-          Estado
-        </label>
-        <select [(ngModel)]="filterActive" (change)="applyFilters()">
-          <option [ngValue]="null">Todos</option>
-          <option [ngValue]="true">Activos</option>
-          <option [ngValue]="false">Inactivos</option>
-        </select>
-      </div>
+      <!-- ── Tabla ─────────────────────────────────────────────── -->
+      @if (!loading) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
 
-      <!-- Acciones de filtros -->
-      <div class="filter-actions">
-        <button 
-          class="btn-clear-compact" 
-          (click)="clearFilters()"
-          *ngIf="searchTerm || filterBrandId !== null || filterCategoryId !== null || filterActive !== null"
-          title="Limpiar todos los filtros">
-          <span class="material-icons">clear_all</span>
-          Limpiar
-        </button>
-        
-        <!-- Indicador de filtros activos -->
-        <span class="filters-badge" 
-              *ngIf="searchTerm || filterBrandId !== null || filterCategoryId !== null || filterActive !== null">
-          <span class="material-icons">filter_alt</span>
-          {{ getActiveFiltersCount() }} filtro(s) activo(s)
-        </span>
-      </div>
-    </div>
-  </div>
+            <!-- Cabecera -->
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">
+                  Producto
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Nombre
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Marca
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Categoría
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Precio
+                </th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">
+                  Stock
+                </th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">
+                  Estado
+                </th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       TABLA DE PRODUCTOS — Diseño moderno corporativo
-       ═══════════════════════════════════════════════════════════ -->
-  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-4">
+            <!-- Cuerpo -->
+            <tbody class="divide-y divide-gray-100">
+              @for (product of filteredProducts; track product.id) {
+                <tr class="hover:bg-gray-50 transition-colors duration-150">
 
-    <!-- ── Overlay de carga ──────────────────────────────────── -->
-    @if (loading) {
-      <div class="flex items-center justify-center py-20 gap-3">
-        <svg class="animate-spin h-6 w-6 text-[#800020]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-        </svg>
-        <span class="text-sm font-medium text-gray-500">Cargando productos...</span>
-      </div>
-    }
+                  <!-- Imagen -->
+                  <td class="px-4 py-3">
+                    <div class="w-11 h-11 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                      <img
+                        [src]="product.imageUrl || 'assets/images/placeholder.jpg'"
+                        [alt]="product.name"
+                        class="w-full h-full object-cover">
+                      </div>
+                    </td>
 
-    <!-- ── Tabla ─────────────────────────────────────────────── -->
-    @if (!loading) {
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-
-          <!-- Cabecera -->
-          <thead class="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">
-                Producto
-              </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Nombre
-              </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Marca
-              </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Categoría
-              </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Precio
-              </th>
-              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">
-                Stock
-              </th>
-              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">
-                Estado
-              </th>
-              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-
-          <!-- Cuerpo -->
-          <tbody class="divide-y divide-gray-100">
-            @for (product of filteredProducts; track product.id) {
-              <tr class="hover:bg-gray-50 transition-colors duration-150">
-
-                <!-- Imagen -->
-                <td class="px-4 py-3">
-                  <div class="w-11 h-11 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
-                    <img
-                      [src]="product.imageUrl || 'assets/images/placeholder.jpg'"
-                      [alt]="product.name"
-                      class="w-full h-full object-cover">
-                  </div>
-                </td>
-
-                <!-- Nombre + badge Destacado -->
-                <td class="px-4 py-3 max-w-[200px]">
-                  <div class="flex flex-col gap-1">
-                    <span class="font-medium text-gray-900 truncate" [title]="product.name">
-                      {{ product.name }}
-                    </span>
-                    @if (product.featured) {
+                    <!-- Nombre + badge Destacado -->
+                    <td class="px-4 py-3 max-w-[200px]">
+                      <div class="flex flex-col gap-1">
+                        <span class="font-medium text-gray-900 truncate" [title]="product.name">
+                          {{ product.name }}
+                        </span>
+                        @if (product.featured) {
                       <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full
                                    text-[10px] font-bold bg-amber-50 text-amber-700
                                    border border-amber-200 w-fit">
-                        <i class="fas fa-star text-[9px]"></i>
-                        Destacado
-                      </span>
-                    }
-                  </div>
-                </td>
+                            <i class="fas fa-star text-[9px]"></i>
+                            Destacado
+                          </span>
+                        }
+                      </div>
+                    </td>
 
-                <!-- Marca -->
-                <td class="px-4 py-3">
-                  <div class="flex items-center gap-2">
-                    @if (product.brandLogoUrl) {
-                      <img [src]="product.brandLogoUrl" [alt]="product.brandName"
-                           class="w-5 h-5 object-contain rounded">
-                    }
-                    <span class="text-gray-700 text-sm">{{ product.brandName || '—' }}</span>
-                  </div>
-                </td>
+                    <!-- Marca -->
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        @if (product.brandLogoUrl) {
+                          <img [src]="product.brandLogoUrl" [alt]="product.brandName"
+                            class="w-5 h-5 object-contain rounded">
+                          }
+                          <span class="text-gray-700 text-sm">{{ product.brandName || '—' }}</span>
+                        </div>
+                      </td>
 
-                <!-- Categoría -->
-                <td class="px-4 py-3">
-                  <span class="text-gray-600 text-sm">
-                    {{ getCategoryName(product.categoryId) }}
-                  </span>
-                </td>
+                      <!-- Categoría -->
+                      <td class="px-4 py-3">
+                        <span class="text-gray-600 text-sm">
+                          {{ getCategoryName(product.categoryId) }}
+                        </span>
+                      </td>
 
-                <!-- Precio -->
-                <td class="px-4 py-3 whitespace-nowrap">
-                  <div class="flex flex-col">
-                    <span class="font-semibold text-gray-900">
-                      ${{ product.price | number:'1.0-0' }}
-                    </span>
-                    @if (product.discountPrice) {
-                      <span class="text-xs text-gray-400 line-through">
-                        ${{ product.discountPrice | number:'1.0-0' }}
-                      </span>
-                    }
-                  </div>
-                </td>
+                      <!-- Precio -->
+                      <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex flex-col">
+                          <span class="font-semibold text-gray-900">
+                            ${{ product.price | number:'1.0-0' }}
+                          </span>
+                          @if (product.discountPrice) {
+                            <span class="text-xs text-gray-400 line-through">
+                              ${{ product.discountPrice | number:'1.0-0' }}
+                            </span>
+                          }
+                        </div>
+                      </td>
 
-                <!-- Stock -->
-                <td class="px-4 py-3 text-center">
+                      <!-- Stock -->
+                      <td class="px-4 py-3 text-center">
                   <span class="inline-flex items-center justify-center min-w-[2rem] h-7
                                px-2 rounded-full text-xs font-bold"
                         [ngClass]="{
@@ -280,1382 +295,1378 @@
                           'bg-amber-100 text-amber-700 border border-amber-200': product.stock > 5 && product.stock <= 10,
                           'bg-green-100 text-green-700 border border-green-200': product.stock > 10
                         }">
-                    {{ product.stock }}
-                  </span>
-                </td>
+                          {{ product.stock }}
+                        </span>
+                      </td>
 
-                <!-- Estado (toggle) -->
-                <td class="px-4 py-3 text-center">
-                  <button
-                    (click)="toggleStatus(product)"
-                    [title]="product.active ? 'Desactivar producto' : 'Activar producto'"
+                      <!-- Estado (toggle) -->
+                      <td class="px-4 py-3 text-center">
+                        <button
+                          (click)="toggleStatus(product)"
+                          [title]="product.active ? 'Desactivar producto' : 'Activar producto'"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
                            text-xs font-semibold transition-all duration-200 cursor-pointer border"
                     [ngClass]="product.active
                       ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
                       : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'">
-                    <span class="w-1.5 h-1.5 rounded-full"
-                          [ngClass]="product.active ? 'bg-green-500' : 'bg-gray-400'">
-                    </span>
-                    {{ product.active ? 'Activo' : 'Inactivo' }}
-                  </button>
-                </td>
+                          <span class="w-1.5 h-1.5 rounded-full"
+                            [ngClass]="product.active ? 'bg-green-500' : 'bg-gray-400'">
+                          </span>
+                          {{ product.active ? 'Activo' : 'Inactivo' }}
+                        </button>
+                      </td>
 
-                <!-- Acciones -->
-                <td class="px-4 py-3 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <button *ngIf="authService.hasPermission('PRODUCT_UPDATE')"
-                      (click)="openEditModal(product)"
-                      title="Editar producto"
+                      <!-- Acciones -->
+                      <td class="px-4 py-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                          @if (authService.hasPermission('PRODUCT_UPDATE')) {
+                            <button
+                              (click)="openEditModal(product)"
+                              title="Editar producto"
                       class="w-8 h-8 flex items-center justify-center rounded-lg
                              text-blue-600 bg-blue-50 hover:bg-blue-100
                              border border-blue-100 transition-colors duration-150">
-                      <i class="fas fa-pen text-xs"></i>
-                    </button>
-                    <button *ngIf="authService.hasPermission('PRODUCT_DELETE')"
-                      (click)="openDeleteModal(product)"
-                      title="Eliminar producto"
+                              <i class="fas fa-pen text-xs"></i>
+                            </button>
+                          }
+                          @if (authService.hasPermission('PRODUCT_DELETE')) {
+                            <button
+                              (click)="openDeleteModal(product)"
+                              title="Eliminar producto"
                       class="w-8 h-8 flex items-center justify-center rounded-lg
                              text-red-600 bg-red-50 hover:bg-red-100
                              border border-red-100 transition-colors duration-150">
-                      <i class="fas fa-trash text-xs"></i>
-                    </button>
-                  </div>
-                </td>
+                              <i class="fas fa-trash text-xs"></i>
+                            </button>
+                          }
+                        </div>
+                      </td>
 
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
 
-      <!-- ── Estado vacío ──────────────────────────────────────── -->
-      @if (filteredProducts.length === 0) {
-        <div class="flex flex-col items-center justify-center py-20 gap-4 text-center">
-          <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-            <i class="fas fa-box-open text-gray-400 text-2xl"></i>
-          </div>
-          <div>
-            <p class="text-base font-semibold text-gray-700">No se encontraron productos</p>
-            <p class="text-sm text-gray-400 mt-1">
-              Prueba ajustando los filtros o crea el primer producto.
-            </p>
-          </div>
-          <button *ngIf="authService.hasPermission('PRODUCT_CREATE')"
-            (click)="openCreateModal()"
+            <!-- ── Estado vacío ──────────────────────────────────────── -->
+            @if (filteredProducts.length === 0) {
+              <div class="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                  <i class="fas fa-box-open text-gray-400 text-2xl"></i>
+                </div>
+                <div>
+                  <p class="text-base font-semibold text-gray-700">No se encontraron productos</p>
+                  <p class="text-sm text-gray-400 mt-1">
+                    Prueba ajustando los filtros o crea el primer producto.
+                  </p>
+                </div>
+                @if (authService.hasPermission('PRODUCT_CREATE')) {
+                  <button
+                    (click)="openCreateModal()"
             class="inline-flex items-center gap-2 px-4 py-2 bg-[#800020] text-white
                    text-sm font-semibold rounded-xl hover:bg-[#6a001a] transition-colors
                    shadow-sm">
-            <i class="fas fa-plus text-xs"></i>
-            Crear primer producto
-          </button>
-        </div>
-      }
+                    <i class="fas fa-plus text-xs"></i>
+                    Crear primer producto
+                  </button>
+                }
+              </div>
+            }
 
-      <!-- ── Footer: Paginación ────────────────────────────────── -->
-      @if (totalProducts > 0) {
+            <!-- ── Footer: Paginación ────────────────────────────────── -->
+            @if (totalProducts > 0) {
         <div class="flex flex-col sm:flex-row items-center justify-between
                     gap-4 px-6 py-4 border-t border-gray-200 bg-gray-50/50">
 
-          <!-- Lado izquierdo: selector de tamaño + rango -->
-          <div class="flex items-center gap-3 text-sm text-gray-500">
-            <span class="hidden sm:inline">Filas por página:</span>
-            <select
-              [value]="pageSize"
-              (change)="changePageSize($event)"
+                <!-- Lado izquierdo: selector de tamaño + rango -->
+                <div class="flex items-center gap-3 text-sm text-gray-500">
+                  <span class="hidden sm:inline">Filas por página:</span>
+                  <select
+                    [value]="pageSize"
+                    (change)="changePageSize($event)"
               class="h-8 rounded-lg border border-gray-200 bg-white text-gray-700
                      text-sm px-2 pr-7 shadow-sm focus:outline-none
                      focus:ring-2 focus:ring-[#800020]/30 focus:border-[#800020]
                      cursor-pointer">
-              @for (opt of pageSizeOptions; track opt) {
-                <option [value]="opt" [selected]="opt === pageSize">{{ opt }}</option>
-              }
-            </select>
-            <span>
-              Mostrando
-              <strong class="text-[#800020]">{{ startIndex }}</strong>
-              –
-              <strong class="text-[#800020]">{{ endIndex }}</strong>
-              de
-              <strong class="text-[#800020]">{{ totalProducts }}</strong>
-              productos
-            </span>
-          </div>
+                    @for (opt of pageSizeOptions; track opt) {
+                      <option [value]="opt" [selected]="opt === pageSize">{{ opt }}</option>
+                    }
+                  </select>
+                  <span>
+                    Mostrando
+                    <strong class="text-[#800020]">{{ startIndex }}</strong>
+                    –
+                    <strong class="text-[#800020]">{{ endIndex }}</strong>
+                    de
+                    <strong class="text-[#800020]">{{ totalProducts }}</strong>
+                    productos
+                  </span>
+                </div>
 
-          <!-- Lado derecho: controles de página -->
+                <!-- Lado derecho: controles de página -->
           <div class="flex items-center border border-gray-200 rounded-lg
                       bg-white shadow-sm overflow-hidden divide-x divide-gray-200">
 
-            <!-- Primera página -->
-            <button
-              (click)="goToPage(0)"
-              [disabled]="currentPage === 0"
-              title="Primera página"
+                  <!-- Primera página -->
+                  <button
+                    (click)="goToPage(0)"
+                    [disabled]="currentPage === 0"
+                    title="Primera página"
               class="w-9 h-9 flex items-center justify-center text-gray-500
                      hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed
                      transition-colors">
-              <i class="fas fa-angle-double-left text-xs"></i>
-            </button>
+                    <i class="fas fa-angle-double-left text-xs"></i>
+                  </button>
 
-            <!-- Anterior -->
-            <button
-              (click)="previousPage()"
-              [disabled]="currentPage === 0"
-              title="Página anterior"
+                  <!-- Anterior -->
+                  <button
+                    (click)="previousPage()"
+                    [disabled]="currentPage === 0"
+                    title="Página anterior"
               class="w-9 h-9 flex items-center justify-center text-gray-500
                      hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed
                      transition-colors">
-              <i class="fas fa-angle-left text-xs"></i>
-            </button>
+                    <i class="fas fa-angle-left text-xs"></i>
+                  </button>
 
-            <!-- Números de página -->
-            @for (page of pageNumbers; track page) {
-              <button
-                (click)="goToPage(page)"
-                [title]="'Página ' + (page + 1)"
+                  <!-- Números de página -->
+                  @for (page of pageNumbers; track page) {
+                    <button
+                      (click)="goToPage(page)"
+                      [title]="'Página ' + (page + 1)"
                 class="w-9 h-9 flex items-center justify-center text-sm
                        font-medium transition-colors"
                 [ngClass]="page === currentPage
                   ? 'bg-[#800020] text-white font-bold'
                   : 'text-gray-600 hover:bg-gray-50'">
-                {{ page + 1 }}
-              </button>
-            }
-
-            <!-- Siguiente -->
-            <button
-              (click)="nextPage()"
-              [disabled]="currentPage === totalPages - 1"
-              title="Página siguiente"
-              class="w-9 h-9 flex items-center justify-center text-gray-500
-                     hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed
-                     transition-colors">
-              <i class="fas fa-angle-right text-xs"></i>
-            </button>
-
-            <!-- Última página -->
-            <button
-              (click)="goToPage(totalPages - 1)"
-              [disabled]="currentPage === totalPages - 1"
-              title="Última página"
-              class="w-9 h-9 flex items-center justify-center text-gray-500
-                     hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed
-                     transition-colors">
-              <i class="fas fa-angle-double-right text-xs"></i>
-            </button>
-
-          </div>
-        </div>
-      }
-    }
-
-  </div>
-  <!-- /tabla de productos -->
-</div>
-
-<!-- MODAL PROFESIONAL CON SISTEMA DE TABS/PESTAÑAS -->
-<div class="modal-overlay" *ngIf="showCreateModal || showEditModal" (click)="confirmCloseProductModal()">
-  <div class="modal-content modal-large-tabs" (click)="$event.stopPropagation()">
-    
-    <!-- OVERLAY DE CARGA PROFESIONAL -->
-    <div class="absolute inset-0 bg-white/80 backdrop-blur-sm z-[12000] flex flex-col items-center justify-center rounded-xl" *ngIf="isProcessingUploads">
-      <svg class="animate-spin h-10 w-10 text-[#800020] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-      </svg>
-      <h3 class="text-xl font-bold text-gray-800 mb-1">Procesando Producto</h3>
-      <p class="text-gray-600 font-medium">{{ uploadProgressMessage }}</p>
-      <div class="w-64 bg-gray-200 rounded-full h-2.5 mt-4 overflow-hidden">
-        <div class="bg-[#800020] h-2.5 rounded-full transition-all duration-300" style="width: 100%"></div>
-      </div>
-    </div>
-
-    <!-- Header del Modal -->
-    <div class="modal-header">
-      <div class="modal-header-content">
-        <span class="material-icons modal-icon">{{ showCreateModal ? 'add_shopping_cart' : 'edit' }}</span>
-        <div>
-          <h2>{{ showCreateModal ? 'Nuevo Producto' : 'Editar Producto' }}</h2>
-          <p class="modal-subtitle">Complete los campos por sección para registrar el producto</p>
-        </div>
-      </div>
-      <button class="modal-close" (click)="confirmCloseProductModal()" [disabled]="loading || uploadingImage || isProcessingUploads">
-        <span class="material-icons">close</span>
-      </button>
-    </div>
-
-    <!-- Sistema de Tabs Profesional -->
-    <div class="tabs-container">
-      <div class="tabs-header">
-        <button 
-          class="tab-btn" 
-          [class.active]="currentTab === 'general'"
-          (click)="setTab('general')">
-          <span class="material-symbols-outlined">info</span>
-          <span class="tab-label">
-            <span class="tab-title">General</span>
-            <span class="tab-subtitle">Datos</span>
-          </span>
-          <span class="tab-indicator"></span>
-        </button>
-        
-        <button 
-          class="tab-btn" 
-          [class.active]="currentTab === 'pricing'"
-          (click)="setTab('pricing')">
-          <span class="material-symbols-outlined">payments</span>
-          <span class="tab-label">
-            <span class="tab-title">Precios</span>
-            <span class="tab-subtitle">Stock</span>
-          </span>
-          <span class="tab-indicator"></span>
-        </button>
-        
-        <button 
-          class="tab-btn" 
-          [class.active]="currentTab === 'media'"
-          (click)="setTab('media')">
-          <span class="material-symbols-outlined">photo_library</span>
-          <span class="tab-label">
-            <span class="tab-title">Multimedia</span>
-            <span class="tab-subtitle">Imágenes</span>
-          </span>
-          <span class="tab-indicator"></span>
-        </button>
-        
-        <button 
-          class="tab-btn" 
-          [class.active]="currentTab === 'details'"
-          (click)="setTab('details')">
-          <span class="material-symbols-outlined">description</span>
-          <span class="tab-label">
-            <span class="tab-title">Detalles</span>
-            <span class="tab-subtitle">Atributos</span>
-          </span>
-          <span class="tab-indicator"></span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Los errores ahora se muestran en el toast global del componente -->
-
-    <!-- Body del Modal con Contenido por Tabs -->
-    <div class="modal-body">
-      <form class="product-form-professional">
-        
-        <!-- ============================================
-             TAB 1: INFORMACIÓN GENERAL
-             ============================================ -->
-        <div class="tab-content" *ngIf="currentTab === 'general'">
-          <div class="form-section-tab">
-
-            <!-- ── Nombre del producto ─────────────────────────────────── -->
-            <div class="pf-card">
-              <div class="pf-card__head">
-                <span class="material-symbols-outlined">label</span>
-                <span>Identidad del Producto</span>
-              </div>
-              <div class="pf-card__body">
-
-                <!-- Nombre -->
-                <div class="form-group full-width">
-                  <label class="form-label">
-                    Nombre del Producto
-                    <span class="req-star">*</span>
-                    <span class="help-icon custom-tooltip" data-tooltip="Nombre descriptivo del producto (ej: Guitarra Eléctrica Stratocaster)">
-                      <span class="material-symbols-outlined">help</span>
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    class="form-input"
-                    [(ngModel)]="productForm.name"
-                    name="name"
-                    placeholder="Ej: Guitarra Eléctrica Fender Stratocaster American Professional II"
-                    [class.input-error]="formErrors.name && (isSubmitted || attemptedNext)"
-                    (blur)="validateForm()"
-                    maxlength="200"
-                    required
-                  />
-                  <div *ngIf="formErrors.name && (isSubmitted || attemptedNext)" class="error-message">
-                    <span class="material-symbols-outlined">error</span>
-                    {{ formErrors.name }}
-                  </div>
-                </div>
-
-                <!-- Descripción corta -->
-                <div class="form-group full-width">
-                  <label class="form-label">
-                    <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;margin-right:3px;">subject</span>
-                    Descripción Breve
-                    <span class="label-badge">Opcional</span>
-                    <span class="help-icon custom-tooltip" data-tooltip="Aparece en las tarjetas del catálogo. Máx. 200 caracteres.">
-                      <span class="material-symbols-outlined">help</span>
-                    </span>
-                  </label>
-                  <textarea
-                    class="form-textarea"
-                    [(ngModel)]="productForm.description"
-                    name="description"
-                    rows="3"
-                    maxlength="200"
-                    placeholder="Ej: Guitarra eléctrica profesional con pastillas V-Mod II, mástil de arce y cuerpo de aliso."
-                    (input)="updateDescriptionCharCount()"
-                  ></textarea>
-                  <div class="input-help-counter">
-                    <span class="material-symbols-outlined" style="font-size:.85rem">info</span>
-                    <span>Resumen para las tarjetas del catálogo &mdash;
-                      <strong [class.char-warn]="descriptionCharCount > 160">{{ descriptionCharCount }}/200</strong> caracteres
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- ── Clasificación: Categoría + Marca ────────────────────── -->
-            <div class="pf-card">
-              <div class="pf-card__head">
-                <span class="material-symbols-outlined">category</span>
-                <span>Clasificación</span>
-              </div>
-              <div class="pf-card__body">
-                <div class="form-grid two-col">
-
-                  <!-- Categoría — custom dropdown -->
-                  <div class="form-group">
-                    <label class="form-label">
-                      Categoría
-                      <span class="req-star">*</span>
-                      <span class="help-icon custom-tooltip" data-tooltip="Categoría principal del producto">
-                        <span class="material-symbols-outlined">help</span>
-                      </span>
-                    </label>
-                    <div class="custom-dropdown-wrap" [class.input-error]="formErrors.categoryId && (isSubmitted || attemptedNext)">
-                      <div class="custom-dropdown-input-row">
-                        <span class="combobox-icon">
-                          <span class="material-symbols-outlined">folder_open</span>
-                        </span>
-                        <input
-                          type="text"
-                          class="form-input combobox-input"
-                          [value]="categorySearch"
-                          (input)="filterCategories($event)"
-                          (focus)="openCategoryDropdown()"
-                          (blur)="closeCategoryDropdown()"
-                          placeholder="Escribe o selecciona categoría..."
-                          autocomplete="off"
-                        />
-                        <span class="dropdown-arrow">
-                          <span class="material-symbols-outlined">arrow_drop_down</span>
-                        </span>
-                      </div>
-                      <div class="custom-dropdown-list" *ngIf="showCategoryDropdown">
-                        <div
-                          *ngIf="filteredCategories.length === 0"
-                          class="custom-dropdown-empty">
-                          Sin resultados
-                        </div>
-                        <div
-                          *ngFor="let c of filteredCategories"
-                          class="custom-dropdown-option"
-                          (mousedown)="selectCategory(c)">
-                          <span class="material-symbols-outlined" style="font-size:.9rem;color:#94a3b8">folder_open</span>
-                          {{ c.name }}
-                        </div>
-                      </div>
-                    </div>
-                    <div *ngIf="formErrors.categoryId && (isSubmitted || attemptedNext)" class="error-message">
-                      <span class="material-symbols-outlined">error</span>
-                      {{ formErrors.categoryId }}
-                    </div>
-                  </div>
-
-                  <!-- Marca — custom dropdown -->
-                  <div class="form-group">
-                    <label class="form-label">
-                      Marca
-                      <span class="help-icon custom-tooltip" data-tooltip="Marca del fabricante del producto">
-                        <span class="material-symbols-outlined">help</span>
-                      </span>
-                    </label>
-                    <div class="custom-dropdown-wrap">
-                      <div class="custom-dropdown-input-row">
-                        <span class="combobox-icon">
-                          <span class="material-symbols-outlined">business</span>
-                        </span>
-                        <input
-                          type="text"
-                          class="form-input combobox-input"
-                          [value]="brandSearch"
-                          (input)="filterBrands($event)"
-                          (focus)="openBrandDropdown()"
-                          (blur)="closeBrandDropdown()"
-                          placeholder="Escribe o selecciona marca..."
-                          autocomplete="off"
-                        />
-                        <span class="dropdown-arrow">
-                          <span class="material-symbols-outlined">arrow_drop_down</span>
-                        </span>
-                      </div>
-                      <div class="custom-dropdown-list" *ngIf="showBrandDropdown">
-                        <div
-                          *ngIf="filteredBrands.length === 0"
-                          class="custom-dropdown-empty">
-                          Sin resultados
-                        </div>
-                        <div
-                          *ngFor="let b of filteredBrands"
-                          class="custom-dropdown-option"
-                          (mousedown)="selectBrand(b)">
-                          <span class="material-symbols-outlined" style="font-size:.9rem;color:#94a3b8">business</span>
-                          {{ b.name }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            <!-- Navegación Tab -->
-            <div class="tab-navigation">
-              <button type="button" class="btn btn-secondary" (click)="confirmCloseProductModal()" [disabled]="loading || uploadingImage || isProcessingUploads">
-                <span class="material-symbols-outlined">close</span>
-                Cancelar
-              </button>
-              <button type="button" class="btn btn-primary" (click)="setTab('pricing')">
-                Siguiente: Precios
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- ============================================
-             TAB 2: PRECIOS E INVENTARIO
-             ============================================ -->
-        <div class="tab-content" *ngIf="currentTab === 'pricing'">
-          <div class="form-section-tab">
-
-            <!-- ── Precios ─────────────────────────────────────────────── -->
-            <div class="pf-card">
-              <div class="pf-card__head">
-                <span class="material-symbols-outlined">payments</span>
-                <span>Precios de Venta</span>
-              </div>
-              <div class="pf-card__body">
-                <div class="form-grid two-col">
-
-                  <!-- Precio Regular -->
-                  <div class="form-group">
-                    <label class="form-label">
-                      Precio Regular
-                      <span class="req-star">*</span>
-                      <span class="help-icon custom-tooltip" data-tooltip="Precio de venta en pesos (solo números)">
-                        <span class="material-symbols-outlined">help</span>
-                      </span>
-                    </label>
-                    <div class="input-with-icon">
-                      <span class="input-icon">$</span>
-                      <input
-                        type="text"
-                        inputmode="decimal"
-                        class="form-input input-with-left-icon"
-                        [(ngModel)]="productForm.price"
-                        name="price"
-                        placeholder="5000.00"
-                        [class.input-error]="formErrors.price && (isSubmitted || attemptedNext)"
-                        (input)="sanitizeDecimalInput($event, 'price')"
-                        (blur)="validateDiscountPrice()"
-                        required
-                      />
-                    </div>
-                    <div *ngIf="formErrors.price && (isSubmitted || attemptedNext)" class="error-message">
-                      <span class="material-symbols-outlined">error</span>
-                      {{ formErrors.price }}
-                    </div>
-                  </div>
-
-                  <!-- Precio con Descuento -->
-                  <div class="form-group">
-                    <label class="form-label">
-                      Precio con Descuento
-                      <span class="label-badge">Opcional</span>
-                      <span class="help-icon custom-tooltip" data-tooltip="Debe ser menor al precio regular">
-                        <span class="material-symbols-outlined">help</span>
-                      </span>
-                    </label>
-                    <div class="input-with-icon">
-                      <span class="input-icon">$</span>
-                      <input
-                        type="text"
-                        inputmode="decimal"
-                        class="form-input input-with-left-icon"
-                        [(ngModel)]="productForm.discountPrice"
-                        name="discountPrice"
-                        placeholder="4500.00"
-                        [class.input-error]="formErrors.discountPrice && (isSubmitted || attemptedNext)"
-                        (input)="sanitizeDecimalInput($event, 'discountPrice')"
-                        (blur)="validateDiscountPrice()"
-                      />
-                    </div>
-                    <div *ngIf="formErrors.discountPrice && (isSubmitted || attemptedNext)" class="error-message">
-                      <span class="material-symbols-outlined">error</span>
-                      {{ formErrors.discountPrice }}
-                    </div>
-                    <!-- Badge de descuento -->
-                    <div *ngIf="productForm.price && productForm.discountPrice && productForm.discountPrice < productForm.price" 
-                         class="discount-badge">
-                      <span class="material-symbols-outlined" style="font-size:1rem">local_offer</span>
-                      {{ ((1 - productForm.discountPrice / productForm.price) * 100).toFixed(0) }}% OFF
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            <!-- ── Inventario ─────────────────────────────────────────── -->
-            <div class="pf-card">
-              <div class="pf-card__head">
-                <span class="material-symbols-outlined">inventory_2</span>
-                <span>Inventario y Visibilidad</span>
-              </div>
-              <div class="pf-card__body">
-                <div class="form-grid two-col">
-
-                  <!-- Stock -->
-                  <div class="form-group">
-                    <label class="form-label">
-                      Stock Disponible
-                      <span class="req-star">*</span>
-                      <span class="help-icon custom-tooltip" data-tooltip="Cantidad disponible en inventario">
-                        <span class="material-symbols-outlined">help</span>
-                      </span>
-                    </label>
-                    <div class="input-with-icon">
-                      <span class="input-icon">
-                        <span class="material-symbols-outlined" style="font-size:1rem">inventory</span>
-                      </span>
-                      <input
-                        type="text"
-                        inputmode="numeric"
-                        class="form-input input-with-left-icon"
-                        [(ngModel)]="productForm.stock"
-                        name="stock"
-                        placeholder="10"
-                        [class.input-error]="formErrors.stock && (isSubmitted || attemptedNext)"
-                        (input)="sanitizeIntegerInput($event, 'stock')"
-                        required
-                      />
-                    </div>
-                    <div *ngIf="formErrors.stock && (isSubmitted || attemptedNext)" class="error-message">
-                      <span class="material-symbols-outlined">error</span>
-                      {{ formErrors.stock }}
-                    </div>
-                  </div>
-
-                  <!-- Espacio visual -->
-                  <div></div>
-
-                  <!-- Estado -->
-                  <div class="form-group">
-                    <label class="form-label">Estado del Producto</label>
-                    <div class="toggle-switch-modern">
-                      <input
-                        type="checkbox"
-                        id="activeToggle"
-                        [(ngModel)]="productForm.active"
-                        name="active"
-                      />
-                      <label for="activeToggle" class="toggle-label-modern">
-                        <span class="toggle-slider-modern"></span>
-                        <span class="toggle-text-modern">
-                          <span class="material-symbols-outlined" style="font-size:1rem">{{ productForm.active ? 'visibility' : 'visibility_off' }}</span>
-                          {{ productForm.active ? 'Visible en tienda' : 'Oculto' }}
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Destacado -->
-                  <div class="form-group">
-                    <label class="form-label">Producto Destacado</label>
-                    <div class="toggle-switch-modern">
-                      <input
-                        type="checkbox"
-                        id="featuredToggle"
-                        [(ngModel)]="productForm.featured"
-                        name="featured"
-                      />
-                      <label for="featuredToggle" class="toggle-label-modern">
-                        <span class="toggle-slider-modern"></span>
-                        <span class="toggle-text-modern">
-                          <span class="material-symbols-outlined" style="font-size:1rem">{{ productForm.featured ? 'star' : 'star_border' }}</span>
-                          {{ productForm.featured ? 'Sí, mostrar destacado' : 'No destacado' }}
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            <!-- Navegación Tab -->
-            <div class="tab-navigation">
-              <button type="button" class="btn btn-secondary" (click)="setTab('general')">
-                <span class="material-symbols-outlined">arrow_back</span>
-                Anterior
-              </button>
-              <button type="button" class="btn btn-primary" (click)="setTab('media')">
-                Siguiente: Multimedia
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ============================================
-             TAB 3: MULTIMEDIA (IMÁGENES)
-             ============================================ -->
-        <div class="tab-content" *ngIf="currentTab === 'media'">
-          
-          <!-- ESTADO DE ERROR PARCIAL -->
-          <div *ngIf="partialErrorState" class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md">
-            <div class="flex items-start">
-              <div class="flex-shrink-0">
-                <span class="material-icons text-red-500">error_outline</span>
-              </div>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">
-                  Subida incompleta: Fallaron {{ failedImagesCount }} imagen(es)
-                </h3>
-                <div class="mt-2 text-sm text-red-700">
-                  <p>
-                    El producto se creó/actualizó correctamente, pero algunas imágenes fallaron (probablemente exceden tamaño, tipo incorrecto o problema de red).
-                    Las imágenes con error se han marcado en la lista. Puedes quitarlas e intentar subirlas nuevamente.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section-tab">
-            <div class="section-intro">
-              <span class="material-symbols-outlined intro-icon">photo_library</span>
-              <div>
-                <h3>Multimedia del Producto</h3>
-                <p>Sube la imagen principal y galería del producto</p>
-              </div>
-            </div>
-
-            <!-- Contenido (Siempre visible, incluso al crear) -->
-            <div class="image-upload-area" style="margin-top: 20px;">
-              
-              <div class="upload-file-section">
-                
-                <p *ngIf="!selectedProduct" style="font-size: 0.9rem; color: #64748b; margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
-                  <strong>Modo creación:</strong> Puedes seleccionar múltiples imágenes ahora. Se subirán automáticamente cuando guardes el producto. ({{ pendingProductImages.length }}/{{ maxImages }} imágenes)
-                </p>
-
-                <!-- Límite de imágenes -->
-                <p *ngIf="(productImages.length + pendingProductImages.length) >= maxImages" style="font-size: 0.9rem; color: #ef4444; margin-bottom: 16px; background: #fef2f2; padding: 12px; border-radius: 8px; border: 1px solid #fecaca;">
-                  <strong>Límite alcanzado:</strong> Has llegado al máximo de {{ maxImages }} imágenes permitidas.
-                </p>
-
-                <!-- Zona de carga múltiple -->
-                <div class="upload-zone" 
-                     *ngIf="(productImages.length + pendingProductImages.length) < maxImages"
-                     (click)="fileInput.click()"
-                     (dragover)="onDragOver($event)"
-                     (dragleave)="onDragLeave($event)"
-                     (drop)="onDrop($event)"
-                     style="cursor: pointer;">
-                  <input
-                    type="file"
-                    #fileInput
-                    multiple
-                    accept="image/png, image/jpeg, image/webp"
-                    (change)="onImageFileSelected($event)"
-                    style="display: none"
-                  />
-                  <div class="upload-icon">
-                    <span class="material-symbols-outlined">add_photo_alternate</span>
-                  </div>
-                  <p class="upload-title">Seleccionar nuevas imágenes</p>
-                  <p class="upload-hint">Haz clic o arrastra imágenes aquí</p>
-                  <span class="upload-specs">
-                    JPG, PNG o WebP &middot; Máximo 5 MB
-                  </span>
-                </div>
-
-                <!-- Imágenes en cola -->
-                <div *ngIf="pendingProductImages.length > 0" class="pending-images-section" style="margin-top: 24px;">
-                  <h4 style="margin: 0 0 12px 0; color: #334155; font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span><i class="fas fa-clock" style="color: #f59e0b; margin-right: 6px;"></i> Imágenes pendientes ({{ pendingProductImages.length }}/{{ maxImages }})</span>
-                    <div style="display: flex; gap: 8px;">
-                      <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" (click)="clearPendingImages()">Limpiar todas</button>
-                      <button *ngIf="selectedProduct" type="button" class="btn btn-primary" (click)="uploadSelectedImage()" [disabled]="uploadingImage" style="padding: 4px 10px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-outlined" style="font-size: 1rem" *ngIf="!uploadingImage">cloud_upload</span>
-                        <span class="material-symbols-outlined" style="font-size: 1rem" *ngIf="uploadingImage">hourglass_empty</span>
-                        {{ uploadingImage ? 'Subiendo...' : 'Subir imágenes' }}
-                      </button>
-                    </div>
-                  </h4>
-                  
-                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
-                    <div *ngFor="let pending of pendingProductImages; let i = index" 
-                         style="border: 2px solid; border-radius: 12px; overflow: hidden; background: #fff; position: relative; transition: all 0.2s;"
-                         [style.border-color]="pending.isPrimaryCandidate ? '#800020' : '#e2e8f0'">
-                      
-                      <!-- Contenedor Imagen -->
-                      <div class="gallery-image-container" style="height: 150px; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 12px; position: relative;">
-                        <img [src]="pending.previewUrl" alt="Pendiente" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                        
-                        <!-- Badges -->
-                        <div style="position: absolute; top: 8px; left: 8px; display: flex; flex-direction: column; gap: 4px;">
-                          <div *ngIf="pending.isPrimaryCandidate" style="background: #800020; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">star</span> Principal
-                          </div>
-                          <div *ngIf="pending.uploadStatus === 'PENDING'" style="background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
-                            Pendiente
-                          </div>
-                          <div *ngIf="pending.uploadStatus === 'UPLOADING'" style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
-                            Subiendo...
-                          </div>
-                          <div *ngIf="pending.uploadStatus === 'FAILED'" style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
-                            Error
-                          </div>
-                        </div>
-
-                        <!-- Orden Number -->
-                        <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: white; width: 24px; height: 24px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; justify-content: center;">
-                          {{ pending.desiredOrder }}
-                        </div>
-                      </div>
-
-                      <!-- Info y Botones superpuestos -->
-                      <div style="padding: 8px; border-top: 1px solid #e2e8f0; background: #fff;">
-                        <p style="font-size: 0.8rem; font-weight: 600; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="pending.name">{{ pending.name }}</p>
-                        <p style="font-size: 0.7rem; color: #64748b; margin: 2px 0 8px 0;">{{ (pending.size / 1024).toFixed(0) }} KB</p>
-                        
-                        <!-- Acciones -->
-                        <div style="display: flex; gap: 4px; justify-content: space-between;">
-                          <!-- Navegación -->
-                          <div style="display: flex; gap: 4px;">
-                            <button type="button" (click)="movePendingImageLeft(i)" [disabled]="i === 0" style="background: #f1f5f9; border: none; padding: 4px; border-radius: 4px; cursor: pointer;" title="Mover a la izquierda">
-                              <span class="material-symbols-outlined" style="font-size: 1rem; color: #475569;">arrow_back</span>
-                            </button>
-                            <button type="button" (click)="movePendingImageRight(i)" [disabled]="i === pendingProductImages.length - 1" style="background: #f1f5f9; border: none; padding: 4px; border-radius: 4px; cursor: pointer;" title="Mover a la derecha">
-                              <span class="material-symbols-outlined" style="font-size: 1rem; color: #475569;">arrow_forward</span>
-                            </button>
-                          </div>
-                          
-                          <!-- Ver -->
-                          <button type="button" (click)="openPendingLightbox(pending)" style="background: #f1f5f9; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 2px;">
-                            <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
-                          </button>
-                        </div>
-                        
-                        <!-- Actions 2 -->
-                        <div style="display: flex; gap: 4px; justify-content: space-between; margin-top: 8px;">
-                          <button type="button" (click)="setPrimaryPendingImage(i)" [disabled]="pending.isPrimaryCandidate" style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px; border-radius: 4px; cursor: pointer; color: #64748b; font-size: 0.75rem;" title="Hacer principal">
-                            {{ pending.isPrimaryCandidate ? 'Principal' : 'Usar principal' }}
-                          </button>
-                          
-                          <button type="button" (click)="removePendingImage(i)" style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer;" title="Quitar">
-                            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
-                          </button>
-                        </div>
-
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Galería de Imágenes Cargadas -->
-                <div *ngIf="productImages.length > 0" class="images-gallery" style="margin-top: 32px;">
-                  <div class="gallery-header" style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
-                    <h4 style="margin: 0; display: flex; align-items: center; gap: 8px; color: #334155; font-size: 1.1rem;">
-                      <span class="material-symbols-outlined">photo_library</span>
-                      Galería del Producto ({{ productImages.length }}/{{ maxImages }})
-                    </h4>
-                  </div>
-
-                  <div class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
-                    <div 
-                      *ngFor="let image of productImages; let i = index"
-                      class="gallery-item"
-                      [class.is-primary]="image.isPrimary"
-                      style="border: 2px solid; border-radius: 12px; overflow: hidden; background: #fff; position: relative; transition: all 0.2s;"
-                      [style.border-color]="image.isPrimary ? '#800020' : '#e2e8f0'">
-                      
-                      <!-- Imagen -->
-                      <div class="gallery-image-container" style="height: 200px; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 12px;">
-                        <img [src]="image.url" [alt]="image.altText || 'Imagen ' + (i + 1)" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                        
-                        <!-- Badge de imagen principal -->
-                        <div class="primary-badge" *ngIf="image.isPrimary" style="position: absolute; top: 12px; left: 12px; background: #800020; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                          <span class="material-symbols-outlined" style="font-size: 1rem;">star</span>
-                          Portada
-                        </div>
-                        
-                        <!-- Badge de Cloudinary -->
-                        <div *ngIf="image.provider === 'CLOUDINARY'" style="position: absolute; bottom: 12px; left: 12px; background: rgba(59, 130, 246, 0.9); color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 600; display: flex; align-items: center; gap: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                          <span class="material-symbols-outlined" style="font-size: 0.8rem;">cloud</span>
-                          Cloudinary
-                        </div>
-                      </div>
-
-                      <!-- Acciones -->
-                      <div class="gallery-item-actions" style="padding: 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; background: #fff; gap: 4px;">
-                        <button 
-                          type="button"
-                          class="btn-gallery-action btn-primary-action"
-                          [class.active]="image.isPrimary"
-                          (click)="setPrimaryImage(image.id!)"
-                          [attr.data-tooltip]="image.isPrimary ? 'Esta es la portada' : 'Hacer portada'"
-                          style="background: none; border: none; cursor: pointer; color: #64748b; transition: color 0.2s; display: flex; align-items: center;"
-                          [style.color]="image.isPrimary ? '#800020' : '#64748b'">
-                          <span class="material-symbols-outlined">{{ image.isPrimary ? 'star' : 'star_border' }}</span>
-                        </button>
-                        
-                        <div style="display: flex; gap: 4px;">
-                          <button 
-                            type="button"
-                            class="btn-gallery-action custom-tooltip"
-                            (click)="openExistingLightbox(image)"
-                            data-tooltip="Ver imagen"
-                            style="background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">visibility</span>
-                          </button>
-                          
-                          <button 
-                            type="button"
-                            class="btn-gallery-action btn-remove custom-tooltip"
-                            (click)="removeImage(image.id!)"
-                            data-tooltip="Eliminar imagen"
-                            style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete</span>
-                          </button>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Navegación Tab -->
-            <div class="tab-navigation">
-              <button type="button" class="btn btn-secondary" (click)="setTab('pricing')">
-                <span class="material-symbols-outlined">arrow_back</span>
-                Anterior
-              </button>
-              <button type="button" class="btn btn-primary" (click)="setTab('details')">
-                Siguiente: Especificaciones
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ============================================
-             TAB 4: ESPECIFICACIONES Y DETALLES (MEJORADO)
-             ============================================ -->
-        <div class="tab-content" *ngIf="currentTab === 'details'">
-          <div class="form-section-tab">
-            
-            <!-- Header de la sección -->
-            <div class="section-intro details-intro">
-              <div class="intro-icon-wrapper">
-                <span class="material-symbols-outlined">description</span>
-              </div>
-              <div class="intro-content">
-                <h3>Especificaciones y Descripción</h3>
-                <p>Completa los detalles técnicos y crea una descripción completa del producto</p>
-              </div>
-            </div>
-
-            <!-- Card de Identificación del Producto -->
-            <div class="specs-container" style="grid-template-columns: 1fr;">
-              <div class="specs-card">
-                <div class="card-header">
-                  <span class="material-symbols-outlined">style</span>
-                  <h4>Identificación Técnica</h4>
-                </div>
-                <div class="card-body">
-                  <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
-                    
-                    <!-- Modelo -->
-                    <div class="form-group">
-                      <label class="form-label">
-                        <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle;margin-right:3px;">label</span>
-                        Modelo o Versión
-                      </label>
-                      <input
-                        type="text"
-                        class="form-input"
-                        [(ngModel)]="productForm.model"
-                        name="model"
-                        placeholder="Ej: Stratocaster Pro II"
-                        maxlength="100"
-                      />
-                    </div>
-
-                    <!-- Peso -->
-                    <div class="form-group">
-                      <label class="form-label">
-                        <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle;margin-right:3px;">monitor_weight</span>
-                        Peso (kg)
-                      </label>
-                      <input
-                        type="number"
-                        class="form-input"
-                        [(ngModel)]="productForm.weight"
-                        name="weight"
-                        placeholder="3.5"
-                        min="0"
-                        step="0.1"
-                        (input)="onNumberInput($event, 'weight')"
-                      />
-                    </div>
-
-                    <!-- SKU (readonly) -->
-                    <div class="form-group">
-                      <label class="form-label">
-                        <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle;margin-right:3px;">qr_code_2</span>
-                        Código SKU
-                        <span class="help-icon custom-tooltip" data-tooltip="El SKU es autogenerado por el sistema">
-                          <span class="material-symbols-outlined">help</span>
-                        </span>
-                      </label>
-                      <div class="readonly-field">
-                        <input
-                          type="text"
-                          class="form-input"
-                          [value]="productForm.sku || 'Auto-generado'"
-                          disabled
-                          readonly
-                        />
-                        <span class="readonly-label">
-                          <span class="material-symbols-outlined">lock</span>
-                          Auto
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ATRIBUTOS DINÁMICOS -->
-            <div class="specs-container" style="grid-template-columns: 1fr;">
-              <div class="specs-card attributes-card">
-                <div class="card-header">
-                  <span class="material-symbols-outlined">tune</span>
-                  <div>
-                    <h4>Características del Producto</h4>
-                    <p class="card-subtitle">Agrega atributos personalizados (Calibre, Material, Tipo, etc.)</p>
-                  </div>
-                </div>
-                <div class="card-body">
-                  
-                  <!-- Lista de atributos dinámicos -->
-                  <div class="attributes-list" *ngIf="productForm.customAttributes && productForm.customAttributes.length > 0">
-                    <div class="attribute-row" *ngFor="let attr of productForm.customAttributes; let i = index">
-                      <div class="attribute-inputs">
-                        <div class="form-group">
-                          <label class="form-label-mini">Nombre</label>
-                          <input
-                            type="text"
-                            class="form-input form-input-sm"
-                            [(ngModel)]="attr.key"
-                            [name]="'attr_key_' + i"
-                            placeholder="Ej: Calibre, Material"
-                            maxlength="50"
-                          />
-                        </div>
-                        <div class="attribute-separator">
-                          <span class="material-symbols-outlined">arrow_forward</span>
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label-mini">Valor</label>
-                          <input
-                            type="text"
-                            class="form-input form-input-sm"
-                            [(ngModel)]="attr.value"
-                            [name]="'attr_value_' + i"
-                            placeholder="Ej: .009-.042, Acero niquelado"
-                            maxlength="100"
-                          />
-                        </div>
-                      </div>
-                      <button 
-                        type="button" 
-                        class="btn-remove-attribute custom-tooltip" 
-                        (click)="removeAttribute(i)"
-                        data-tooltip="Eliminar atributo">
-                        <span class="material-symbols-outlined">delete</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Mensaje cuando no hay atributos -->
-                  <div class="attributes-empty" *ngIf="!productForm.customAttributes || productForm.customAttributes.length === 0">
-                    <span class="material-symbols-outlined">inventory_2</span>
-                    <p>Sin características agregadas</p>
-                    <small>Haz clic en "Agregar Característica" para empezar</small>
-                  </div>
-
-                  <!-- Botón para agregar atributo -->
-                  <button 
-                    type="button" 
-                    class="btn-add-attribute" 
-                    (click)="addAttribute()">
-                    <span class="material-symbols-outlined">add_circle</span>
-                    <span>Agregar Característica</span>
-                  </button>
-
-                  <div class="attributes-tips">
-                    <div class="tip-mini">
-                      <span class="material-symbols-outlined">lightbulb</span>
-                      <span><strong>Ejemplos:</strong> Calibre &rarr; .009-.042 &nbsp;|&nbsp; Material &rarr; Acero niquelado &nbsp;|&nbsp; Tipo &rarr; Eléctrica</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Descripción Rica (Full Width) -->
-            <div class="description-section-enhanced">
-              <div class="description-header">
-                <div class="header-title">
-                  <span class="material-symbols-outlined">edit_note</span>
-                  <div>
-                    <h4>Descripción Completa del Producto</h4>
-                    <p>Editor de texto para crear una descripción detallada y profesional</p>
-                  </div>
-                </div>
-                <div class="header-badge">
-                  <span class="material-symbols-outlined">auto_fix_high</span>
-                  Editor Rico
-                </div>
-              </div>
-
-              <!-- Toolbar Mejorado -->
-              <div class="editor-toolbar-enhanced">
-                <div class="toolbar-section">
-                  <button type="button" class="toolbar-btn custom-tooltip" (click)="applyTextFormat('bold')" data-tooltip="Negrita (Ctrl+B)">
-                    <span class="material-symbols-outlined">format_bold</span>
-                  </button>
-                  <button type="button" class="toolbar-btn custom-tooltip" (click)="applyTextFormat('italic')" data-tooltip="Cursiva (Ctrl+I)">
-                    <span class="material-symbols-outlined">format_italic</span>
-                  </button>
-                  <button type="button" class="toolbar-btn custom-tooltip" (click)="applyTextFormat('underline')" data-tooltip="Subrayado (Ctrl+U)">
-                    <span class="material-symbols-outlined">format_underlined</span>
-                  </button>
-                </div>
-
-                <div class="toolbar-divider"></div>
-
-                <div class="toolbar-section">
-                  <button type="button" class="toolbar-btn custom-tooltip" (click)="insertList('ul')" data-tooltip="Lista con viñetas">
-                    <span class="material-symbols-outlined">format_list_bulleted</span>
-                  </button>
-                  <button type="button" class="toolbar-btn custom-tooltip" (click)="insertList('ol')" data-tooltip="Lista numerada">
-                    <span class="material-symbols-outlined">format_list_numbered</span>
-                  </button>
-                </div>
-
-                <div class="toolbar-divider"></div>
-
-                <div class="toolbar-section">
-                  <button type="button" class="toolbar-btn custom-tooltip" (click)="applyTextFormat('formatBlock', '<h3>')" data-tooltip="Título">
-                    <span class="material-symbols-outlined">title</span>
-                  </button>
-                  <button type="button" class="toolbar-btn custom-tooltip" (click)="clearFormatting()" data-tooltip="Limpiar formato">
-                    <span class="material-symbols-outlined">format_clear</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Editor Principal con Altura Mayor -->
-              <div class="editor-main-area">
-                <div 
-                  class="rich-text-editor-pro"
-                  contenteditable="true"
-                  (input)="onDescriptionInput($event)"
-                  data-placeholder="Escribe la descripción de tu producto aquí... Incluye características principales, materiales, beneficios para el usuario y contenido incluido."
-                ></div>
-              </div>
-
-              <!-- Tips profesionales -->
-              <div class="editor-tips">
-                <div class="tip-card tip-success">
-                  <span class="material-symbols-outlined">tips_and_updates</span>
-                  <div>
-                    <strong>Consejo:</strong> Usa listas y títulos para organizar la información. Las descripciones bien estructuradas aumentan las ventas.
-                  </div>
-                </div>
-                <div class="tip-card tip-info">
-                  <span class="material-symbols-outlined">search</span>
-                  <div>
-                    <strong>SEO:</strong> Incluye palabras clave como la marca, modelo y características principales del producto.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Navegación Tab -->
-            <div class="tab-navigation">
-              <button type="button" class="btn-tab-nav" (click)="setTab('media')">
-                <span class="material-symbols-outlined">arrow_back</span>
-                Anterior: Multimedia
-              </button>
-              <div class="tab-navigation-spacer"></div>
-              <button type="button" class="btn-tab-nav btn-tab-nav-primary" (click)="saveProduct()" [disabled]="loading">
-                <span class="material-symbols-outlined">{{ loading ? 'hourglass_empty' : 'save' }}</span>
-                {{ loading ? 'Guardando...' : (showCreateModal ? (pendingProductImages.length > 0 ? 'Crear Producto y subir imágenes' : 'Crear Producto') : 'Guardar Cambios') }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </form>
-    </div>
-
-  </div>
-</div>
-<!-- Modal Eliminar -->
-<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeModal()">
-  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Confirmar Eliminación</h2>
-      <button class="modal-close" (click)="closeModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <div class="delete-warning">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-        </svg>
-        <p>¿Estás seguro de que deseas eliminar el producto <strong>{{ selectedProduct?.name }}</strong>?</p>
-        <p class="warning-text">Esta acción no se puede deshacer.</p>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
-      <button class="btn-danger" (click)="deleteProduct()">Eliminar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================
-     LIGHTBOX (VISTA AMPLIADA)
-     ============================================ -->
-<div *ngIf="showLightbox && lightboxImage" class="lightbox-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 40px;" (click)="closeLightbox()">
-  
-  <button type="button" class="btn-close-lightbox" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;" (click)="closeLightbox(); $event.stopPropagation()">
-    <span class="material-symbols-outlined" style="font-size: 32px;">close</span>
-  </button>
-
-  <img [src]="lightboxImage.url" [alt]="lightboxImage.name" style="max-width: 90%; max-height: 80vh; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border-radius: 8px; background: transparent;" (click)="$event.stopPropagation()">
-  
-  <div style="margin-top: 20px; color: white; text-align: center;" (click)="$event.stopPropagation()">
-    <h3 style="margin: 0 0 8px 0; font-size: 1.2rem;">{{ lightboxImage.name }}</h3>
-    <p style="margin: 0; color: #cbd5e1; font-size: 0.9rem;" *ngIf="lightboxImage.size">
-      Tamaño: {{ (lightboxImage.size / 1024).toFixed(1) }} KB <span *ngIf="lightboxImage.type">| Tipo: {{ lightboxImage.type }}</span>
-    </p>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     MODAL DE ALERTAS DE STOCK — Configurar notificaciones de bajo stock
-     ═══════════════════════════════════════════════════════════════ -->
-@if (showStockAlertsModal) {
-  <div class="sa-backdrop" (click)="closeStockAlertsModal()" (keydown.escape)="closeStockAlertsModal()" role="dialog" aria-modal="true" aria-label="Configurar alertas de stock">
-    <div class="sa-modal" (click)="$event.stopPropagation()">
-
-      <!-- Header -->
-      <div class="sa-modal__header">
-        <div class="sa-modal__header-left">
-          <div class="sa-modal__icon-circle">
-            <span class="material-icons">notifications_active</span>
-          </div>
-          <div>
-            <h3 class="sa-modal__title">Alertas de Stock Bajo</h3>
-            <p class="sa-modal__subtitle">Configura quién recibe notificaciones cuando un producto tiene stock crítico.</p>
-          </div>
-        </div>
-        <button type="button" class="sa-modal__close" (click)="closeStockAlertsModal()" aria-label="Cerrar">
-          <span class="material-icons">close</span>
-        </button>
-      </div>
-
-      <!-- Body -->
-      <div class="sa-modal__body">
-
-        @if (stockAlertsLoading) {
-          <div class="sa-loading">
-            <div class="sa-spinner"></div>
-            <p>Cargando configuración...</p>
-          </div>
-        } @else {
-          <!-- Toggle de activación -->
-          <div class="sa-section">
-            <div class="sa-toggle-row">
-              <div class="sa-toggle-text">
-                <strong>Activar alertas de stock bajo</strong>
-                <span class="sa-toggle-sub">Cuando un producto tenga stock igual o menor al umbral configurado, se enviará un correo a los empleados seleccionados.</span>
-              </div>
-              <button type="button" class="sa-toggle"
-                      [class.sa-toggle--on]="stockAlertsEnabled"
-                      (click)="stockAlertsEnabled = !stockAlertsEnabled"
-                      role="switch"
-                      [attr.aria-checked]="stockAlertsEnabled">
-                <span class="sa-toggle__track">
-                  <span class="sa-toggle__thumb"></span>
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Contenido condicional (solo si está activo) -->
-          @if (stockAlertsEnabled) {
-            <div class="sa-section sa-section--fade-in">
-              <h4 class="sa-section__title">
-                <span class="material-icons">trending_down</span>
-                Umbral de Stock Mínimo
-              </h4>
-              <div class="sa-threshold-row">
-                <input type="number"
-                       class="sa-input sa-input--num"
-                       [(ngModel)]="stockAlertThreshold"
-                       min="0"
-                       max="999"
-                       placeholder="10" />
-                <span class="sa-threshold-unit">unidades</span>
-              </div>
-              <span class="sa-hint">
-                Productos con stock igual o menor a este valor generarán alerta.
-              </span>
-            </div>
-
-            <div class="sa-section sa-section--fade-in">
-              <h4 class="sa-section__title">
-                <span class="material-icons">group</span>
-                Empleados Destinatarios
-                @if (selectedAlertEmployees.length) {
-                  <span class="sa-badge">{{ selectedAlertEmployees.length }}</span>
-                }
-              </h4>
-
-              <!-- Chips de seleccionados -->
-              <div class="sa-chips">
-                @for (emp of selectedAlertEmployees; track emp.id) {
-                  <span class="sa-chip">
-                    <span class="sa-chip__avatar">{{ getAlertInitials(emp.fullName) }}</span>
-                    <span class="sa-chip__info">
-                      <span class="sa-chip__name">{{ emp.fullName }}</span>
-                      <span class="sa-chip__role">{{ formatAlertRole(emp.role) }}</span>
-                    </span>
-                    <button type="button" class="sa-chip__remove" (click)="removeAlertEmployee(emp.id)" aria-label="Quitar">
-                      <span class="material-icons">close</span>
+                      {{ page + 1 }}
                     </button>
-                  </span>
-                }
+                  }
+
+                  <!-- Siguiente -->
+                  <button
+                    (click)="nextPage()"
+                    [disabled]="currentPage === totalPages - 1"
+                    title="Página siguiente"
+              class="w-9 h-9 flex items-center justify-center text-gray-500
+                     hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed
+                     transition-colors">
+                    <i class="fas fa-angle-right text-xs"></i>
+                  </button>
+
+                  <!-- Última página -->
+                  <button
+                    (click)="goToPage(totalPages - 1)"
+                    [disabled]="currentPage === totalPages - 1"
+                    title="Última página"
+              class="w-9 h-9 flex items-center justify-center text-gray-500
+                     hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed
+                     transition-colors">
+                    <i class="fas fa-angle-double-right text-xs"></i>
+                  </button>
+
+                </div>
               </div>
+            }
+          }
 
-              <!-- Buscador de empleados -->
-              <div class="sa-search-wrap">
-                <span class="material-icons sa-search-icon">search</span>
-                <input type="text"
-                       class="sa-search"
-                       [(ngModel)]="alertStaffSearch"
-                       (focus)="onAlertStaffFocus()"
-                       (blur)="onAlertStaffBlur()"
-                       (input)="filterAlertStaff()"
-                       [placeholder]="selectedAlertEmployees.length === 0 ? 'Buscar empleado por nombre, correo o rol...' : 'Agregar otro empleado...'" />
+        </div>
+        <!-- /tabla de productos -->
+      </div>
 
-                <!-- Dropdown de resultados -->
-                @if (loadingAlertStaff) {
-                  <div class="sa-dropdown">
-                    <div class="sa-dropdown__loading">
-                      <div class="sa-spinner sa-spinner--small"></div>
-                      <span>Cargando empleados...</span>
-                    </div>
-                  </div>
-                } @else if (showAlertStaffDropdown && filteredAlertStaff.length > 0) {
-                  <div class="sa-dropdown">
-                    @for (staff of filteredAlertStaff; track staff.id) {
-                      <button type="button" class="sa-dropdown__item" (mousedown)="selectAlertEmployee(staff)">
-                        <span class="sa-dropdown__avatar">{{ getAlertInitials(staff.fullName) }}</span>
-                        <span class="sa-dropdown__info">
-                          <span class="sa-dropdown__name">{{ staff.fullName }}</span>
-                          <span class="sa-dropdown__email">{{ staff.email }}</span>
-                        </span>
-                        <span class="sa-dropdown__role">{{ formatAlertRole(staff.role) }}</span>
-                      </button>
-                    }
-                  </div>
-                } @else if (showAlertStaffDropdown && filteredAlertStaff.length === 0 && alertStaffSearch) {
-                  <div class="sa-dropdown">
-                    <div class="sa-dropdown__empty">
-                      <span class="material-icons">search_off</span>
-                      <span>No se encontraron empleados</span>
-                    </div>
-                  </div>
-                } @else if (showAlertStaffDropdown && filteredAlertStaff.length === 0 && !alertStaffSearch && allAlertStaff.length > 0) {
-                  <div class="sa-dropdown">
-                    <div class="sa-dropdown__empty">
-                      <span class="material-icons">check_circle</span>
-                      <span>Todos los empleados han sido seleccionados</span>
-                    </div>
-                  </div>
-                }
+      <!-- MODAL PROFESIONAL CON SISTEMA DE TABS/PESTAÑAS -->
+      @if (showCreateModal || showEditModal) {
+        <div class="modal-overlay" (click)="confirmCloseProductModal()">
+          <div class="modal-content modal-large-tabs" (click)="$event.stopPropagation()">
+            <!-- OVERLAY DE CARGA PROFESIONAL -->
+            @if (isProcessingUploads) {
+              <div class="absolute inset-0 bg-white/80 backdrop-blur-sm z-[12000] flex flex-col items-center justify-center rounded-xl">
+                <svg class="animate-spin h-10 w-10 text-[#800020] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+                <h3 class="text-xl font-bold text-gray-800 mb-1">Procesando Producto</h3>
+                <p class="text-gray-600 font-medium">{{ uploadProgressMessage }}</p>
+                <div class="w-64 bg-gray-200 rounded-full h-2.5 mt-4 overflow-hidden">
+                  <div class="bg-[#800020] h-2.5 rounded-full transition-all duration-300" style="width: 100%"></div>
+                </div>
               </div>
-
-              <span class="sa-hint">
-                <span class="material-icons" style="font-size:.7rem;vertical-align:middle;">security</span>
-                Solo empleados activos del sistema pueden ser destinatarios.
-              </span>
+            }
+            <!-- Header del Modal -->
+            <div class="modal-header">
+              <div class="modal-header-content">
+                <span class="material-icons modal-icon">{{ showCreateModal ? 'add_shopping_cart' : 'edit' }}</span>
+                <div>
+                  <h2>{{ showCreateModal ? 'Nuevo Producto' : 'Editar Producto' }}</h2>
+                  <p class="modal-subtitle">Complete los campos por sección para registrar el producto</p>
+                </div>
+              </div>
+              <button class="modal-close" (click)="confirmCloseProductModal()" [disabled]="loading || uploadingImage || isProcessingUploads">
+                <span class="material-icons">close</span>
+              </button>
             </div>
-          }
-        }
-      </div>
+            <!-- Sistema de Tabs Profesional -->
+            <div class="tabs-container">
+              <div class="tabs-header">
+                <button
+                  class="tab-btn"
+                  [class.active]="currentTab === 'general'"
+                  (click)="setTab('general')">
+                  <span class="material-symbols-outlined">info</span>
+                  <span class="tab-label">
+                    <span class="tab-title">General</span>
+                    <span class="tab-subtitle">Datos</span>
+                  </span>
+                  <span class="tab-indicator"></span>
+                </button>
+                <button
+                  class="tab-btn"
+                  [class.active]="currentTab === 'pricing'"
+                  (click)="setTab('pricing')">
+                  <span class="material-symbols-outlined">payments</span>
+                  <span class="tab-label">
+                    <span class="tab-title">Precios</span>
+                    <span class="tab-subtitle">Stock</span>
+                  </span>
+                  <span class="tab-indicator"></span>
+                </button>
+                <button
+                  class="tab-btn"
+                  [class.active]="currentTab === 'media'"
+                  (click)="setTab('media')">
+                  <span class="material-symbols-outlined">photo_library</span>
+                  <span class="tab-label">
+                    <span class="tab-title">Multimedia</span>
+                    <span class="tab-subtitle">Imágenes</span>
+                  </span>
+                  <span class="tab-indicator"></span>
+                </button>
+                <button
+                  class="tab-btn"
+                  [class.active]="currentTab === 'details'"
+                  (click)="setTab('details')">
+                  <span class="material-symbols-outlined">description</span>
+                  <span class="tab-label">
+                    <span class="tab-title">Detalles</span>
+                    <span class="tab-subtitle">Atributos</span>
+                  </span>
+                  <span class="tab-indicator"></span>
+                </button>
+              </div>
+            </div>
+            <!-- Los errores ahora se muestran en el toast global del componente -->
+            <!-- Body del Modal con Contenido por Tabs -->
+            <div class="modal-body">
+              <form class="product-form-professional">
+                <!-- ============================================
+                TAB 1: INFORMACIÓN GENERAL
+                ============================================ -->
+                @if (currentTab === 'general') {
+                  <div class="tab-content">
+                    <div class="form-section-tab">
+                      <!-- ── Nombre del producto ─────────────────────────────────── -->
+                      <div class="pf-card">
+                        <div class="pf-card__head">
+                          <span class="material-symbols-outlined">label</span>
+                          <span>Identidad del Producto</span>
+                        </div>
+                        <div class="pf-card__body">
+                          <!-- Nombre -->
+                          <div class="form-group full-width">
+                            <label class="form-label">
+                              Nombre del Producto
+                              <span class="req-star">*</span>
+                              <span class="help-icon custom-tooltip" data-tooltip="Nombre descriptivo del producto (ej: Guitarra Eléctrica Stratocaster)">
+                                <span class="material-symbols-outlined">help</span>
+                              </span>
+                            </label>
+                            <input
+                              type="text"
+                              class="form-input"
+                              [(ngModel)]="productForm.name"
+                              name="name"
+                              placeholder="Ej: Guitarra Eléctrica Fender Stratocaster American Professional II"
+                              [class.input-error]="formErrors.name && (isSubmitted || attemptedNext)"
+                              (blur)="validateForm()"
+                              maxlength="200"
+                              required
+                              />
+                              @if (formErrors.name && (isSubmitted || attemptedNext)) {
+                                <div class="error-message">
+                                  <span class="material-symbols-outlined">error</span>
+                                  {{ formErrors.name }}
+                                </div>
+                              }
+                            </div>
+                            <!-- Descripción corta -->
+                            <div class="form-group full-width">
+                              <label class="form-label">
+                                <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;margin-right:3px;">subject</span>
+                                Descripción Breve
+                                <span class="label-badge">Opcional</span>
+                                <span class="help-icon custom-tooltip" data-tooltip="Aparece en las tarjetas del catálogo. Máx. 200 caracteres.">
+                                  <span class="material-symbols-outlined">help</span>
+                                </span>
+                              </label>
+                              <textarea
+                                class="form-textarea"
+                                [(ngModel)]="productForm.description"
+                                name="description"
+                                rows="3"
+                                maxlength="200"
+                                placeholder="Ej: Guitarra eléctrica profesional con pastillas V-Mod II, mástil de arce y cuerpo de aliso."
+                                (input)="updateDescriptionCharCount()"
+                              ></textarea>
+                              <div class="input-help-counter">
+                                <span class="material-symbols-outlined" style="font-size:.85rem">info</span>
+                                <span>Resumen para las tarjetas del catálogo &mdash;
+                                  <strong [class.char-warn]="descriptionCharCount > 160">{{ descriptionCharCount }}/200</strong> caracteres
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- ── Clasificación: Categoría + Marca ────────────────────── -->
+                        <div class="pf-card">
+                          <div class="pf-card__head">
+                            <span class="material-symbols-outlined">category</span>
+                            <span>Clasificación</span>
+                          </div>
+                          <div class="pf-card__body">
+                            <div class="form-grid two-col">
+                              <!-- Categoría — custom dropdown -->
+                              <div class="form-group">
+                                <label class="form-label">
+                                  Categoría
+                                  <span class="req-star">*</span>
+                                  <span class="help-icon custom-tooltip" data-tooltip="Categoría principal del producto">
+                                    <span class="material-symbols-outlined">help</span>
+                                  </span>
+                                </label>
+                                <div class="custom-dropdown-wrap" [class.input-error]="formErrors.categoryId && (isSubmitted || attemptedNext)">
+                                  <div class="custom-dropdown-input-row">
+                                    <span class="combobox-icon">
+                                      <span class="material-symbols-outlined">folder_open</span>
+                                    </span>
+                                    <input
+                                      type="text"
+                                      class="form-input combobox-input"
+                                      [value]="categorySearch"
+                                      (input)="filterCategories($event)"
+                                      (focus)="openCategoryDropdown()"
+                                      (blur)="closeCategoryDropdown()"
+                                      placeholder="Escribe o selecciona categoría..."
+                                      autocomplete="off"
+                                      />
+                                      <span class="dropdown-arrow">
+                                        <span class="material-symbols-outlined">arrow_drop_down</span>
+                                      </span>
+                                    </div>
+                                    @if (showCategoryDropdown) {
+                                      <div class="custom-dropdown-list">
+                                        @if (filteredCategories.length === 0) {
+                                          <div
+                                            class="custom-dropdown-empty">
+                                            Sin resultados
+                                          </div>
+                                        }
+                                        @for (c of filteredCategories; track c) {
+                                          <div
+                                            class="custom-dropdown-option"
+                                            (mousedown)="selectCategory(c)">
+                                            <span class="material-symbols-outlined" style="font-size:.9rem;color:#94a3b8">folder_open</span>
+                                            {{ c.name }}
+                                          </div>
+                                        }
+                                      </div>
+                                    }
+                                  </div>
+                                  @if (formErrors.categoryId && (isSubmitted || attemptedNext)) {
+                                    <div class="error-message">
+                                      <span class="material-symbols-outlined">error</span>
+                                      {{ formErrors.categoryId }}
+                                    </div>
+                                  }
+                                </div>
+                                <!-- Marca — custom dropdown -->
+                                <div class="form-group">
+                                  <label class="form-label">
+                                    Marca
+                                    <span class="help-icon custom-tooltip" data-tooltip="Marca del fabricante del producto">
+                                      <span class="material-symbols-outlined">help</span>
+                                    </span>
+                                  </label>
+                                  <div class="custom-dropdown-wrap">
+                                    <div class="custom-dropdown-input-row">
+                                      <span class="combobox-icon">
+                                        <span class="material-symbols-outlined">business</span>
+                                      </span>
+                                      <input
+                                        type="text"
+                                        class="form-input combobox-input"
+                                        [value]="brandSearch"
+                                        (input)="filterBrands($event)"
+                                        (focus)="openBrandDropdown()"
+                                        (blur)="closeBrandDropdown()"
+                                        placeholder="Escribe o selecciona marca..."
+                                        autocomplete="off"
+                                        />
+                                        <span class="dropdown-arrow">
+                                          <span class="material-symbols-outlined">arrow_drop_down</span>
+                                        </span>
+                                      </div>
+                                      @if (showBrandDropdown) {
+                                        <div class="custom-dropdown-list">
+                                          @if (filteredBrands.length === 0) {
+                                            <div
+                                              class="custom-dropdown-empty">
+                                              Sin resultados
+                                            </div>
+                                          }
+                                          @for (b of filteredBrands; track b) {
+                                            <div
+                                              class="custom-dropdown-option"
+                                              (mousedown)="selectBrand(b)">
+                                              <span class="material-symbols-outlined" style="font-size:.9rem;color:#94a3b8">business</span>
+                                              {{ b.name }}
+                                            </div>
+                                          }
+                                        </div>
+                                      }
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Navegación Tab -->
+                            <div class="tab-navigation">
+                              <button type="button" class="btn btn-secondary" (click)="confirmCloseProductModal()" [disabled]="loading || uploadingImage || isProcessingUploads">
+                                <span class="material-symbols-outlined">close</span>
+                                Cancelar
+                              </button>
+                              <button type="button" class="btn btn-primary" (click)="setTab('pricing')">
+                                Siguiente: Precios
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                      <!-- ============================================
+                      TAB 2: PRECIOS E INVENTARIO
+                      ============================================ -->
+                      @if (currentTab === 'pricing') {
+                        <div class="tab-content">
+                          <div class="form-section-tab">
+                            <!-- ── Precios ─────────────────────────────────────────────── -->
+                            <div class="pf-card">
+                              <div class="pf-card__head">
+                                <span class="material-symbols-outlined">payments</span>
+                                <span>Precios de Venta</span>
+                              </div>
+                              <div class="pf-card__body">
+                                <div class="form-grid two-col">
+                                  <!-- Precio Regular -->
+                                  <div class="form-group">
+                                    <label class="form-label">
+                                      Precio Regular
+                                      <span class="req-star">*</span>
+                                      <span class="help-icon custom-tooltip" data-tooltip="Precio de venta en pesos (solo números)">
+                                        <span class="material-symbols-outlined">help</span>
+                                      </span>
+                                    </label>
+                                    <div class="input-with-icon">
+                                      <span class="input-icon">$</span>
+                                      <input
+                                        type="text"
+                                        inputmode="decimal"
+                                        class="form-input input-with-left-icon"
+                                        [(ngModel)]="productForm.price"
+                                        name="price"
+                                        placeholder="5000.00"
+                                        [class.input-error]="formErrors.price && (isSubmitted || attemptedNext)"
+                                        (input)="sanitizeDecimalInput($event, 'price')"
+                                        (blur)="validateDiscountPrice()"
+                                        required
+                                        />
+                                      </div>
+                                      @if (formErrors.price && (isSubmitted || attemptedNext)) {
+                                        <div class="error-message">
+                                          <span class="material-symbols-outlined">error</span>
+                                          {{ formErrors.price }}
+                                        </div>
+                                      }
+                                    </div>
+                                    <!-- Precio con Descuento -->
+                                    <div class="form-group">
+                                      <label class="form-label">
+                                        Precio con Descuento
+                                        <span class="label-badge">Opcional</span>
+                                        <span class="help-icon custom-tooltip" data-tooltip="Debe ser menor al precio regular">
+                                          <span class="material-symbols-outlined">help</span>
+                                        </span>
+                                      </label>
+                                      <div class="input-with-icon">
+                                        <span class="input-icon">$</span>
+                                        <input
+                                          type="text"
+                                          inputmode="decimal"
+                                          class="form-input input-with-left-icon"
+                                          [(ngModel)]="productForm.discountPrice"
+                                          name="discountPrice"
+                                          placeholder="4500.00"
+                                          [class.input-error]="formErrors.discountPrice && (isSubmitted || attemptedNext)"
+                                          (input)="sanitizeDecimalInput($event, 'discountPrice')"
+                                          (blur)="validateDiscountPrice()"
+                                          />
+                                        </div>
+                                        @if (formErrors.discountPrice && (isSubmitted || attemptedNext)) {
+                                          <div class="error-message">
+                                            <span class="material-symbols-outlined">error</span>
+                                            {{ formErrors.discountPrice }}
+                                          </div>
+                                        }
+                                        <!-- Badge de descuento -->
+                                        @if (productForm.price && productForm.discountPrice && productForm.discountPrice < productForm.price) {
+                                          <div
+                                            class="discount-badge">
+                                            <span class="material-symbols-outlined" style="font-size:1rem">local_offer</span>
+                                            {{ ((1 - productForm.discountPrice / productForm.price) * 100).toFixed(0) }}% OFF
+                                          </div>
+                                        }
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <!-- ── Inventario ─────────────────────────────────────────── -->
+                                <div class="pf-card">
+                                  <div class="pf-card__head">
+                                    <span class="material-symbols-outlined">inventory_2</span>
+                                    <span>Inventario y Visibilidad</span>
+                                  </div>
+                                  <div class="pf-card__body">
+                                    <div class="form-grid two-col">
+                                      <!-- Stock -->
+                                      <div class="form-group">
+                                        <label class="form-label">
+                                          Stock Disponible
+                                          <span class="req-star">*</span>
+                                          <span class="help-icon custom-tooltip" data-tooltip="Cantidad disponible en inventario">
+                                            <span class="material-symbols-outlined">help</span>
+                                          </span>
+                                        </label>
+                                        <div class="input-with-icon">
+                                          <span class="input-icon">
+                                            <span class="material-symbols-outlined" style="font-size:1rem">inventory</span>
+                                          </span>
+                                          <input
+                                            type="text"
+                                            inputmode="numeric"
+                                            class="form-input input-with-left-icon"
+                                            [(ngModel)]="productForm.stock"
+                                            name="stock"
+                                            placeholder="10"
+                                            [class.input-error]="formErrors.stock && (isSubmitted || attemptedNext)"
+                                            (input)="sanitizeIntegerInput($event, 'stock')"
+                                            required
+                                            />
+                                          </div>
+                                          @if (formErrors.stock && (isSubmitted || attemptedNext)) {
+                                            <div class="error-message">
+                                              <span class="material-symbols-outlined">error</span>
+                                              {{ formErrors.stock }}
+                                            </div>
+                                          }
+                                        </div>
+                                        <!-- Espacio visual -->
+                                        <div></div>
+                                        <!-- Estado -->
+                                        <div class="form-group">
+                                          <label class="form-label">Estado del Producto</label>
+                                          <div class="toggle-switch-modern">
+                                            <input
+                                              type="checkbox"
+                                              id="activeToggle"
+                                              [(ngModel)]="productForm.active"
+                                              name="active"
+                                              />
+                                              <label for="activeToggle" class="toggle-label-modern">
+                                                <span class="toggle-slider-modern"></span>
+                                                <span class="toggle-text-modern">
+                                                  <span class="material-symbols-outlined" style="font-size:1rem">{{ productForm.active ? 'visibility' : 'visibility_off' }}</span>
+                                                  {{ productForm.active ? 'Visible en tienda' : 'Oculto' }}
+                                                </span>
+                                              </label>
+                                            </div>
+                                          </div>
+                                          <!-- Destacado -->
+                                          <div class="form-group">
+                                            <label class="form-label">Producto Destacado</label>
+                                            <div class="toggle-switch-modern">
+                                              <input
+                                                type="checkbox"
+                                                id="featuredToggle"
+                                                [(ngModel)]="productForm.featured"
+                                                name="featured"
+                                                />
+                                                <label for="featuredToggle" class="toggle-label-modern">
+                                                  <span class="toggle-slider-modern"></span>
+                                                  <span class="toggle-text-modern">
+                                                    <span class="material-symbols-outlined" style="font-size:1rem">{{ productForm.featured ? 'star' : 'star_border' }}</span>
+                                                    {{ productForm.featured ? 'Sí, mostrar destacado' : 'No destacado' }}
+                                                  </span>
+                                                </label>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <!-- Navegación Tab -->
+                                      <div class="tab-navigation">
+                                        <button type="button" class="btn btn-secondary" (click)="setTab('general')">
+                                          <span class="material-symbols-outlined">arrow_back</span>
+                                          Anterior
+                                        </button>
+                                        <button type="button" class="btn btn-primary" (click)="setTab('media')">
+                                          Siguiente: Multimedia
+                                          <span class="material-symbols-outlined">arrow_forward</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                }
+                                <!-- ============================================
+                                TAB 3: MULTIMEDIA (IMÁGENES)
+                                ============================================ -->
+                                @if (currentTab === 'media') {
+                                  <div class="tab-content">
+                                    <!-- ESTADO DE ERROR PARCIAL -->
+                                    @if (partialErrorState) {
+                                      <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md">
+                                        <div class="flex items-start">
+                                          <div class="flex-shrink-0">
+                                            <span class="material-icons text-red-500">error_outline</span>
+                                          </div>
+                                          <div class="ml-3">
+                                            <h3 class="text-sm font-medium text-red-800">
+                                              Subida incompleta: Fallaron {{ failedImagesCount }} imagen(es)
+                                            </h3>
+                                            <div class="mt-2 text-sm text-red-700">
+                                              <p>
+                                                El producto se creó/actualizó correctamente, pero algunas imágenes fallaron (probablemente exceden tamaño, tipo incorrecto o problema de red).
+                                                Las imágenes con error se han marcado en la lista. Puedes quitarlas e intentar subirlas nuevamente.
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    }
+                                    <div class="form-section-tab">
+                                      <div class="section-intro">
+                                        <span class="material-symbols-outlined intro-icon">photo_library</span>
+                                        <div>
+                                          <h3>Multimedia del Producto</h3>
+                                          <p>Sube la imagen principal y galería del producto</p>
+                                        </div>
+                                      </div>
+                                      <!-- Contenido (Siempre visible, incluso al crear) -->
+                                      <div class="image-upload-area" style="margin-top: 20px;">
+                                        <div class="upload-file-section">
+                                          @if (!selectedProduct) {
+                                            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                                              <strong>Modo creación:</strong> Puedes seleccionar múltiples imágenes ahora. Se subirán automáticamente cuando guardes el producto. ({{ pendingProductImages.length }}/{{ maxImages }} imágenes)
+                                            </p>
+                                          }
+                                          <!-- Límite de imágenes -->
+                                          @if ((productImages.length + pendingProductImages.length) >= maxImages) {
+                                            <p style="font-size: 0.9rem; color: #ef4444; margin-bottom: 16px; background: #fef2f2; padding: 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                                              <strong>Límite alcanzado:</strong> Has llegado al máximo de {{ maxImages }} imágenes permitidas.
+                                            </p>
+                                          }
+                                          <!-- Zona de carga múltiple -->
+                                          @if ((productImages.length + pendingProductImages.length) < maxImages) {
+                                            <div class="upload-zone"
+                                              (click)="fileInput.click()"
+                                              (dragover)="onDragOver($event)"
+                                              (dragleave)="onDragLeave($event)"
+                                              (drop)="onDrop($event)"
+                                              style="cursor: pointer;">
+                                              <input
+                                                type="file"
+                                                #fileInput
+                                                multiple
+                                                accept="image/png, image/jpeg, image/webp"
+                                                (change)="onImageFileSelected($event)"
+                                                style="display: none"
+                                                />
+                                                <div class="upload-icon">
+                                                  <span class="material-symbols-outlined">add_photo_alternate</span>
+                                                </div>
+                                                <p class="upload-title">Seleccionar nuevas imágenes</p>
+                                                <p class="upload-hint">Haz clic o arrastra imágenes aquí</p>
+                                                <span class="upload-specs">
+                                                  JPG, PNG o WebP &middot; Máximo 5 MB
+                                                </span>
+                                              </div>
+                                            }
+                                            <!-- Imágenes en cola -->
+                                            @if (pendingProductImages.length > 0) {
+                                              <div class="pending-images-section" style="margin-top: 24px;">
+                                                <h4 style="margin: 0 0 12px 0; color: #334155; font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                                  <span><i class="fas fa-clock" style="color: #f59e0b; margin-right: 6px;"></i> Imágenes pendientes ({{ pendingProductImages.length }}/{{ maxImages }})</span>
+                                                  <div style="display: flex; gap: 8px;">
+                                                    <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" (click)="clearPendingImages()">Limpiar todas</button>
+                                                    @if (selectedProduct) {
+                                                      <button type="button" class="btn btn-primary" (click)="uploadSelectedImage()" [disabled]="uploadingImage" style="padding: 4px 10px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
+                                                        @if (!uploadingImage) {
+                                                          <span class="material-symbols-outlined" style="font-size: 1rem">cloud_upload</span>
+                                                        }
+                                                        @if (uploadingImage) {
+                                                          <span class="material-symbols-outlined" style="font-size: 1rem">hourglass_empty</span>
+                                                        }
+                                                        {{ uploadingImage ? 'Subiendo...' : 'Subir imágenes' }}
+                                                      </button>
+                                                    }
+                                                  </div>
+                                                </h4>
+                                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                                                  @for (pending of pendingProductImages; track pending; let i = $index) {
+                                                    <div
+                                                      style="border: 2px solid; border-radius: 12px; overflow: hidden; background: #fff; position: relative; transition: all 0.2s;"
+                                                      [style.border-color]="pending.isPrimaryCandidate ? '#800020' : '#e2e8f0'">
+                                                      <!-- Contenedor Imagen -->
+                                                      <div class="gallery-image-container" style="height: 150px; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 12px; position: relative;">
+                                                        <img [src]="pending.previewUrl" alt="Pendiente" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                                        <!-- Badges -->
+                                                        <div style="position: absolute; top: 8px; left: 8px; display: flex; flex-direction: column; gap: 4px;">
+                                                          @if (pending.isPrimaryCandidate) {
+                                                            <div style="background: #800020; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                              <span class="material-symbols-outlined" style="font-size: 0.9rem;">star</span> Principal
+                                                            </div>
+                                                          }
+                                                          @if (pending.uploadStatus === 'PENDING') {
+                                                            <div style="background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
+                                                              Pendiente
+                                                            </div>
+                                                          }
+                                                          @if (pending.uploadStatus === 'UPLOADING') {
+                                                            <div style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
+                                                              Subiendo...
+                                                            </div>
+                                                          }
+                                                          @if (pending.uploadStatus === 'FAILED') {
+                                                            <div style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
+                                                              Error
+                                                            </div>
+                                                          }
+                                                        </div>
+                                                        <!-- Orden Number -->
+                                                        <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: white; width: 24px; height: 24px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; justify-content: center;">
+                                                          {{ pending.desiredOrder }}
+                                                        </div>
+                                                      </div>
+                                                      <!-- Info y Botones superpuestos -->
+                                                      <div style="padding: 8px; border-top: 1px solid #e2e8f0; background: #fff;">
+                                                        <p style="font-size: 0.8rem; font-weight: 600; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="pending.name">{{ pending.name }}</p>
+                                                        <p style="font-size: 0.7rem; color: #64748b; margin: 2px 0 8px 0;">{{ (pending.size / 1024).toFixed(0) }} KB</p>
+                                                        <!-- Acciones -->
+                                                        <div style="display: flex; gap: 4px; justify-content: space-between;">
+                                                          <!-- Navegación -->
+                                                          <div style="display: flex; gap: 4px;">
+                                                            <button type="button" (click)="movePendingImageLeft(i)" [disabled]="i === 0" style="background: #f1f5f9; border: none; padding: 4px; border-radius: 4px; cursor: pointer;" title="Mover a la izquierda">
+                                                              <span class="material-symbols-outlined" style="font-size: 1rem; color: #475569;">arrow_back</span>
+                                                            </button>
+                                                            <button type="button" (click)="movePendingImageRight(i)" [disabled]="i === pendingProductImages.length - 1" style="background: #f1f5f9; border: none; padding: 4px; border-radius: 4px; cursor: pointer;" title="Mover a la derecha">
+                                                              <span class="material-symbols-outlined" style="font-size: 1rem; color: #475569;">arrow_forward</span>
+                                                            </button>
+                                                          </div>
+                                                          <!-- Ver -->
+                                                          <button type="button" (click)="openPendingLightbox(pending)" style="background: #f1f5f9; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 2px;">
+                                                            <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
+                                                          </button>
+                                                        </div>
+                                                        <!-- Actions 2 -->
+                                                        <div style="display: flex; gap: 4px; justify-content: space-between; margin-top: 8px;">
+                                                          <button type="button" (click)="setPrimaryPendingImage(i)" [disabled]="pending.isPrimaryCandidate" style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px; border-radius: 4px; cursor: pointer; color: #64748b; font-size: 0.75rem;" title="Hacer principal">
+                                                            {{ pending.isPrimaryCandidate ? 'Principal' : 'Usar principal' }}
+                                                          </button>
+                                                          <button type="button" (click)="removePendingImage(i)" style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer;" title="Quitar">
+                                                            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
+                                                          </button>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  }
+                                                </div>
+                                              </div>
+                                            }
+                                            <!-- Galería de Imágenes Cargadas -->
+                                            @if (productImages.length > 0) {
+                                              <div class="images-gallery" style="margin-top: 32px;">
+                                                <div class="gallery-header" style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                                                  <h4 style="margin: 0; display: flex; align-items: center; gap: 8px; color: #334155; font-size: 1.1rem;">
+                                                    <span class="material-symbols-outlined">photo_library</span>
+                                                    Galería del Producto ({{ productImages.length }}/{{ maxImages }})
+                                                  </h4>
+                                                </div>
+                                                <div class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                                                  @for (image of productImages; track image; let i = $index) {
+                                                    <div
+                                                      class="gallery-item"
+                                                      [class.is-primary]="image.isPrimary"
+                                                      style="border: 2px solid; border-radius: 12px; overflow: hidden; background: #fff; position: relative; transition: all 0.2s;"
+                                                      [style.border-color]="image.isPrimary ? '#800020' : '#e2e8f0'">
+                                                      <!-- Imagen -->
+                                                      <div class="gallery-image-container" style="height: 200px; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 12px;">
+                                                        <img [src]="image.url" [alt]="image.altText || 'Imagen ' + (i + 1)" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                                        <!-- Badge de imagen principal -->
+                                                        @if (image.isPrimary) {
+                                                          <div class="primary-badge" style="position: absolute; top: 12px; left: 12px; background: #800020; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                            <span class="material-symbols-outlined" style="font-size: 1rem;">star</span>
+                                                            Portada
+                                                          </div>
+                                                        }
+                                                        <!-- Badge de Cloudinary -->
+                                                        @if (image.provider === 'CLOUDINARY') {
+                                                          <div style="position: absolute; bottom: 12px; left: 12px; background: rgba(59, 130, 246, 0.9); color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 600; display: flex; align-items: center; gap: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                            <span class="material-symbols-outlined" style="font-size: 0.8rem;">cloud</span>
+                                                            Cloudinary
+                                                          </div>
+                                                        }
+                                                      </div>
+                                                      <!-- Acciones -->
+                                                      <div class="gallery-item-actions" style="padding: 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; background: #fff; gap: 4px;">
+                                                        <button
+                                                          type="button"
+                                                          class="btn-gallery-action btn-primary-action"
+                                                          [class.active]="image.isPrimary"
+                                                          (click)="setPrimaryImage(image.id!)"
+                                                          [attr.data-tooltip]="image.isPrimary ? 'Esta es la portada' : 'Hacer portada'"
+                                                          style="background: none; border: none; cursor: pointer; color: #64748b; transition: color 0.2s; display: flex; align-items: center;"
+                                                          [style.color]="image.isPrimary ? '#800020' : '#64748b'">
+                                                          <span class="material-symbols-outlined">{{ image.isPrimary ? 'star' : 'star_border' }}</span>
+                                                        </button>
+                                                        <div style="display: flex; gap: 4px;">
+                                                          <button
+                                                            type="button"
+                                                            class="btn-gallery-action custom-tooltip"
+                                                            (click)="openExistingLightbox(image)"
+                                                            data-tooltip="Ver imagen"
+                                                            style="background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                                                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">visibility</span>
+                                                          </button>
+                                                          <button
+                                                            type="button"
+                                                            class="btn-gallery-action btn-remove custom-tooltip"
+                                                            (click)="removeImage(image.id!)"
+                                                            data-tooltip="Eliminar imagen"
+                                                            style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                                                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete</span>
+                                                          </button>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  }
+                                                </div>
+                                              </div>
+                                            }
+                                          </div>
+                                        </div>
+                                        <!-- Navegación Tab -->
+                                        <div class="tab-navigation">
+                                          <button type="button" class="btn btn-secondary" (click)="setTab('pricing')">
+                                            <span class="material-symbols-outlined">arrow_back</span>
+                                            Anterior
+                                          </button>
+                                          <button type="button" class="btn btn-primary" (click)="setTab('details')">
+                                            Siguiente: Especificaciones
+                                            <span class="material-symbols-outlined">arrow_forward</span>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  }
+                                  <!-- ============================================
+                                  TAB 4: ESPECIFICACIONES Y DETALLES (MEJORADO)
+                                  ============================================ -->
+                                  @if (currentTab === 'details') {
+                                    <div class="tab-content">
+                                      <div class="form-section-tab">
+                                        <!-- Header de la sección -->
+                                        <div class="section-intro details-intro">
+                                          <div class="intro-icon-wrapper">
+                                            <span class="material-symbols-outlined">description</span>
+                                          </div>
+                                          <div class="intro-content">
+                                            <h3>Especificaciones y Descripción</h3>
+                                            <p>Completa los detalles técnicos y crea una descripción completa del producto</p>
+                                          </div>
+                                        </div>
+                                        <!-- Card de Identificación del Producto -->
+                                        <div class="specs-container" style="grid-template-columns: 1fr;">
+                                          <div class="specs-card">
+                                            <div class="card-header">
+                                              <span class="material-symbols-outlined">style</span>
+                                              <h4>Identificación Técnica</h4>
+                                            </div>
+                                            <div class="card-body">
+                                              <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
+                                                <!-- Modelo -->
+                                                <div class="form-group">
+                                                  <label class="form-label">
+                                                    <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle;margin-right:3px;">label</span>
+                                                    Modelo o Versión
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    class="form-input"
+                                                    [(ngModel)]="productForm.model"
+                                                    name="model"
+                                                    placeholder="Ej: Stratocaster Pro II"
+                                                    maxlength="100"
+                                                    />
+                                                  </div>
+                                                  <!-- Peso -->
+                                                  <div class="form-group">
+                                                    <label class="form-label">
+                                                      <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle;margin-right:3px;">monitor_weight</span>
+                                                      Peso (kg)
+                                                    </label>
+                                                    <input
+                                                      type="number"
+                                                      class="form-input"
+                                                      [(ngModel)]="productForm.weight"
+                                                      name="weight"
+                                                      placeholder="3.5"
+                                                      min="0"
+                                                      step="0.1"
+                                                      (input)="onNumberInput($event, 'weight')"
+                                                      />
+                                                    </div>
+                                                    <!-- SKU (readonly) -->
+                                                    <div class="form-group">
+                                                      <label class="form-label">
+                                                        <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle;margin-right:3px;">qr_code_2</span>
+                                                        Código SKU
+                                                        <span class="help-icon custom-tooltip" data-tooltip="El SKU es autogenerado por el sistema">
+                                                          <span class="material-symbols-outlined">help</span>
+                                                        </span>
+                                                      </label>
+                                                      <div class="readonly-field">
+                                                        <input
+                                                          type="text"
+                                                          class="form-input"
+                                                          [value]="productForm.sku || 'Auto-generado'"
+                                                          disabled
+                                                          readonly
+                                                          />
+                                                          <span class="readonly-label">
+                                                            <span class="material-symbols-outlined">lock</span>
+                                                            Auto
+                                                          </span>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <!-- ATRIBUTOS DINÁMICOS -->
+                                              <div class="specs-container" style="grid-template-columns: 1fr;">
+                                                <div class="specs-card attributes-card">
+                                                  <div class="card-header">
+                                                    <span class="material-symbols-outlined">tune</span>
+                                                    <div>
+                                                      <h4>Características del Producto</h4>
+                                                      <p class="card-subtitle">Agrega atributos personalizados (Calibre, Material, Tipo, etc.)</p>
+                                                    </div>
+                                                  </div>
+                                                  <div class="card-body">
+                                                    <!-- Lista de atributos dinámicos -->
+                                                    @if (productForm.customAttributes && productForm.customAttributes.length > 0) {
+                                                      <div class="attributes-list">
+                                                        @for (attr of productForm.customAttributes; track attr; let i = $index) {
+                                                          <div class="attribute-row">
+                                                            <div class="attribute-inputs">
+                                                              <div class="form-group">
+                                                                <label class="form-label-mini">Nombre</label>
+                                                                <input
+                                                                  type="text"
+                                                                  class="form-input form-input-sm"
+                                                                  [(ngModel)]="attr.key"
+                                                                  [name]="'attr_key_' + i"
+                                                                  placeholder="Ej: Calibre, Material"
+                                                                  maxlength="50"
+                                                                  />
+                                                                </div>
+                                                                <div class="attribute-separator">
+                                                                  <span class="material-symbols-outlined">arrow_forward</span>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                  <label class="form-label-mini">Valor</label>
+                                                                  <input
+                                                                    type="text"
+                                                                    class="form-input form-input-sm"
+                                                                    [(ngModel)]="attr.value"
+                                                                    [name]="'attr_value_' + i"
+                                                                    placeholder="Ej: .009-.042, Acero niquelado"
+                                                                    maxlength="100"
+                                                                    />
+                                                                  </div>
+                                                                </div>
+                                                                <button
+                                                                  type="button"
+                                                                  class="btn-remove-attribute custom-tooltip"
+                                                                  (click)="removeAttribute(i)"
+                                                                  data-tooltip="Eliminar atributo">
+                                                                  <span class="material-symbols-outlined">delete</span>
+                                                                </button>
+                                                              </div>
+                                                            }
+                                                          </div>
+                                                        }
+                                                        <!-- Mensaje cuando no hay atributos -->
+                                                        @if (!productForm.customAttributes || productForm.customAttributes.length === 0) {
+                                                          <div class="attributes-empty">
+                                                            <span class="material-symbols-outlined">inventory_2</span>
+                                                            <p>Sin características agregadas</p>
+                                                            <small>Haz clic en "Agregar Característica" para empezar</small>
+                                                          </div>
+                                                        }
+                                                        <!-- Botón para agregar atributo -->
+                                                        <button
+                                                          type="button"
+                                                          class="btn-add-attribute"
+                                                          (click)="addAttribute()">
+                                                          <span class="material-symbols-outlined">add_circle</span>
+                                                          <span>Agregar Característica</span>
+                                                        </button>
+                                                        <div class="attributes-tips">
+                                                          <div class="tip-mini">
+                                                            <span class="material-symbols-outlined">lightbulb</span>
+                                                            <span><strong>Ejemplos:</strong> Calibre &rarr; .009-.042 &nbsp;|&nbsp; Material &rarr; Acero niquelado &nbsp;|&nbsp; Tipo &rarr; Eléctrica</span>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                  <!-- Descripción Rica (Full Width) -->
+                                                  <div class="description-section-enhanced">
+                                                    <div class="description-header">
+                                                      <div class="header-title">
+                                                        <span class="material-symbols-outlined">edit_note</span>
+                                                        <div>
+                                                          <h4>Descripción Completa del Producto</h4>
+                                                          <p>Editor de texto para crear una descripción detallada y profesional</p>
+                                                        </div>
+                                                      </div>
+                                                      <div class="header-badge">
+                                                        <span class="material-symbols-outlined">auto_fix_high</span>
+                                                        Editor Rico
+                                                      </div>
+                                                    </div>
+                                                    <!-- Toolbar Mejorado -->
+                                                    <div class="editor-toolbar-enhanced">
+                                                      <div class="toolbar-section">
+                                                        <button type="button" class="toolbar-btn custom-tooltip" (click)="applyTextFormat('bold')" data-tooltip="Negrita (Ctrl+B)">
+                                                          <span class="material-symbols-outlined">format_bold</span>
+                                                        </button>
+                                                        <button type="button" class="toolbar-btn custom-tooltip" (click)="applyTextFormat('italic')" data-tooltip="Cursiva (Ctrl+I)">
+                                                          <span class="material-symbols-outlined">format_italic</span>
+                                                        </button>
+                                                        <button type="button" class="toolbar-btn custom-tooltip" (click)="applyTextFormat('underline')" data-tooltip="Subrayado (Ctrl+U)">
+                                                          <span class="material-symbols-outlined">format_underlined</span>
+                                                        </button>
+                                                      </div>
+                                                      <div class="toolbar-divider"></div>
+                                                      <div class="toolbar-section">
+                                                        <button type="button" class="toolbar-btn custom-tooltip" (click)="insertList('ul')" data-tooltip="Lista con viñetas">
+                                                          <span class="material-symbols-outlined">format_list_bulleted</span>
+                                                        </button>
+                                                        <button type="button" class="toolbar-btn custom-tooltip" (click)="insertList('ol')" data-tooltip="Lista numerada">
+                                                          <span class="material-symbols-outlined">format_list_numbered</span>
+                                                        </button>
+                                                      </div>
+                                                      <div class="toolbar-divider"></div>
+                                                      <div class="toolbar-section">
+                                                        <button type="button" class="toolbar-btn custom-tooltip" (click)="applyTextFormat('formatBlock', '<h3>')" data-tooltip="Título">
+                                                          <span class="material-symbols-outlined">title</span>
+                                                        </button>
+                                                        <button type="button" class="toolbar-btn custom-tooltip" (click)="clearFormatting()" data-tooltip="Limpiar formato">
+                                                          <span class="material-symbols-outlined">format_clear</span>
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                    <!-- Editor Principal con Altura Mayor -->
+                                                    <div class="editor-main-area">
+                                                      <div
+                                                        class="rich-text-editor-pro"
+                                                        contenteditable="true"
+                                                        (input)="onDescriptionInput($event)"
+                                                        data-placeholder="Escribe la descripción de tu producto aquí... Incluye características principales, materiales, beneficios para el usuario y contenido incluido."
+                                                      ></div>
+                                                    </div>
+                                                    <!-- Tips profesionales -->
+                                                    <div class="editor-tips">
+                                                      <div class="tip-card tip-success">
+                                                        <span class="material-symbols-outlined">tips_and_updates</span>
+                                                        <div>
+                                                          <strong>Consejo:</strong> Usa listas y títulos para organizar la información. Las descripciones bien estructuradas aumentan las ventas.
+                                                        </div>
+                                                      </div>
+                                                      <div class="tip-card tip-info">
+                                                        <span class="material-symbols-outlined">search</span>
+                                                        <div>
+                                                          <strong>SEO:</strong> Incluye palabras clave como la marca, modelo y características principales del producto.
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                  <!-- Navegación Tab -->
+                                                  <div class="tab-navigation">
+                                                    <button type="button" class="btn-tab-nav" (click)="setTab('media')">
+                                                      <span class="material-symbols-outlined">arrow_back</span>
+                                                      Anterior: Multimedia
+                                                    </button>
+                                                    <div class="tab-navigation-spacer"></div>
+                                                    <button type="button" class="btn-tab-nav btn-tab-nav-primary" (click)="saveProduct()" [disabled]="loading">
+                                                      <span class="material-symbols-outlined">{{ loading ? 'hourglass_empty' : 'save' }}</span>
+                                                      {{ loading ? 'Guardando...' : (showCreateModal ? (pendingProductImages.length > 0 ? 'Crear Producto y subir imágenes' : 'Crear Producto') : 'Guardar Cambios') }}
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            }
+                                          </form>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  }
+                                  <!-- Modal Eliminar -->
+                                  @if (showDeleteModal) {
+                                    <div class="modal-overlay" (click)="closeModal()">
+                                      <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+                                        <div class="modal-header">
+                                          <h2>Confirmar Eliminación</h2>
+                                          <button class="modal-close" (click)="closeModal()">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                            </svg>
+                                          </button>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="delete-warning">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                                            </svg>
+                                            <p>¿Estás seguro de que deseas eliminar el producto <strong>{{ selectedProduct?.name }}</strong>?</p>
+                                            <p class="warning-text">Esta acción no se puede deshacer.</p>
+                                          </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+                                          <button class="btn-danger" (click)="deleteProduct()">Eliminar</button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  }
 
-      <!-- Footer -->
-      <div class="sa-modal__footer">
-        <button type="button" class="sa-btn sa-btn--ghost" (click)="closeStockAlertsModal()">
-          Cancelar
-        </button>
-        <button type="button"
-                class="sa-btn sa-btn--primary"
-                [disabled]="!isStockAlertsValid() || savingStockAlerts"
-                (click)="saveStockAlerts()">
-          @if (savingStockAlerts) {
-            <div class="sa-btn-spinner"></div>
-            Guardando...
-          } @else {
-            <span class="material-icons">save</span>
-            Guardar configuración
-          }
-        </button>
-      </div>
+                                  <!-- ============================================
+                                  LIGHTBOX (VISTA AMPLIADA)
+                                  ============================================ -->
+                                  @if (showLightbox && lightboxImage) {
+                                    <div class="lightbox-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 40px;" (click)="closeLightbox()">
+                                      <button type="button" class="btn-close-lightbox" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;" (click)="closeLightbox(); $event.stopPropagation()">
+                                        <span class="material-symbols-outlined" style="font-size: 32px;">close</span>
+                                      </button>
+                                      <img [src]="lightboxImage.url" [alt]="lightboxImage.name" style="max-width: 90%; max-height: 80vh; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border-radius: 8px; background: transparent;" (click)="$event.stopPropagation()">
+                                      <div style="margin-top: 20px; color: white; text-align: center;" (click)="$event.stopPropagation()">
+                                        <h3 style="margin: 0 0 8px 0; font-size: 1.2rem;">{{ lightboxImage.name }}</h3>
+                                        @if (lightboxImage.size) {
+                                          <p style="margin: 0; color: #cbd5e1; font-size: 0.9rem;">
+                                            Tamaño: {{ (lightboxImage.size / 1024).toFixed(1) }} KB @if (lightboxImage.type) {
+                                            <span>| Tipo: {{ lightboxImage.type }}</span>
+                                          }
+                                        </p>
+                                      }
+                                    </div>
+                                  </div>
+                                }
 
-    </div>
-  </div>
-}
+                                <!-- ═══════════════════════════════════════════════════════════════
+                                MODAL DE ALERTAS DE STOCK — Configurar notificaciones de bajo stock
+                                ═══════════════════════════════════════════════════════════════ -->
+                                @if (showStockAlertsModal) {
+                                  <div class="sa-backdrop" (click)="closeStockAlertsModal()" (keydown.escape)="closeStockAlertsModal()" role="dialog" aria-modal="true" aria-label="Configurar alertas de stock">
+                                    <div class="sa-modal" (click)="$event.stopPropagation()">
+
+                                      <!-- Header -->
+                                      <div class="sa-modal__header">
+                                        <div class="sa-modal__header-left">
+                                          <div class="sa-modal__icon-circle">
+                                            <span class="material-icons">notifications_active</span>
+                                          </div>
+                                          <div>
+                                            <h3 class="sa-modal__title">Alertas de Stock Bajo</h3>
+                                            <p class="sa-modal__subtitle">Configura quién recibe notificaciones cuando un producto tiene stock crítico.</p>
+                                          </div>
+                                        </div>
+                                        <button type="button" class="sa-modal__close" (click)="closeStockAlertsModal()" aria-label="Cerrar">
+                                          <span class="material-icons">close</span>
+                                        </button>
+                                      </div>
+
+                                      <!-- Body -->
+                                      <div class="sa-modal__body">
+
+                                        @if (stockAlertsLoading) {
+                                          <div class="sa-loading">
+                                            <div class="sa-spinner"></div>
+                                            <p>Cargando configuración...</p>
+                                          </div>
+                                        } @else {
+                                          <!-- Toggle de activación -->
+                                          <div class="sa-section">
+                                            <div class="sa-toggle-row">
+                                              <div class="sa-toggle-text">
+                                                <strong>Activar alertas de stock bajo</strong>
+                                                <span class="sa-toggle-sub">Cuando un producto tenga stock igual o menor al umbral configurado, se enviará un correo a los empleados seleccionados.</span>
+                                              </div>
+                                              <button type="button" class="sa-toggle"
+                                                [class.sa-toggle--on]="stockAlertsEnabled"
+                                                (click)="stockAlertsEnabled = !stockAlertsEnabled"
+                                                role="switch"
+                                                [attr.aria-checked]="stockAlertsEnabled">
+                                                <span class="sa-toggle__track">
+                                                  <span class="sa-toggle__thumb"></span>
+                                                </span>
+                                              </button>
+                                            </div>
+                                          </div>
+
+                                          <!-- Contenido condicional (solo si está activo) -->
+                                          @if (stockAlertsEnabled) {
+                                            <div class="sa-section sa-section--fade-in">
+                                              <h4 class="sa-section__title">
+                                                <span class="material-icons">trending_down</span>
+                                                Umbral de Stock Mínimo
+                                              </h4>
+                                              <div class="sa-threshold-row">
+                                                <input type="number"
+                                                  class="sa-input sa-input--num"
+                                                  [(ngModel)]="stockAlertThreshold"
+                                                  min="0"
+                                                  max="999"
+                                                  placeholder="10" />
+                                                  <span class="sa-threshold-unit">unidades</span>
+                                                </div>
+                                                <span class="sa-hint">
+                                                  Productos con stock igual o menor a este valor generarán alerta.
+                                                </span>
+                                              </div>
+
+                                              <div class="sa-section sa-section--fade-in">
+                                                <h4 class="sa-section__title">
+                                                  <span class="material-icons">group</span>
+                                                  Empleados Destinatarios
+                                                  @if (selectedAlertEmployees.length) {
+                                                    <span class="sa-badge">{{ selectedAlertEmployees.length }}</span>
+                                                  }
+                                                </h4>
+
+                                                <!-- Chips de seleccionados -->
+                                                <div class="sa-chips">
+                                                  @for (emp of selectedAlertEmployees; track emp.id) {
+                                                    <span class="sa-chip">
+                                                      <span class="sa-chip__avatar">{{ getAlertInitials(emp.fullName) }}</span>
+                                                      <span class="sa-chip__info">
+                                                        <span class="sa-chip__name">{{ emp.fullName }}</span>
+                                                        <span class="sa-chip__role">{{ formatAlertRole(emp.role) }}</span>
+                                                      </span>
+                                                      <button type="button" class="sa-chip__remove" (click)="removeAlertEmployee(emp.id)" aria-label="Quitar">
+                                                        <span class="material-icons">close</span>
+                                                      </button>
+                                                    </span>
+                                                  }
+                                                </div>
+
+                                                <!-- Buscador de empleados -->
+                                                <div class="sa-search-wrap">
+                                                  <span class="material-icons sa-search-icon">search</span>
+                                                  <input type="text"
+                                                    class="sa-search"
+                                                    [(ngModel)]="alertStaffSearch"
+                                                    (focus)="onAlertStaffFocus()"
+                                                    (blur)="onAlertStaffBlur()"
+                                                    (input)="filterAlertStaff()"
+                                                    [placeholder]="selectedAlertEmployees.length === 0 ? 'Buscar empleado por nombre, correo o rol...' : 'Agregar otro empleado...'" />
+
+                                                    <!-- Dropdown de resultados -->
+                                                    @if (loadingAlertStaff) {
+                                                      <div class="sa-dropdown">
+                                                        <div class="sa-dropdown__loading">
+                                                          <div class="sa-spinner sa-spinner--small"></div>
+                                                          <span>Cargando empleados...</span>
+                                                        </div>
+                                                      </div>
+                                                    } @else if (showAlertStaffDropdown && filteredAlertStaff.length > 0) {
+                                                      <div class="sa-dropdown">
+                                                        @for (staff of filteredAlertStaff; track staff.id) {
+                                                          <button type="button" class="sa-dropdown__item" (mousedown)="selectAlertEmployee(staff)">
+                                                            <span class="sa-dropdown__avatar">{{ getAlertInitials(staff.fullName) }}</span>
+                                                            <span class="sa-dropdown__info">
+                                                              <span class="sa-dropdown__name">{{ staff.fullName }}</span>
+                                                              <span class="sa-dropdown__email">{{ staff.email }}</span>
+                                                            </span>
+                                                            <span class="sa-dropdown__role">{{ formatAlertRole(staff.role) }}</span>
+                                                          </button>
+                                                        }
+                                                      </div>
+                                                    } @else if (showAlertStaffDropdown && filteredAlertStaff.length === 0 && alertStaffSearch) {
+                                                      <div class="sa-dropdown">
+                                                        <div class="sa-dropdown__empty">
+                                                          <span class="material-icons">search_off</span>
+                                                          <span>No se encontraron empleados</span>
+                                                        </div>
+                                                      </div>
+                                                    } @else if (showAlertStaffDropdown && filteredAlertStaff.length === 0 && !alertStaffSearch && allAlertStaff.length > 0) {
+                                                      <div class="sa-dropdown">
+                                                        <div class="sa-dropdown__empty">
+                                                          <span class="material-icons">check_circle</span>
+                                                          <span>Todos los empleados han sido seleccionados</span>
+                                                        </div>
+                                                      </div>
+                                                    }
+                                                  </div>
+
+                                                  <span class="sa-hint">
+                                                    <span class="material-icons" style="font-size:.7rem;vertical-align:middle;">security</span>
+                                                    Solo empleados activos del sistema pueden ser destinatarios.
+                                                  </span>
+                                                </div>
+                                              }
+                                            }
+                                          </div>
+
+                                          <!-- Footer -->
+                                          <div class="sa-modal__footer">
+                                            <button type="button" class="sa-btn sa-btn--ghost" (click)="closeStockAlertsModal()">
+                                              Cancelar
+                                            </button>
+                                            <button type="button"
+                                              class="sa-btn sa-btn--primary"
+                                              [disabled]="!isStockAlertsValid() || savingStockAlerts"
+                                              (click)="saveStockAlerts()">
+                                              @if (savingStockAlerts) {
+                                                <div class="sa-btn-spinner"></div>
+                                                Guardando...
+                                              } @else {
+                                                <span class="material-icons">save</span>
+                                                Guardar configuración
+                                              }
+                                            </button>
+                                          </div>
+
+                                        </div>
+                                      </div>
+                                    }
 

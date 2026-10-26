@@ -1,9 +1,10 @@
 ﻿import {
   Component, Input, Output, EventEmitter, OnDestroy, OnInit,
   ViewChild, TemplateRef,
-  ApplicationRef, EmbeddedViewRef
+  ApplicationRef, EmbeddedViewRef,
+  ChangeDetectionStrategy
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import Swal from 'sweetalert2';
@@ -49,8 +50,9 @@ interface LimitOption {
 @Component({
   selector: 'app-csv-import-export',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './csv-import-export.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./csv-import-export.component.css']
 })
 export class CsvImportExportComponent implements OnInit, OnDestroy {

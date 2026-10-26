@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 
@@ -16,12 +16,13 @@ export interface InfoSection {
   selector: 'app-information-page',
   standalone: true,
   imports: [CommonModule, RouterModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="min-h-screen bg-[#FCFAF7] pb-20 font-sans text-[#292524]">
       <!-- Hero Editorial Header -->
       <header class="relative overflow-hidden bg-gradient-to-br from-[#722F37] via-[#5A252C] to-[#3d171c] text-white py-14 sm:py-18 px-4 sm:px-6 lg:px-8">
         <div class="absolute inset-0 pointer-events-none opacity-20"
-             style="background: radial-gradient(circle at 85% 20%, #C5A059 0%, transparent 55%), radial-gradient(circle at 15% 85%, #C5A059 0%, transparent 50%);"></div>
+        style="background: radial-gradient(circle at 85% 20%, #C5A059 0%, transparent 55%), radial-gradient(circle at 15% 85%, #C5A059 0%, transparent 50%);"></div>
 
         <div class="max-w-6xl mx-auto relative z-10">
           <!-- Breadcrumb (Visible solo en móvil; oculto en escritorio donde ya existe la barra de navegación principal) -->
@@ -81,52 +82,60 @@ export interface InfoSection {
               Índice de secciones ({{ sections.length }})
             </h2>
             <nav aria-label="Índice del documento" class="space-y-1 max-h-[60vh] overflow-y-auto pr-1">
-              <a *ngFor="let sec of sections"
-                 [href]="'#' + sec.id"
-                 (click)="scrollToSection($event, sec.id)"
-                 class="group flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all"
+              @for (sec of sections; track sec) {
+                <a
+                  [href]="'#' + sec.id"
+                  (click)="scrollToSection($event, sec.id)"
+                  class="group flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all"
                  [ngClass]="activeSectionId === sec.id
                    ? 'bg-[#722F37] text-white shadow-sm'
                    : 'text-slate-600 hover:bg-[#FAF6F0] hover:text-[#722F37]'">
-                <span class="font-mono text-[11px] px-1.5 py-0.5 rounded"
-                      [ngClass]="activeSectionId === sec.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover:text-[#722F37]'">
-                  {{ sec.number }}
-                </span>
-                <span class="truncate">{{ sec.title }}</span>
-              </a>
+                  <span class="font-mono text-[11px] px-1.5 py-0.5 rounded"
+                    [ngClass]="activeSectionId === sec.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover:text-[#722F37]'">
+                    {{ sec.number }}
+                  </span>
+                  <span class="truncate">{{ sec.title }}</span>
+                </a>
+              }
             </nav>
 
             <!-- Related Pages Quick Links -->
             <div class="mt-6 pt-5 border-t border-slate-100">
               <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">Documentos relacionados</p>
               <div class="flex flex-col gap-2 text-xs font-semibold">
-                <a *ngIf="pageType !== 'terminos'" routerLink="/terminos"
-                   class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
-                  <span>Términos y Condiciones</span>
-                  <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
-                </a>
-                <a *ngIf="pageType !== 'privacidad'" routerLink="/privacidad"
-                   class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
-                  <span>Aviso de Privacidad</span>
-                  <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
-                </a>
+                @if (pageType !== 'terminos') {
+                  <a routerLink="/terminos"
+                    class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
+                    <span>Términos y Condiciones</span>
+                    <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
+                  </a>
+                }
+                @if (pageType !== 'privacidad') {
+                  <a routerLink="/privacidad"
+                    class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
+                    <span>Aviso de Privacidad</span>
+                    <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
+                  </a>
+                }
                 <a routerLink="/informacion/envios"
-                   class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
+                  class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
                   <span>Envíos y Entregas</span>
                   <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
                 </a>
                 <a routerLink="/informacion/pagos"
-                   class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
+                  class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
                   <span>Formas de Pago</span>
                   <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
                 </a>
-                <a *ngIf="pageType !== 'cancelaciones'" routerLink="/informacion/cancelaciones"
-                   class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
-                  <span>Política de Cancelaciones</span>
-                  <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
-                </a>
+                @if (pageType !== 'cancelaciones') {
+                  <a routerLink="/informacion/cancelaciones"
+                    class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
+                    <span>Política de Cancelaciones</span>
+                    <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
+                  </a>
+                }
                 <a routerLink="/ayuda"
-                   class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
+                  class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">
                   <span>Centro de Ayuda (FAQ)</span>
                   <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
                 </a>
@@ -136,39 +145,42 @@ export interface InfoSection {
 
           <!-- Main Content Sections -->
           <main class="lg:col-span-8 space-y-5">
-            <article *ngFor="let sec of sections"
-                     [id]="sec.id"
-                     class="bg-white rounded-2xl border border-[#E5E0D8] p-6 sm:p-8 shadow-sm hover:border-[#C5A059]/50 transition-colors scroll-mt-28">
-              <div class="flex items-start gap-4 mb-4">
-                <div class="w-11 h-11 rounded-xl bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 font-bold">
-                  <span class="material-icons text-xl" aria-hidden="true">{{ sec.icon }}</span>
+            @for (sec of sections; track sec) {
+              <article
+                [id]="sec.id"
+                class="bg-white rounded-2xl border border-[#E5E0D8] p-6 sm:p-8 shadow-sm hover:border-[#C5A059]/50 transition-colors scroll-mt-28">
+                <div class="flex items-start gap-4 mb-4">
+                  <div class="w-11 h-11 rounded-xl bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 font-bold">
+                    <span class="material-icons text-xl" aria-hidden="true">{{ sec.icon }}</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <span class="text-xs font-bold uppercase tracking-widest text-[#C5A059] block mb-0.5">
+                      Sección {{ sec.number }}
+                    </span>
+                    <h3 class="text-lg sm:text-xl font-bold text-[#292524] leading-snug">
+                      {{ sec.title }}
+                    </h3>
+                  </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="text-xs font-bold uppercase tracking-widest text-[#C5A059] block mb-0.5">
-                    Sección {{ sec.number }}
-                  </span>
-                  <h3 class="text-lg sm:text-xl font-bold text-[#292524] leading-snug">
-                    {{ sec.title }}
-                  </h3>
-                </div>
-              </div>
-
-              <p class="text-sm sm:text-base text-slate-600 leading-relaxed mb-4">
-                {{ sec.summary }}
-              </p>
-
-              <ul class="space-y-2.5">
-                <li *ngFor="let point of sec.points" class="flex items-start gap-3 text-sm text-slate-700 leading-relaxed">
-                  <span class="material-icons text-[#C5A059] text-lg mt-0.5 shrink-0" aria-hidden="true">check_circle</span>
-                  <span>{{ point }}</span>
-                </li>
-              </ul>
-
-              <div *ngIf="sec.note"
-                   class="mt-5 p-4 rounded-xl bg-[#FAF6F0] border-l-4 border-[#C5A059] text-xs sm:text-sm text-slate-700 leading-relaxed">
-                <strong class="text-[#5A252C]">Nota operativa:</strong> {{ sec.note }}
-              </div>
-            </article>
+                <p class="text-sm sm:text-base text-slate-600 leading-relaxed mb-4">
+                  {{ sec.summary }}
+                </p>
+                <ul class="space-y-2.5">
+                  @for (point of sec.points; track point) {
+                    <li class="flex items-start gap-3 text-sm text-slate-700 leading-relaxed">
+                      <span class="material-icons text-[#C5A059] text-lg mt-0.5 shrink-0" aria-hidden="true">check_circle</span>
+                      <span>{{ point }}</span>
+                    </li>
+                  }
+                </ul>
+                @if (sec.note) {
+                  <div
+                    class="mt-5 p-4 rounded-xl bg-[#FAF6F0] border-l-4 border-[#C5A059] text-xs sm:text-sm text-slate-700 leading-relaxed">
+                    <strong class="text-[#5A252C]">Nota operativa:</strong> {{ sec.note }}
+                  </div>
+                }
+              </article>
+            }
 
             <!-- Official Contact Card -->
             <section class="bg-gradient-to-br from-[#722F37] to-[#5A252C] rounded-2xl p-6 sm:p-8 text-white shadow-md">
@@ -183,12 +195,12 @@ export interface InfoSection {
                 </div>
                 <div class="flex flex-wrap sm:flex-col gap-3 shrink-0">
                   <a routerLink="/ayuda"
-                     class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#C5A059] hover:bg-[#d1b171] text-slate-950 font-bold text-sm transition-colors">
+                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#C5A059] hover:bg-[#d1b171] text-slate-950 font-bold text-sm transition-colors">
                     <span class="material-icons text-base" aria-hidden="true">help_outline</span>
                     Ir al Centro de Ayuda
                   </a>
                   <a routerLink="/catalogo"
-                     class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/20 transition-colors">
+                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/20 transition-colors">
                     Explorar Catálogo
                   </a>
                 </div>
@@ -198,7 +210,7 @@ export interface InfoSection {
         </div>
       </div>
     </div>
-  `
+    `
 })
 export class InformationPageComponent implements OnInit {
   pageType = 'terminos';

@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HelpCenterService } from '../../services/help-center.service';
@@ -12,8 +12,9 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-help-center',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule],
   templateUrl: './help-center.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./help-center.component.css']
 })
 export class HelpCenterComponent implements OnInit, OnDestroy {

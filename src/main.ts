@@ -1,3 +1,4 @@
+import { provideZoneChangeDetection } from "@angular/core";
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { registerLocaleData } from '@angular/common';
@@ -9,6 +10,6 @@ import { appConfig } from './app/app.config';
 // (auth, sanitization, browser-compat) se registren una sola vez.
 registerLocaleData(localeEs, 'es');
 
-bootstrapApplication(AppComponent, appConfig).catch(() => {
+bootstrapApplication(AppComponent, {...appConfig, providers: [provideZoneChangeDetection(), ...appConfig.providers]}).catch(() => {
   // Error silencioso en producción
 });

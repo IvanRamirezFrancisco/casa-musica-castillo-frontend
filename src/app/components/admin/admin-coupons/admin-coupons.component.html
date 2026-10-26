@@ -12,386 +12,406 @@
   </div>
 
   <!-- Error Message -->
-  <div *ngIf="error" class="alert alert-danger">
-    <i class="fas fa-exclamation-circle"></i> {{ error }}
-  </div>
+  @if (error) {
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-circle"></i> {{ error }}
+    </div>
+  }
 
   <!-- Loading State -->
-  <div *ngIf="loading && coupons.length === 0" class="loading-container">
-    <div class="spinner"></div>
-    <p>Cargando cupones...</p>
-  </div>
+  @if (loading && coupons.length === 0) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando cupones...</p>
+    </div>
+  }
 
   <!-- Coupons Table -->
-  <div *ngIf="!loading || coupons.length > 0" class="coupons-table-container">
-    <table class="coupons-table">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Descripción</th>
-          <th>Descuento</th>
-          <th>Usos</th>
-          <th>Vigencia</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let coupon of coupons" [class.inactive]="!coupon.isActive">
-          <td>
-            <strong class="coupon-code">{{ coupon.code }}</strong>
-          </td>
-          <td>
-            <span class="coupon-description">{{ coupon.description }}</span>
-          </td>
-          <td>
-            <span class="discount-badge" [class]="'discount-' + coupon.discountType.toLowerCase()">
-              {{ formatDiscount(coupon) }}
-            </span>
-          </td>
-          <td>
-            <div class="usage-info">
-              <span class="usage-count">{{ coupon.currentUsageCount }}</span>
-              <span class="usage-limit" *ngIf="coupon.usageLimit">/ {{ coupon.usageLimit }}</span>
-              <span class="usage-unlimited" *ngIf="!coupon.usageLimit">Ilimitado</span>
-            </div>
-          </td>
-          <td>
-            <div class="validity-dates">
-              <small>{{ formatDate(coupon.validFrom) }}</small>
-              <span class="date-separator">→</span>
-              <small>{{ formatDate(coupon.validUntil) }}</small>
-            </div>
-          </td>
-          <td>
-            <span class="status-badge" [class]="getCouponStatusClass(coupon)">
-              <span *ngIf="coupon.isActive">✓ Activo</span>
-              <span *ngIf="!coupon.isActive">✗ Inactivo</span>
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <button 
-                class="btn-icon btn-stats" 
-                (click)="viewStats(coupon)"
-                title="Ver estadísticas">
-                <i class="fas fa-chart-bar"></i>
-              </button>
-              <button 
-                class="btn-icon btn-edit" 
-                (click)="openEditModal(coupon)"
-                title="Editar">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button 
-                *ngIf="coupon.isActive"
-                class="btn-icon btn-delete" 
-                (click)="deactivateCoupon(coupon)"
-                title="Desactivar">
-                <i class="fas fa-ban"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-        <tr *ngIf="coupons.length === 0">
-          <td colspan="7" class="empty-state">
-            <i class="fas fa-inbox"></i>
-            <p>No hay cupones registrados</p>
-            <button class="btn btn-primary" (click)="openCreateModal()">
-              Crear Primer Cupón
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button 
-        class="btn btn-secondary" 
-        (click)="goToPage(currentPage - 1)"
-        [disabled]="currentPage === 0">
-        <i class="fas fa-chevron-left"></i> Anterior
-      </button>
-      
-      <span class="page-info">
-        Página {{ currentPage + 1 }} de {{ totalPages }}
-        <small>({{ totalCoupons }} cupones)</small>
-      </span>
-      
-      <button 
-        class="btn btn-secondary" 
-        (click)="goToPage(currentPage + 1)"
-        [disabled]="currentPage === totalPages - 1">
-        Siguiente <i class="fas fa-chevron-right"></i>
-      </button>
+  @if (!loading || coupons.length > 0) {
+    <div class="coupons-table-container">
+      <table class="coupons-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th>Descuento</th>
+            <th>Usos</th>
+            <th>Vigencia</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (coupon of coupons; track coupon) {
+            <tr [class.inactive]="!coupon.isActive">
+              <td>
+                <strong class="coupon-code">{{ coupon.code }}</strong>
+              </td>
+              <td>
+                <span class="coupon-description">{{ coupon.description }}</span>
+              </td>
+              <td>
+                <span class="discount-badge" [class]="'discount-' + coupon.discountType.toLowerCase()">
+                  {{ formatDiscount(coupon) }}
+                </span>
+              </td>
+              <td>
+                <div class="usage-info">
+                  <span class="usage-count">{{ coupon.currentUsageCount }}</span>
+                  @if (coupon.usageLimit) {
+                    <span class="usage-limit">/ {{ coupon.usageLimit }}</span>
+                  }
+                  @if (!coupon.usageLimit) {
+                    <span class="usage-unlimited">Ilimitado</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="validity-dates">
+                  <small>{{ formatDate(coupon.validFrom) }}</small>
+                  <span class="date-separator">→</span>
+                  <small>{{ formatDate(coupon.validUntil) }}</small>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" [class]="getCouponStatusClass(coupon)">
+                  @if (coupon.isActive) {
+                    <span>✓ Activo</span>
+                  }
+                  @if (!coupon.isActive) {
+                    <span>✗ Inactivo</span>
+                  }
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button
+                    class="btn-icon btn-stats"
+                    (click)="viewStats(coupon)"
+                    title="Ver estadísticas">
+                    <i class="fas fa-chart-bar"></i>
+                  </button>
+                  <button
+                    class="btn-icon btn-edit"
+                    (click)="openEditModal(coupon)"
+                    title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  @if (coupon.isActive) {
+                    <button
+                      class="btn-icon btn-delete"
+                      (click)="deactivateCoupon(coupon)"
+                      title="Desactivar">
+                      <i class="fas fa-ban"></i>
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+          @if (coupons.length === 0) {
+            <tr>
+              <td colspan="7" class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No hay cupones registrados</p>
+                <button class="btn btn-primary" (click)="openCreateModal()">
+                  Crear Primer Cupón
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button
+            class="btn btn-secondary"
+            (click)="goToPage(currentPage - 1)"
+            [disabled]="currentPage === 0">
+            <i class="fas fa-chevron-left"></i> Anterior
+          </button>
+          <span class="page-info">
+            Página {{ currentPage + 1 }} de {{ totalPages }}
+            <small>({{ totalCoupons }} cupones)</small>
+          </span>
+          <button
+            class="btn btn-secondary"
+            (click)="goToPage(currentPage + 1)"
+            [disabled]="currentPage === totalPages - 1">
+            Siguiente <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      }
     </div>
-  </div>
+  }
 </div>
 
 <!-- Modal Create/Edit Coupon -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>
-        <i class="fas fa-tag"></i> 
-        {{ editMode ? 'Editar Cupón' : 'Crear Nuevo Cupón' }}
-      </h2>
-      <button class="btn-close" (click)="closeModal()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-    <form class="modal-body" (ngSubmit)="saveCoupon()">
-      <!-- Código del cupón -->
-      <div class="form-group">
-        <label>Código del Cupón *</label>
-        <input 
-          type="text" 
-          [(ngModel)]="currentCoupon.code" 
-          name="code"
-          class="form-control"
-          placeholder="Ej: SUMMER20"
-          [disabled]="editMode"
-          required
-          maxlength="50">
-        <small class="form-help">El código será convertido a mayúsculas automáticamente</small>
-      </div>
-
-      <!-- Descripción -->
-      <div class="form-group">
-        <label>Descripción *</label>
-        <textarea 
-          [(ngModel)]="currentCoupon.description" 
-          name="description"
-          class="form-control"
-          placeholder="Ej: Descuento de verano del 20%"
-          rows="3"
-          required
-          maxlength="255"></textarea>
-      </div>
-
-      <!-- Tipo de descuento -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Tipo de Descuento *</label>
-          <select 
-            [(ngModel)]="currentCoupon.discountType" 
-            name="discountType"
-            class="form-control"
-            required>
-            <option *ngFor="let type of discountTypes" [value]="type">
-              <span *ngIf="type === 'PERCENTAGE'">Porcentaje (%)</span>
-              <span *ngIf="type === 'FIXED'">Monto Fijo ($)</span>
-              <span *ngIf="type === 'FREE_SHIPPING'">Envío Gratis</span>
-            </option>
-          </select>
-        </div>
-
-        <div class="form-group" *ngIf="currentCoupon.discountType !== 'FREE_SHIPPING'">
-          <label>Valor del Descuento *</label>
-          <input 
-            type="number" 
-            [(ngModel)]="currentCoupon.discountValue" 
-            name="discountValue"
-            class="form-control"
-            [placeholder]="currentCoupon.discountType === 'PERCENTAGE' ? '20' : '100.00'"
-            min="0"
-            [max]="currentCoupon.discountType === 'PERCENTAGE' ? 100 : 999999"
-            step="0.01"
-            required>
-        </div>
-      </div>
-
-      <!-- Restricciones -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Compra Mínima</label>
-          <input 
-            type="number" 
-            [(ngModel)]="currentCoupon.minimumPurchase" 
-            name="minimumPurchase"
-            class="form-control"
-            placeholder="Opcional"
-            min="0"
-            step="0.01">
-        </div>
-
-        <div class="form-group" *ngIf="currentCoupon.discountType === 'PERCENTAGE'">
-          <label>Descuento Máximo ($)</label>
-          <input 
-            type="number" 
-            [(ngModel)]="currentCoupon.maximumDiscount" 
-            name="maximumDiscount"
-            class="form-control"
-            placeholder="Opcional"
-            min="0"
-            step="0.01">
-        </div>
-      </div>
-
-      <!-- Fechas de vigencia -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Válido Desde *</label>
-          <input 
-            type="date" 
-            [(ngModel)]="currentCoupon.validFrom" 
-            name="validFrom"
-            class="form-control"
-            required>
-        </div>
-
-        <div class="form-group">
-          <label>Válido Hasta *</label>
-          <input 
-            type="date" 
-            [(ngModel)]="currentCoupon.validUntil" 
-            name="validUntil"
-            class="form-control"
-            required>
-        </div>
-      </div>
-
-      <!-- Límites de uso -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Límite de Usos Total</label>
-          <input 
-            type="number" 
-            [(ngModel)]="currentCoupon.usageLimit" 
-            name="usageLimit"
-            class="form-control"
-            placeholder="Ilimitado"
-            min="1">
-        </div>
-
-        <div class="form-group">
-          <label>Límite por Usuario</label>
-          <input 
-            type="number" 
-            [(ngModel)]="currentCoupon.usageLimitPerUser" 
-            name="usageLimitPerUser"
-            class="form-control"
-            placeholder="1"
-            min="1">
-        </div>
-      </div>
-
-      <!-- Opciones adicionales -->
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="currentCoupon.firstPurchaseOnly" 
-            name="firstPurchaseOnly">
-          Solo para primera compra
-        </label>
-      </div>
-
-      <!-- Botones -->
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeModal()">
-          Cancelar
-        </button>
-        <button type="submit" class="btn btn-primary" [disabled]="loading">
-          <span *ngIf="!loading">
-            <i class="fas fa-save"></i> {{ editMode ? 'Actualizar' : 'Crear' }} Cupón
-          </span>
-          <span *ngIf="loading">
-            <i class="fas fa-spinner fa-spin"></i> Guardando...
-          </span>
+@if (showModal) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i class="fas fa-tag"></i>
+          {{ editMode ? 'Editar Cupón' : 'Crear Nuevo Cupón' }}
+        </h2>
+        <button class="btn-close" (click)="closeModal()">
+          <i class="fas fa-times"></i>
         </button>
       </div>
-    </form>
-  </div>
-</div>
+      <form class="modal-body" (ngSubmit)="saveCoupon()">
+        <!-- Código del cupón -->
+        <div class="form-group">
+          <label>Código del Cupón *</label>
+          <input
+            type="text"
+            [(ngModel)]="currentCoupon.code"
+            name="code"
+            class="form-control"
+            placeholder="Ej: SUMMER20"
+            [disabled]="editMode"
+            required
+            maxlength="50">
+            <small class="form-help">El código será convertido a mayúsculas automáticamente</small>
+          </div>
+          <!-- Descripción -->
+          <div class="form-group">
+            <label>Descripción *</label>
+            <textarea
+              [(ngModel)]="currentCoupon.description"
+              name="description"
+              class="form-control"
+              placeholder="Ej: Descuento de verano del 20%"
+              rows="3"
+              required
+            maxlength="255"></textarea>
+          </div>
+          <!-- Tipo de descuento -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo de Descuento *</label>
+              <select
+                [(ngModel)]="currentCoupon.discountType"
+                name="discountType"
+                class="form-control"
+                required>
+                @for (type of discountTypes; track type) {
+                  <option [value]="type">
+                    @if (type === 'PERCENTAGE') {
+                      <span>Porcentaje (%)</span>
+                    }
+                    @if (type === 'FIXED') {
+                      <span>Monto Fijo ($)</span>
+                    }
+                    @if (type === 'FREE_SHIPPING') {
+                      <span>Envío Gratis</span>
+                    }
+                  </option>
+                }
+              </select>
+            </div>
+            @if (currentCoupon.discountType !== 'FREE_SHIPPING') {
+              <div class="form-group">
+                <label>Valor del Descuento *</label>
+                <input
+                  type="number"
+                  [(ngModel)]="currentCoupon.discountValue"
+                  name="discountValue"
+                  class="form-control"
+                  [placeholder]="currentCoupon.discountType === 'PERCENTAGE' ? '20' : '100.00'"
+                  min="0"
+                  [max]="currentCoupon.discountType === 'PERCENTAGE' ? 100 : 999999"
+                  step="0.01"
+                  required>
+                </div>
+              }
+            </div>
+            <!-- Restricciones -->
+            <div class="form-row">
+              <div class="form-group">
+                <label>Compra Mínima</label>
+                <input
+                  type="number"
+                  [(ngModel)]="currentCoupon.minimumPurchase"
+                  name="minimumPurchase"
+                  class="form-control"
+                  placeholder="Opcional"
+                  min="0"
+                  step="0.01">
+                </div>
+                @if (currentCoupon.discountType === 'PERCENTAGE') {
+                  <div class="form-group">
+                    <label>Descuento Máximo ($)</label>
+                    <input
+                      type="number"
+                      [(ngModel)]="currentCoupon.maximumDiscount"
+                      name="maximumDiscount"
+                      class="form-control"
+                      placeholder="Opcional"
+                      min="0"
+                      step="0.01">
+                    </div>
+                  }
+                </div>
+                <!-- Fechas de vigencia -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Válido Desde *</label>
+                    <input
+                      type="date"
+                      [(ngModel)]="currentCoupon.validFrom"
+                      name="validFrom"
+                      class="form-control"
+                      required>
+                    </div>
+                    <div class="form-group">
+                      <label>Válido Hasta *</label>
+                      <input
+                        type="date"
+                        [(ngModel)]="currentCoupon.validUntil"
+                        name="validUntil"
+                        class="form-control"
+                        required>
+                      </div>
+                    </div>
+                    <!-- Límites de uso -->
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Límite de Usos Total</label>
+                        <input
+                          type="number"
+                          [(ngModel)]="currentCoupon.usageLimit"
+                          name="usageLimit"
+                          class="form-control"
+                          placeholder="Ilimitado"
+                          min="1">
+                        </div>
+                        <div class="form-group">
+                          <label>Límite por Usuario</label>
+                          <input
+                            type="number"
+                            [(ngModel)]="currentCoupon.usageLimitPerUser"
+                            name="usageLimitPerUser"
+                            class="form-control"
+                            placeholder="1"
+                            min="1">
+                          </div>
+                        </div>
+                        <!-- Opciones adicionales -->
+                        <div class="form-group">
+                          <label class="checkbox-label">
+                            <input
+                              type="checkbox"
+                              [(ngModel)]="currentCoupon.firstPurchaseOnly"
+                              name="firstPurchaseOnly">
+                              Solo para primera compra
+                            </label>
+                          </div>
+                          <!-- Botones -->
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" (click)="closeModal()">
+                              Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary" [disabled]="loading">
+                              @if (!loading) {
+                                <span>
+                                  <i class="fas fa-save"></i> {{ editMode ? 'Actualizar' : 'Crear' }} Cupón
+                                </span>
+                              }
+                              @if (loading) {
+                                <span>
+                                  <i class="fas fa-spinner fa-spin"></i> Guardando...
+                                </span>
+                              }
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  }
 
-<!-- Modal Statistics -->
-<div class="modal-overlay" *ngIf="showStatsModal" (click)="closeStatsModal()">
-  <div class="modal-content stats-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>
-        <i class="fas fa-chart-bar"></i> 
-        Estadísticas del Cupón
-      </h2>
-      <button class="btn-close" (click)="closeStatsModal()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-    <div class="modal-body" *ngIf="selectedCouponStats">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-users"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ selectedCouponStats.totalUsages }}</h3>
-            <p>Usos Totales</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-user-friends"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ selectedCouponStats.uniqueUsers }}</h3>
-            <p>Usuarios Únicos</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-dollar-sign"></i>
-          </div>
-          <div class="stat-content">
-            <h3>${{ selectedCouponStats.totalDiscountGiven.toFixed(2) }}</h3>
-            <p>Descuento Total Dado</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-shopping-cart"></i>
-          </div>
-          <div class="stat-content">
-            <h3>${{ selectedCouponStats.averageOrderValue.toFixed(2) }}</h3>
-            <p>Valor Promedio de Orden</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-chart-line"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ selectedCouponStats.conversionRate.toFixed(1) }}%</h3>
-            <p>Tasa de Conversión</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-money-bill-wave"></i>
-          </div>
-          <div class="stat-content">
-            <h3>${{ selectedCouponStats.revenue.toFixed(2) }}</h3>
-            <p>Revenue Generado</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="stats-info">
-        <p><strong>Código:</strong> {{ selectedCouponStats.couponCode }}</p>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeStatsModal()">
-        Cerrar
-      </button>
-    </div>
-  </div>
-</div>
+                  <!-- Modal Statistics -->
+                  @if (showStatsModal) {
+                    <div class="modal-overlay" (click)="closeStatsModal()">
+                      <div class="modal-content stats-modal" (click)="$event.stopPropagation()">
+                        <div class="modal-header">
+                          <h2>
+                            <i class="fas fa-chart-bar"></i>
+                            Estadísticas del Cupón
+                          </h2>
+                          <button class="btn-close" (click)="closeStatsModal()">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
+                        @if (selectedCouponStats) {
+                          <div class="modal-body">
+                            <div class="stats-grid">
+                              <div class="stat-card">
+                                <div class="stat-icon">
+                                  <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-content">
+                                  <h3>{{ selectedCouponStats.totalUsages }}</h3>
+                                  <p>Usos Totales</p>
+                                </div>
+                              </div>
+                              <div class="stat-card">
+                                <div class="stat-icon">
+                                  <i class="fas fa-user-friends"></i>
+                                </div>
+                                <div class="stat-content">
+                                  <h3>{{ selectedCouponStats.uniqueUsers }}</h3>
+                                  <p>Usuarios Únicos</p>
+                                </div>
+                              </div>
+                              <div class="stat-card">
+                                <div class="stat-icon">
+                                  <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="stat-content">
+                                  <h3>${{ selectedCouponStats.totalDiscountGiven.toFixed(2) }}</h3>
+                                  <p>Descuento Total Dado</p>
+                                </div>
+                              </div>
+                              <div class="stat-card">
+                                <div class="stat-icon">
+                                  <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <div class="stat-content">
+                                  <h3>${{ selectedCouponStats.averageOrderValue.toFixed(2) }}</h3>
+                                  <p>Valor Promedio de Orden</p>
+                                </div>
+                              </div>
+                              <div class="stat-card">
+                                <div class="stat-icon">
+                                  <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="stat-content">
+                                  <h3>{{ selectedCouponStats.conversionRate.toFixed(1) }}%</h3>
+                                  <p>Tasa de Conversión</p>
+                                </div>
+                              </div>
+                              <div class="stat-card">
+                                <div class="stat-icon">
+                                  <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="stat-content">
+                                  <h3>${{ selectedCouponStats.revenue.toFixed(2) }}</h3>
+                                  <p>Revenue Generado</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="stats-info">
+                              <p><strong>Código:</strong> {{ selectedCouponStats.couponCode }}</p>
+                            </div>
+                          </div>
+                        }
+                        <div class="modal-footer">
+                          <button class="btn btn-secondary" (click)="closeStatsModal()">
+                            Cerrar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  }

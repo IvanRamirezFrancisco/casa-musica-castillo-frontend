@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -43,6 +43,7 @@ Chart.register(...registerables);
     InfoTooltipComponent
   ],
   templateUrl: './admin-demand-forecast.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-demand-forecast.component.css']
 })
 export class AdminDemandForecastComponent implements OnInit, OnDestroy {
@@ -94,8 +95,8 @@ export class AdminDemandForecastComponent implements OnInit, OnDestroy {
     this.closeDetail(); // Cleanup chart and overflow
   }
 
-  @HostListener('document:keydown.escape', ['$event'])
-  onEscapeKey(event: KeyboardEvent): void {
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
     if (this.selectedProduct || this.detailLoading) {
       this.closeDetail();
     }

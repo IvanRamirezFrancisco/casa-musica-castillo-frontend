@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -17,6 +17,7 @@ import { Order, OrderStatus, PaymentStatus } from '../../../models/order.model';
   imports: [CommonModule, FormsModule, MatTooltipModule],
   templateUrl: './admin-purchase-clustering-prediction.component.html',
   styleUrls: ['./admin-purchase-clustering-prediction.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [CurrencyPipe, DecimalPipe]
 })
 export class AdminPurchaseClusteringPredictionComponent implements OnInit, OnDestroy {

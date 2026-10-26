@@ -18,7 +18,7 @@
     <div class="section-header__left">
       <h2 style="margin:0; color:var(--text-color, #333);">Analítica de Patrones de Compra</h2>
       <p style="margin:0; color:var(--text-muted, #6c757d);">
-        Actualizado: {{ summary()?.executedAt | date:'medium' }}
+        Actualizado: {{ $safeNavigationMigration(summary()?.executedAt) | date:'medium' }}
       </p>
     </div>
     <div class="section-header__actions">
@@ -62,7 +62,7 @@
       <div>
         <h3 class="text-sm font-bold text-[#6D1331] uppercase tracking-wider mb-2 m-0">Hallazgo principal</h3>
         <p class="text-gray-800 text-base mb-2">
-          El patrón <strong class="font-bold">“{{ topProfile()?.clusterName }}”</strong> representa el {{ topProfile()?.percentage | number:'1.1-1' }} % de las órdenes analizadas y presenta un ticket promedio de <strong class="font-bold">{{ topProfile()?.averageTotal | currency:'MXN':'symbol-narrow':'1.2-2':'es-MX' }}</strong>.
+          El patrón <strong class="font-bold">“{{ topProfile()?.clusterName }}”</strong> representa el {{ $safeNavigationMigration(topProfile()?.percentage) | number:'1.1-1' }} % de las órdenes analizadas y presenta un ticket promedio de <strong class="font-bold">{{ $safeNavigationMigration(topProfile()?.averageTotal) | currency:'MXN':'symbol-narrow':'1.2-2':'es-MX' }}</strong>.
         </p>
         <p class="text-sm text-gray-700 m-0 border-t border-gray-200 pt-2 mt-2">
           <strong class="font-bold text-[#C75D2C]">Acción sugerida:</strong> {{ topProfile()?.recommendedAction }}
@@ -92,7 +92,7 @@
 
       <div class="summary-card">
         <h3 class="card-title">Ticket prom. del patrón principal</h3>
-        <p class="card-value">{{ topProfile()?.averageTotal | currency:'MXN':'symbol-narrow':'1.0-0':'es-MX' }}</p>
+        <p class="card-value">{{ $safeNavigationMigration(topProfile()?.averageTotal) | currency:'MXN':'symbol-narrow':'1.0-0':'es-MX' }}</p>
         <div style="margin-top: 0.5rem;">
           @if (summary()!.integrity.consistent) {
             <span class="integrity-badge consistent" title="Datos verificados"><span class="material-icons" style="font-size: 14px;">check_circle</span> Datos verificados</span>

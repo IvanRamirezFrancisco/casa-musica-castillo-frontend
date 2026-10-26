@@ -1,32 +1,34 @@
 <div class="p-4 md:p-6 max-w-[1600px] mx-auto bg-[#F8F9FA] min-h-screen">
-  
+
   <!-- ════════════════════════════════════════════════════════════════════════════
-       ENCABEZADO PROFESIONAL
-       ════════════════════════════════════════════════════════════════════════════ -->
+  ENCABEZADO PROFESIONAL
+  ════════════════════════════════════════════════════════════════════════════ -->
   <div class="mb-8">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
       <div>
         <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Pronóstico de demanda</h1>
         <p class="text-sm text-gray-500 mt-1">Estimación semanal de unidades mediante media móvil simple</p>
       </div>
-      
+
       <!-- Bloque colapsable técnico -->
       <div class="relative">
-        <button (click)="toggleTechInfo()" 
-                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+        <button (click)="toggleTechInfo()"
+          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           <span class="material-symbols-outlined text-[16px]">memory</span>
           Info Técnica
           <span class="material-symbols-outlined text-[16px] transition-transform"
-                [class.rotate-180]="showTechInfo">expand_more</span>
+          [class.rotate-180]="showTechInfo">expand_more</span>
         </button>
-        
-        <div *ngIf="showTechInfo" 
-             class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-100 p-4 z-20 text-xs text-gray-600">
-          <div class="mb-2"><span class="font-bold">Modelo:</span> {{ modelStatus?.modelVersion || 'N/A' }}</div>
-          <div class="mb-2"><span class="font-bold">Generado:</span> {{ modelStatus?.artifactGeneratedAt | date:'medium' }}</div>
-          <div class="mb-2"><span class="font-bold">Horizonte:</span> {{ modelStatus?.forecastHorizonWeeks }} semana(s)</div>
-          <div><span class="font-bold">Dataset:</span> {{ modelStatus?.dataSource }}</div>
-        </div>
+
+        @if (showTechInfo) {
+          <div
+            class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-100 p-4 z-20 text-xs text-gray-600">
+            <div class="mb-2"><span class="font-bold">Modelo:</span> {{ modelStatus?.modelVersion || 'N/A' }}</div>
+            <div class="mb-2"><span class="font-bold">Generado:</span> {{ $safeNavigationMigration(modelStatus?.artifactGeneratedAt) | date:'medium' }}</div>
+            <div class="mb-2"><span class="font-bold">Horizonte:</span> {{ modelStatus?.forecastHorizonWeeks }} semana(s)</div>
+            <div><span class="font-bold">Dataset:</span> {{ modelStatus?.dataSource }}</div>
+          </div>
+        }
       </div>
     </div>
 
@@ -41,7 +43,7 @@
           <p class="text-sm font-bold text-slate-800">Media móvil simple</p>
         </div>
       </div>
-      
+
       <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
         <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-purple-600">date_range</span>
@@ -51,7 +53,7 @@
           <p class="text-sm font-bold text-slate-800">12 semanas</p>
         </div>
       </div>
-      
+
       <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
         <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-emerald-600">check_circle</span>
@@ -61,7 +63,7 @@
           <p class="text-lg font-extrabold text-slate-800">{{ modelStatus?.eligibleProducts || 0 }}</p>
         </div>
       </div>
-      
+
       <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
         <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-orange-600">history_toggle_off</span>
@@ -75,8 +77,8 @@
   </div>
 
   <!-- ════════════════════════════════════════════════════════════════════════════
-       FILTROS REDISEÑADOS
-       ════════════════════════════════════════════════════════════════════════════ -->
+  FILTROS REDISEÑADOS
+  ════════════════════════════════════════════════════════════════════════════ -->
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
     <div class="bg-gray-50 border-b border-gray-100 px-5 py-3">
       <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -84,395 +86,415 @@
         Filtros de búsqueda
       </h3>
     </div>
-    
+
     <div class="p-5">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-        
+
         <!-- Búsqueda -->
         <div class="flex flex-col">
           <label class="text-xs font-semibold text-gray-600 mb-1">Producto o SKU</label>
-          <input type="text" [(ngModel)]="filterSearch" placeholder="Buscar..." 
-                 class="h-[42px] px-3 border border-[#D7DCE3] rounded-lg focus:outline-none focus:border-[#6D1331] focus:ring-1 focus:ring-[#6D1331] text-sm">
+          <input type="text" [(ngModel)]="filterSearch" placeholder="Buscar..."
+            class="h-[42px] px-3 border border-[#D7DCE3] rounded-lg focus:outline-none focus:border-[#6D1331] focus:ring-1 focus:ring-[#6D1331] text-sm">
+          </div>
+
+          <!-- Estado Pronóstico -->
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-gray-600 mb-1">Estado</label>
+            <select [(ngModel)]="filterForecastStatus"
+              class="h-[42px] px-3 border border-[#D7DCE3] rounded-lg focus:outline-none focus:border-[#6D1331] focus:ring-1 focus:ring-[#6D1331] text-sm bg-white">
+              <option value="">Todos</option>
+              <option value="AVAILABLE">Pronóstico disponible</option>
+              <option value="INSUFFICIENT_HISTORY">Historial insuficiente</option>
+            </select>
+          </div>
+
+          <!-- Tendencia -->
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-gray-600 mb-1">Tendencia</label>
+            <select [(ngModel)]="filterTrend"
+              class="h-[42px] px-3 border border-[#D7DCE3] rounded-lg focus:outline-none focus:border-[#6D1331] focus:ring-1 focus:ring-[#6D1331] text-sm bg-white">
+              <option value="">Todas</option>
+              <option value="CRECIENTE">Creciente</option>
+              <option value="DECRECIENTE">Decreciente</option>
+              <option value="ESTABLE">Estable</option>
+            </select>
+          </div>
+
+          <!-- Prioridad -->
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-gray-600 mb-1">Prioridad</label>
+            <select [(ngModel)]="filterPriority"
+              class="h-[42px] px-3 border border-[#D7DCE3] rounded-lg focus:outline-none focus:border-[#6D1331] focus:ring-1 focus:ring-[#6D1331] text-sm bg-white">
+              <option value="">Todas</option>
+              <option value="ALTA">Alta</option>
+              <option value="MEDIA">Media</option>
+              <option value="BAJA">Baja</option>
+            </select>
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex gap-2 h-[42px]">
+            <button (click)="applyFilter()"
+              class="flex-1 bg-[#6D1331] hover:bg-[#8B1A40] text-white font-semibold rounded-lg text-sm transition-colors flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-[18px]">search</span>
+              Aplicar
+            </button>
+            <button (click)="clearFilters()"
+              class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold rounded-lg text-sm transition-colors">
+              Limpiar
+            </button>
+          </div>
+
         </div>
-        
-        <!-- Estado Pronóstico -->
-        <div class="flex flex-col">
-          <label class="text-xs font-semibold text-gray-600 mb-1">Estado</label>
-          <select [(ngModel)]="filterForecastStatus"
-                  class="h-[42px] px-3 border border-[#D7DCE3] rounded-lg focus:outline-none focus:border-[#6D1331] focus:ring-1 focus:ring-[#6D1331] text-sm bg-white">
-            <option value="">Todos</option>
-            <option value="AVAILABLE">Pronóstico disponible</option>
-            <option value="INSUFFICIENT_HISTORY">Historial insuficiente</option>
-          </select>
-        </div>
-        
-        <!-- Tendencia -->
-        <div class="flex flex-col">
-          <label class="text-xs font-semibold text-gray-600 mb-1">Tendencia</label>
-          <select [(ngModel)]="filterTrend"
-                  class="h-[42px] px-3 border border-[#D7DCE3] rounded-lg focus:outline-none focus:border-[#6D1331] focus:ring-1 focus:ring-[#6D1331] text-sm bg-white">
-            <option value="">Todas</option>
-            <option value="CRECIENTE">Creciente</option>
-            <option value="DECRECIENTE">Decreciente</option>
-            <option value="ESTABLE">Estable</option>
-          </select>
-        </div>
-        
-        <!-- Prioridad -->
-        <div class="flex flex-col">
-          <label class="text-xs font-semibold text-gray-600 mb-1">Prioridad</label>
-          <select [(ngModel)]="filterPriority"
-                  class="h-[42px] px-3 border border-[#D7DCE3] rounded-lg focus:outline-none focus:border-[#6D1331] focus:ring-1 focus:ring-[#6D1331] text-sm bg-white">
-            <option value="">Todas</option>
-            <option value="ALTA">Alta</option>
-            <option value="MEDIA">Media</option>
-            <option value="BAJA">Baja</option>
-          </select>
-        </div>
-        
-        <!-- Acciones -->
-        <div class="flex gap-2 h-[42px]">
-          <button (click)="applyFilter()"
-                  class="flex-1 bg-[#6D1331] hover:bg-[#8B1A40] text-white font-semibold rounded-lg text-sm transition-colors flex items-center justify-center gap-1">
-            <span class="material-symbols-outlined text-[18px]">search</span>
-            Aplicar
-          </button>
-          <button (click)="clearFilters()"
-                  class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold rounded-lg text-sm transition-colors">
-            Limpiar
-          </button>
-        </div>
-        
       </div>
     </div>
-  </div>
 
-  <!-- ════════════════════════════════════════════════════════════════════════════
-       TABLA PROFESIONAL
-       ════════════════════════════════════════════════════════════════════════════ -->
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    
-    <!-- Loader de tabla -->
-    <div *ngIf="tableLoading" class="p-12 flex flex-col items-center justify-center text-gray-400">
-      <div class="w-10 h-10 border-4 border-gray-200 border-t-[#6D1331] rounded-full animate-spin mb-3"></div>
-      <p class="text-sm font-medium">Cargando productos...</p>
-    </div>
-    
-    <!-- Error de tabla -->
-    <div *ngIf="tableError && !tableLoading" class="p-12 text-center text-red-500">
-      <span class="material-symbols-outlined text-4xl mb-2">error</span>
-      <p class="font-medium">Ocurrió un error al cargar los datos.</p>
-      <button (click)="loadProducts()" class="mt-4 px-4 py-2 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100">
-        Reintentar
-      </button>
-    </div>
-    
-    <!-- Tabla -->
-    <div class="overflow-x-auto" *ngIf="!tableLoading && !tableError">
-      <table class="w-full text-left border-collapse" matSort (matSortChange)="onSortChange($event)">
-        
-        <thead>
-          <tr class="bg-gray-50 border-b border-gray-100">
-            <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="productName">Producto</th>
-            <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="forecastStatus">Estado</th>
-            <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="forecastUnitsRoundedUp">Pronóstico</th>
-            <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="trend">Tendencia</th>
-            <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="demandPriority">Prioridad</th>
-            <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="currentStock">Stock</th>
-            <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="suggestedReplenishment">Reposición</th>
-            <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap text-center">Acciones</th>
-          </tr>
-        </thead>
-        
-        <tbody class="divide-y divide-gray-100">
-          <!-- Empty State -->
-          <tr *ngIf="products.length === 0">
-            <td colspan="8" class="p-12 text-center text-gray-400">
-              <span class="material-symbols-outlined text-4xl mb-2">inbox</span>
-              <p class="text-sm">No se encontraron productos con estos filtros.</p>
-            </td>
-          </tr>
-          
-          <tr *ngFor="let product of products" class="hover:bg-gray-50/50 transition-colors group">
-            
-            <!-- Producto -->
-            <td class="p-4">
-              <div class="flex flex-col">
-                <span class="text-sm font-bold text-slate-800 line-clamp-1">{{ product.productName }}</span>
-                <span class="text-xs text-gray-400 mt-0.5">SKU: {{ product.productSku }} &bull; {{ product.categoryName }}</span>
-              </div>
-            </td>
-            
-            <!-- Estado -->
-            <td class="p-4">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide"
-                    [ngClass]="product.forecastStatus === 'AVAILABLE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'">
-                {{ product.forecastStatus === 'AVAILABLE' ? 'Disponible' : 'Sin historial' }}
-              </span>
-            </td>
-            
-            <!-- Pronóstico -->
-            <td class="p-4">
-              <span *ngIf="product.forecastStatus === 'AVAILABLE'" class="text-sm font-bold text-slate-700">
-                {{ product.forecastUnitsRoundedUp }} unds
-              </span>
-              <span *ngIf="product.forecastStatus !== 'AVAILABLE'" class="text-sm text-gray-400">-</span>
-            </td>
-            
-            <!-- Tendencia -->
-            <td class="p-4">
-              <div *ngIf="product.forecastStatus === 'AVAILABLE'" class="flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px]"
+    <!-- ════════════════════════════════════════════════════════════════════════════
+    TABLA PROFESIONAL
+    ════════════════════════════════════════════════════════════════════════════ -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+
+      <!-- Loader de tabla -->
+      @if (tableLoading) {
+        <div class="p-12 flex flex-col items-center justify-center text-gray-400">
+          <div class="w-10 h-10 border-4 border-gray-200 border-t-[#6D1331] rounded-full animate-spin mb-3"></div>
+          <p class="text-sm font-medium">Cargando productos...</p>
+        </div>
+      }
+
+      <!-- Error de tabla -->
+      @if (tableError && !tableLoading) {
+        <div class="p-12 text-center text-red-500">
+          <span class="material-symbols-outlined text-4xl mb-2">error</span>
+          <p class="font-medium">Ocurrió un error al cargar los datos.</p>
+          <button (click)="loadProducts()" class="mt-4 px-4 py-2 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100">
+            Reintentar
+          </button>
+        </div>
+      }
+
+      <!-- Tabla -->
+      @if (!tableLoading && !tableError) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse" matSort (matSortChange)="onSortChange($event)">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="productName">Producto</th>
+                <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="forecastStatus">Estado</th>
+                <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="forecastUnitsRoundedUp">Pronóstico</th>
+                <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="trend">Tendencia</th>
+                <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="demandPriority">Prioridad</th>
+                <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="currentStock">Stock</th>
+                <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap" mat-sort-header="suggestedReplenishment">Reposición</th>
+                <th class="p-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <!-- Empty State -->
+              @if (products.length === 0) {
+                <tr>
+                  <td colspan="8" class="p-12 text-center text-gray-400">
+                    <span class="material-symbols-outlined text-4xl mb-2">inbox</span>
+                    <p class="text-sm">No se encontraron productos con estos filtros.</p>
+                  </td>
+                </tr>
+              }
+              @for (product of products; track product) {
+                <tr class="hover:bg-gray-50/50 transition-colors group">
+                  <!-- Producto -->
+                  <td class="p-4">
+                    <div class="flex flex-col">
+                      <span class="text-sm font-bold text-slate-800 line-clamp-1">{{ product.productName }}</span>
+                      <span class="text-xs text-gray-400 mt-0.5">SKU: {{ product.productSku }} &bull; {{ product.categoryName }}</span>
+                    </div>
+                  </td>
+                  <!-- Estado -->
+                  <td class="p-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide"
+                      [ngClass]="product.forecastStatus === 'AVAILABLE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'">
+                      {{ product.forecastStatus === 'AVAILABLE' ? 'Disponible' : 'Sin historial' }}
+                    </span>
+                  </td>
+                  <!-- Pronóstico -->
+                  <td class="p-4">
+                    @if (product.forecastStatus === 'AVAILABLE') {
+                      <span class="text-sm font-bold text-slate-700">
+                        {{ product.forecastUnitsRoundedUp }} unds
+                      </span>
+                    }
+                    @if (product.forecastStatus !== 'AVAILABLE') {
+                      <span class="text-sm text-gray-400">-</span>
+                    }
+                  </td>
+                  <!-- Tendencia -->
+                  <td class="p-4">
+                    @if (product.forecastStatus === 'AVAILABLE') {
+                      <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]"
                       [ngClass]="{
                         'text-emerald-500': product.trend === 'CRECIENTE',
                         'text-red-500': product.trend === 'DECRECIENTE',
                         'text-gray-400': product.trend === 'ESTABLE'
                       }">
-                  {{ product.trend === 'CRECIENTE' ? 'trending_up' : (product.trend === 'DECRECIENTE' ? 'trending_down' : 'trending_flat') }}
-                </span>
-                <span class="text-sm font-medium text-slate-700">{{ translateTrend(product.trend) }}</span>
-              </div>
-              <span *ngIf="product.forecastStatus !== 'AVAILABLE'" class="text-sm text-gray-400">-</span>
-            </td>
-            
-            <!-- Prioridad -->
-            <td class="p-4">
-              <span *ngIf="product.forecastStatus === 'AVAILABLE'" 
-                    class="text-xs font-bold px-2 py-1 rounded-md"
+                          {{ product.trend === 'CRECIENTE' ? 'trending_up' : (product.trend === 'DECRECIENTE' ? 'trending_down' : 'trending_flat') }}
+                        </span>
+                        <span class="text-sm font-medium text-slate-700">{{ translateTrend(product.trend) }}</span>
+                      </div>
+                    }
+                    @if (product.forecastStatus !== 'AVAILABLE') {
+                      <span class="text-sm text-gray-400">-</span>
+                    }
+                  </td>
+                  <!-- Prioridad -->
+                  <td class="p-4">
+                    @if (product.forecastStatus === 'AVAILABLE') {
+                      <span
+                        class="text-xs font-bold px-2 py-1 rounded-md"
                     [ngClass]="{
                       'bg-red-50 text-red-700': product.demandPriority === 'ALTA',
                       'bg-orange-50 text-orange-700': product.demandPriority === 'MEDIA',
                       'bg-slate-100 text-slate-600': product.demandPriority === 'BAJA'
                     }">
-                {{ product.demandPriority }}
-              </span>
-              <span *ngIf="product.forecastStatus !== 'AVAILABLE'" class="text-sm text-gray-400">-</span>
-            </td>
-            
-            <!-- Stock -->
-            <td class="p-4">
-              <span class="text-sm font-medium text-slate-700">{{ product.currentStock }}</span>
-            </td>
-            
-            <!-- Reposición -->
-            <td class="p-4">
-              <span *ngIf="product.forecastStatus === 'AVAILABLE'" 
-                    class="text-sm font-bold"
-                    [ngClass]="product.suggestedReplenishment > 0 ? 'text-amber-600' : 'text-gray-400'">
-                {{ product.suggestedReplenishment > 0 ? '+' + product.suggestedReplenishment : '0' }}
-              </span>
-              <span *ngIf="product.forecastStatus !== 'AVAILABLE'" class="text-sm text-gray-400">-</span>
-            </td>
-            
-            <!-- Acciones -->
-            <td class="p-4 text-center">
-              <button (click)="viewDetail(product.productId)"
+                        {{ product.demandPriority }}
+                      </span>
+                    }
+                    @if (product.forecastStatus !== 'AVAILABLE') {
+                      <span class="text-sm text-gray-400">-</span>
+                    }
+                  </td>
+                  <!-- Stock -->
+                  <td class="p-4">
+                    <span class="text-sm font-medium text-slate-700">{{ product.currentStock }}</span>
+                  </td>
+                  <!-- Reposición -->
+                  <td class="p-4">
+                    @if (product.forecastStatus === 'AVAILABLE') {
+                      <span
+                        class="text-sm font-bold"
+                        [ngClass]="product.suggestedReplenishment > 0 ? 'text-amber-600' : 'text-gray-400'">
+                        {{ product.suggestedReplenishment > 0 ? '+' + product.suggestedReplenishment : '0' }}
+                      </span>
+                    }
+                    @if (product.forecastStatus !== 'AVAILABLE') {
+                      <span class="text-sm text-gray-400">-</span>
+                    }
+                  </td>
+                  <!-- Acciones -->
+                  <td class="p-4 text-center">
+                    <button (click)="viewDetail(product.productId)"
                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:border-[#6D1331] hover:text-[#6D1331] text-gray-600 font-semibold rounded-lg text-xs transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6D1331]/30">
-                <span class="material-symbols-outlined text-[16px]">analytics</span>
-                Ver análisis
+                      <span class="material-symbols-outlined text-[16px]">analytics</span>
+                      Ver análisis
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <!-- Paginador -->
+      <mat-paginator [length]="totalElements"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        (page)="onPageChange($event)"
+        class="border-t border-gray-100">
+      </mat-paginator>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════
+  MODAL DE DETALLE (Overlay)
+  ════════════════════════════════════════════════════════════════════════════ -->
+  @if (selectedProduct || detailLoading) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      role="dialog" aria-modal="true" aria-labelledby="forecast-modal-title">
+      <!-- Backdrop con Blur -->
+      <div class="absolute inset-0 transition-opacity duration-200"
+        style="background: rgba(15, 23, 42, 0.42); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);"
+        (click)="onBackdropClick($event)">
+      </div>
+      <!-- Contenedor del Modal -->
+      <div class="relative bg-white rounded-[16px] shadow-2xl flex flex-col w-full"
+        style="width: min(960px, calc(100vw - 48px)); max-height: 90vh;"
+        (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="flex items-start justify-between p-5 md:p-6 border-b border-gray-100 shrink-0">
+          <div class="pr-8">
+            <h2 id="forecast-modal-title" class="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+              {{ selectedProduct?.productName || 'Cargando análisis...' }}
+            </h2>
+            @if (selectedProduct) {
+              <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500 mt-1">
+                <span class="font-mono bg-gray-100 px-2 py-0.5 rounded text-xs">{{ selectedProduct.productSku }}</span>
+                <span>&bull;</span>
+                <span>{{ selectedProduct.categoryName }}</span>
+              </div>
+            }
+          </div>
+          <button (click)="closeDetail()" aria-label="Cerrar detalle del pronóstico"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors shrink-0">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <!-- Body Scrollable -->
+        <div class="flex-1 overflow-y-auto p-5 md:p-6 bg-gray-50/50">
+          <!-- Loading State -->
+          @if (detailLoading) {
+            <div class="flex flex-col items-center justify-center py-20 text-gray-400">
+              <div class="w-10 h-10 border-4 border-gray-200 border-t-[#6D1331] rounded-full animate-spin mb-4"></div>
+              <p class="font-medium">Procesando historial y proyecciones...</p>
+            </div>
+          }
+          <!-- Error State -->
+          @if (detailError && !detailLoading) {
+            <div class="text-center py-20 text-red-500">
+              <span class="material-symbols-outlined text-5xl mb-2">error_outline</span>
+              <p class="font-medium">Ocurrió un error al cargar los detalles del análisis.</p>
+              <button (click)="closeDetail()" class="mt-4 px-6 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50">
+                Cerrar
               </button>
-            </td>
-            
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <!-- Paginador -->
-    <mat-paginator [length]="totalElements"
-                   [pageSize]="pageSize"
-                   [pageSizeOptions]="[5, 10, 25, 50]"
-                   (page)="onPageChange($event)"
-                   class="border-t border-gray-100">
-    </mat-paginator>
-  </div>
-  
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════════════════
-     MODAL DE DETALLE (Overlay)
-     ════════════════════════════════════════════════════════════════════════════ -->
-<div *ngIf="selectedProduct || detailLoading" 
-     class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-     role="dialog" aria-modal="true" aria-labelledby="forecast-modal-title">
-     
-  <!-- Backdrop con Blur -->
-  <div class="absolute inset-0 transition-opacity duration-200" 
-       style="background: rgba(15, 23, 42, 0.42); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);"
-       (click)="onBackdropClick($event)">
-  </div>
-  
-  <!-- Contenedor del Modal -->
-  <div class="relative bg-white rounded-[16px] shadow-2xl flex flex-col w-full"
-       style="width: min(960px, calc(100vw - 48px)); max-height: 90vh;"
-       (click)="$event.stopPropagation()">
-       
-    <!-- Header -->
-    <div class="flex items-start justify-between p-5 md:p-6 border-b border-gray-100 shrink-0">
-      <div class="pr-8">
-        <h2 id="forecast-modal-title" class="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
-          {{ selectedProduct?.productName || 'Cargando análisis...' }}
-        </h2>
-        <div *ngIf="selectedProduct" class="flex flex-wrap items-center gap-2 text-sm text-gray-500 mt-1">
-          <span class="font-mono bg-gray-100 px-2 py-0.5 rounded text-xs">{{ selectedProduct.productSku }}</span>
-          <span>&bull;</span>
-          <span>{{ selectedProduct.categoryName }}</span>
-        </div>
-      </div>
-      
-      <button (click)="closeDetail()" aria-label="Cerrar detalle del pronóstico"
-              class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors shrink-0">
-        <span class="material-symbols-outlined text-[20px]">close</span>
-      </button>
-    </div>
-    
-    <!-- Body Scrollable -->
-    <div class="flex-1 overflow-y-auto p-5 md:p-6 bg-gray-50/50">
-      
-      <!-- Loading State -->
-      <div *ngIf="detailLoading" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <div class="w-10 h-10 border-4 border-gray-200 border-t-[#6D1331] rounded-full animate-spin mb-4"></div>
-        <p class="font-medium">Procesando historial y proyecciones...</p>
-      </div>
-      
-      <!-- Error State -->
-      <div *ngIf="detailError && !detailLoading" class="text-center py-20 text-red-500">
-        <span class="material-symbols-outlined text-5xl mb-2">error_outline</span>
-        <p class="font-medium">Ocurrió un error al cargar los detalles del análisis.</p>
-        <button (click)="closeDetail()" class="mt-4 px-6 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50">
-          Cerrar
-        </button>
-      </div>
-      
-      <!-- Contenido Real -->
-      <div *ngIf="selectedProduct && !detailLoading" class="space-y-6">
-        
-        <!-- Tarjetas Resumen -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-            <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center justify-between">
-              Estado
-              <app-info-tooltip tooltipTitle="Estado del pronóstico" ariaLabel="Información sobre el estado del pronóstico">
-                <span *ngIf="selectedProduct.forecastStatus === 'AVAILABLE'">El producto cuenta con historial suficiente y tiene un pronóstico disponible para la próxima semana.</span>
-                <span *ngIf="selectedProduct.forecastStatus === 'INSUFFICIENT_HISTORY'">El producto todavía no cuenta con suficientes semanas de historial para generar un pronóstico confiable.</span>
-              </app-info-tooltip>
-            </p>
-            <p class="text-sm font-bold text-slate-800">{{ translateStatus(selectedProduct.forecastStatus) }}</p>
-          </div>
-          
-          <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm border-b-2 border-b-[#C5A059]">
-            <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center justify-between">
-              Demanda Estimada
-              <app-info-tooltip tooltipTitle="Demanda estimada" ariaLabel="Información sobre la demanda estimada">
-                <span>Cantidad de unidades que se espera vender durante la próxima semana, calculada mediante una media móvil simple de las últimas 12 semanas.</span>
-                <span *ngIf="selectedProduct.forecastUnits">Valor exacto del modelo: {{ selectedProduct.forecastUnits }} unidades.</span>
-                <span>El valor visible se redondea hacia arriba para facilitar la planificación de inventario.</span>
-              </app-info-tooltip>
-            </p>
-            <p class="text-2xl font-black text-slate-800">
-              {{ selectedProduct.forecastStatus === 'AVAILABLE' ? selectedProduct.forecastUnitsRoundedUp : '-' }}
-              <span class="text-sm font-medium text-gray-400 ml-1">unds</span>
-            </p>
-          </div>
-          
-          <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-            <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center justify-between">
-              Stock Actual
-              <app-info-tooltip tooltipTitle="Stock actual" ariaLabel="Información sobre el stock actual">
-                <span>Cantidad de unidades disponibles actualmente en el inventario del sistema.</span>
-                <span>Este valor se consulta desde la base de datos al abrir el detalle y puede ser diferente al stock registrado cuando se generó el modelo.</span>
-              </app-info-tooltip>
-            </p>
-            <p class="text-2xl font-black text-slate-800">
-              {{ selectedProduct.currentStock }}
-              <span class="text-sm font-medium text-gray-400 ml-1">unds</span>
-            </p>
-          </div>
-          
-          <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm border-b-2 border-b-[#6D1331]">
-            <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center justify-between">
-              Reposición Sugerida
-              <app-info-tooltip tooltipTitle="Reposición sugerida" ariaLabel="Información sobre la reposición sugerida">
-                <span>Cantidad mínima de unidades que convendría incorporar para cubrir la demanda estimada de la próxima semana.</span>
-                <span>Se calcula comparando la demanda estimada redondeada con el stock actual. Si el inventario es suficiente, el resultado es cero.</span>
-                <span *ngIf="selectedProduct.suggestedReplenishment === 0">El stock actual es suficiente y no se requiere reposición inmediata.</span>
-                <span *ngIf="selectedProduct.suggestedReplenishment > 0">Se recomienda reponer {{ selectedProduct.suggestedReplenishment }} unidades.</span>
-              </app-info-tooltip>
-            </p>
-            <p class="text-2xl font-black text-[#6D1331]">
-              {{ selectedProduct.forecastStatus === 'AVAILABLE' ? selectedProduct.suggestedReplenishment : '-' }}
-              <span class="text-sm font-medium text-gray-400 ml-1">unds</span>
-            </p>
-          </div>
-        </div>
-        
-        <!-- Análisis e Interpretación -->
-        <div *ngIf="selectedProduct.forecastStatus === 'AVAILABLE'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          <!-- Metricas Secundarias -->
-          <div class="md:col-span-1 flex flex-col gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex items-center justify-between">
-              <span class="text-sm text-gray-600 font-medium">Tendencia</span>
-              <span class="text-sm font-bold" 
-                    [ngClass]="{'text-emerald-600': selectedProduct.trend === 'CRECIENTE', 'text-red-600': selectedProduct.trend === 'DECRECIENTE', 'text-gray-600': selectedProduct.trend === 'ESTABLE'}">
-                {{ translateTrend(selectedProduct.trend) }}
-              </span>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex items-center justify-between">
-              <span class="text-sm text-gray-600 font-medium">Prioridad</span>
-              <span class="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-700">
-                {{ translatePriority(selectedProduct.demandPriority) }}
-              </span>
+          }
+          <!-- Contenido Real -->
+          @if (selectedProduct && !detailLoading) {
+            <div class="space-y-6">
+              <!-- Tarjetas Resumen -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                  <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center justify-between">
+                    Estado
+                    <app-info-tooltip tooltipTitle="Estado del pronóstico" ariaLabel="Información sobre el estado del pronóstico">
+                      @if (selectedProduct.forecastStatus === 'AVAILABLE') {
+                        <span>El producto cuenta con historial suficiente y tiene un pronóstico disponible para la próxima semana.</span>
+                      }
+                      @if (selectedProduct.forecastStatus === 'INSUFFICIENT_HISTORY') {
+                        <span>El producto todavía no cuenta con suficientes semanas de historial para generar un pronóstico confiable.</span>
+                      }
+                    </app-info-tooltip>
+                  </p>
+                  <p class="text-sm font-bold text-slate-800">{{ translateStatus(selectedProduct.forecastStatus) }}</p>
+                </div>
+                <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm border-b-2 border-b-[#C5A059]">
+                  <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center justify-between">
+                    Demanda Estimada
+                    <app-info-tooltip tooltipTitle="Demanda estimada" ariaLabel="Información sobre la demanda estimada">
+                      <span>Cantidad de unidades que se espera vender durante la próxima semana, calculada mediante una media móvil simple de las últimas 12 semanas.</span>
+                      @if (selectedProduct.forecastUnits) {
+                        <span>Valor exacto del modelo: {{ selectedProduct.forecastUnits }} unidades.</span>
+                      }
+                      <span>El valor visible se redondea hacia arriba para facilitar la planificación de inventario.</span>
+                    </app-info-tooltip>
+                  </p>
+                  <p class="text-2xl font-black text-slate-800">
+                    {{ selectedProduct.forecastStatus === 'AVAILABLE' ? selectedProduct.forecastUnitsRoundedUp : '-' }}
+                    <span class="text-sm font-medium text-gray-400 ml-1">unds</span>
+                  </p>
+                </div>
+                <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                  <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center justify-between">
+                    Stock Actual
+                    <app-info-tooltip tooltipTitle="Stock actual" ariaLabel="Información sobre el stock actual">
+                      <span>Cantidad de unidades disponibles actualmente en el inventario del sistema.</span>
+                      <span>Este valor se consulta desde la base de datos al abrir el detalle y puede ser diferente al stock registrado cuando se generó el modelo.</span>
+                    </app-info-tooltip>
+                  </p>
+                  <p class="text-2xl font-black text-slate-800">
+                    {{ selectedProduct.currentStock }}
+                    <span class="text-sm font-medium text-gray-400 ml-1">unds</span>
+                  </p>
+                </div>
+                <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm border-b-2 border-b-[#6D1331]">
+                  <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center justify-between">
+                    Reposición Sugerida
+                    <app-info-tooltip tooltipTitle="Reposición sugerida" ariaLabel="Información sobre la reposición sugerida">
+                      <span>Cantidad mínima de unidades que convendría incorporar para cubrir la demanda estimada de la próxima semana.</span>
+                      <span>Se calcula comparando la demanda estimada redondeada con el stock actual. Si el inventario es suficiente, el resultado es cero.</span>
+                      @if (selectedProduct.suggestedReplenishment === 0) {
+                        <span>El stock actual es suficiente y no se requiere reposición inmediata.</span>
+                      }
+                      @if (selectedProduct.suggestedReplenishment > 0) {
+                        <span>Se recomienda reponer {{ selectedProduct.suggestedReplenishment }} unidades.</span>
+                      }
+                    </app-info-tooltip>
+                  </p>
+                  <p class="text-2xl font-black text-[#6D1331]">
+                    {{ selectedProduct.forecastStatus === 'AVAILABLE' ? selectedProduct.suggestedReplenishment : '-' }}
+                    <span class="text-sm font-medium text-gray-400 ml-1">unds</span>
+                  </p>
+                </div>
+              </div>
+              <!-- Análisis e Interpretación -->
+              @if (selectedProduct.forecastStatus === 'AVAILABLE') {
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <!-- Metricas Secundarias -->
+                  <div class="md:col-span-1 flex flex-col gap-3">
+                    <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                      <span class="text-sm text-gray-600 font-medium">Tendencia</span>
+                      <span class="text-sm font-bold"
+                        [ngClass]="{'text-emerald-600': selectedProduct.trend === 'CRECIENTE', 'text-red-600': selectedProduct.trend === 'DECRECIENTE', 'text-gray-600': selectedProduct.trend === 'ESTABLE'}">
+                        {{ translateTrend(selectedProduct.trend) }}
+                      </span>
+                    </div>
+                    <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                      <span class="text-sm text-gray-600 font-medium">Prioridad</span>
+                      <span class="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-700">
+                        {{ translatePriority(selectedProduct.demandPriority) }}
+                      </span>
+                    </div>
+                    <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                      <span class="text-sm text-gray-600 font-medium">Historial</span>
+                      <span class="text-sm font-bold text-slate-800">{{ selectedProduct.historyWeeksCount }} semanas</span>
+                    </div>
+                  </div>
+                  <!-- Tarjeta de Interpretación -->
+                  <div class="md:col-span-2 bg-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm">
+                    <h3 class="text-sm font-bold text-indigo-900 flex items-center gap-2 mb-3">
+                      <span class="material-symbols-outlined text-indigo-600 text-[18px]">lightbulb</span>
+                      Interpretación del pronóstico
+                    </h3>
+                    <p class="text-sm text-indigo-800 leading-relaxed mb-3">
+                      {{ getInterpretation(selectedProduct) }}
+                    </p>
+                    <p class="text-sm text-indigo-800 font-medium">
+                      {{ getPriorityInterpretation(selectedProduct) }}
+                    </p>
+                  </div>
+                </div>
+              }
+              <!-- Mensaje sin historial -->
+              @if (selectedProduct.forecastStatus === 'INSUFFICIENT_HISTORY') {
+                <div class="bg-orange-50 border border-orange-100 rounded-xl p-6 text-center">
+                  <span class="material-symbols-outlined text-4xl text-orange-400 mb-2">history_toggle_off</span>
+                  <h3 class="text-lg font-bold text-orange-900 mb-1">Historial de ventas insuficiente</h3>
+                  <p class="text-sm text-orange-800">Este producto no cuenta con ventas registradas en las últimas semanas, por lo que el modelo matemático no puede proyectar la demanda. Se recomienda mantener el stock mínimo general.</p>
+                </div>
+              }
+              <!-- Contenedor de la Gráfica -->
+              @if (selectedProduct.forecastStatus === 'AVAILABLE') {
+                <div class="bg-white border border-gray-100 rounded-xl shadow-sm p-5">
+                  <div class="mb-4">
+                    <h3 class="text-base font-bold text-slate-800">Historial semanal y pronóstico</h3>
+                    <p class="text-xs text-gray-500">Últimas 12 semanas completas y estimación para la próxima semana.</p>
+                  </div>
+                  <div class="relative w-full h-[320px]">
+                    <canvas id="forecastChart"></canvas>
+                  </div>
+                </div>
+              }
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex items-center justify-between">
-              <span class="text-sm text-gray-600 font-medium">Historial</span>
-              <span class="text-sm font-bold text-slate-800">{{ selectedProduct.historyWeeksCount }} semanas</span>
-            </div>
-          </div>
-          
-          <!-- Tarjeta de Interpretación -->
-          <div class="md:col-span-2 bg-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm">
-            <h3 class="text-sm font-bold text-indigo-900 flex items-center gap-2 mb-3">
-              <span class="material-symbols-outlined text-indigo-600 text-[18px]">lightbulb</span>
-              Interpretación del pronóstico
-            </h3>
-            <p class="text-sm text-indigo-800 leading-relaxed mb-3">
-              {{ getInterpretation(selectedProduct) }}
-            </p>
-            <p class="text-sm text-indigo-800 font-medium">
-              {{ getPriorityInterpretation(selectedProduct) }}
-            </p>
-          </div>
+          }
         </div>
-
-        <!-- Mensaje sin historial -->
-        <div *ngIf="selectedProduct.forecastStatus === 'INSUFFICIENT_HISTORY'" class="bg-orange-50 border border-orange-100 rounded-xl p-6 text-center">
-          <span class="material-symbols-outlined text-4xl text-orange-400 mb-2">history_toggle_off</span>
-          <h3 class="text-lg font-bold text-orange-900 mb-1">Historial de ventas insuficiente</h3>
-          <p class="text-sm text-orange-800">Este producto no cuenta con ventas registradas en las últimas semanas, por lo que el modelo matemático no puede proyectar la demanda. Se recomienda mantener el stock mínimo general.</p>
+        <!-- Footer -->
+        <div class="p-4 md:p-5 border-t border-gray-100 flex justify-end shrink-0 bg-white rounded-b-[16px]">
+          <button (click)="closeDetail()"
+            class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg text-sm transition-colors">
+            Cerrar
+          </button>
         </div>
-        
-        <!-- Contenedor de la Gráfica -->
-        <div *ngIf="selectedProduct.forecastStatus === 'AVAILABLE'" class="bg-white border border-gray-100 rounded-xl shadow-sm p-5">
-          <div class="mb-4">
-            <h3 class="text-base font-bold text-slate-800">Historial semanal y pronóstico</h3>
-            <p class="text-xs text-gray-500">Últimas 12 semanas completas y estimación para la próxima semana.</p>
-          </div>
-          <div class="relative w-full h-[320px]">
-            <canvas id="forecastChart"></canvas>
-          </div>
-        </div>
-
       </div>
     </div>
-    
-    <!-- Footer -->
-    <div class="p-4 md:p-5 border-t border-gray-100 flex justify-end shrink-0 bg-white rounded-b-[16px]">
-      <button (click)="closeDetail()" 
-              class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg text-sm transition-colors">
-        Cerrar
-      </button>
-    </div>
-    
-  </div>
-</div>
+  }

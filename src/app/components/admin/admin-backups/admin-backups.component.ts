@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, interval, takeUntil } from 'rxjs';
@@ -28,6 +28,7 @@ import { NotificationCenterService } from '../../../core/services/notification-c
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-backups.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-backups.component.css'
 })
 export class AdminBackupsComponent implements OnInit, OnDestroy {

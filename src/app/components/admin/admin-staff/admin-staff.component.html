@@ -2,619 +2,648 @@
 <div class="container-fluid py-4">
 
   <!-- ═══════════════════════════════════════════════════
-       TABS: Empleados Activos | Invitaciones
-       ═══════════════════════════════════════════════════ -->
+  TABS: Empleados Activos | Invitaciones
+  ═══════════════════════════════════════════════════ -->
   <div class="staff-tabs mb-3">
     <button class="staff-tab"
-            [class.active]="activeTab === 'staff'"
-            (click)="switchTab('staff')">
+      [class.active]="activeTab === 'staff'"
+      (click)="switchTab('staff')">
       <i class="bi bi-people-fill me-2"></i>Empleados Activos
     </button>
     <button class="staff-tab"
-            [class.active]="activeTab === 'invitations'"
-            (click)="switchTab('invitations')">
+      [class.active]="activeTab === 'invitations'"
+      (click)="switchTab('invitations')">
       <i class="bi bi-envelope-paper-fill me-2"></i>Invitaciones
-      <span *ngIf="pendingCount > 0" class="tab-badge">{{ pendingCount }}</span>
+      @if (pendingCount > 0) {
+        <span class="tab-badge">{{ pendingCount }}</span>
+      }
     </button>
     <div class="tab-spacer"></div>
-    <button *ngIf="authService.hasPermission('USER_CREATE')" class="btn btn-tinto btn-sm" (click)="openInviteModal()">
-      <i class="bi bi-person-plus-fill me-1"></i> Invitar Empleado
-    </button>
+    @if (authService.hasPermission('USER_CREATE')) {
+      <button class="btn btn-tinto btn-sm" (click)="openInviteModal()">
+        <i class="bi bi-person-plus-fill me-1"></i> Invitar Empleado
+      </button>
+    }
   </div>
 
   <!-- ── Filter bar: Staff tab ── -->
-  <div *ngIf="activeTab === 'staff'" class="filter-bar mb-4">
-
-    <div class="filter-search-wrap">
-      <svg class="filter-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input
-        type="text"
-        class="filter-input"
-        placeholder="Nombre o email..."
-        [(ngModel)]="searchTerm"
-        (keyup.enter)="onSearch()"
-        (ngModelChange)="onSearch()">
-    </div>
-
-    <select class="filter-select" [(ngModel)]="selectedRoleId" (change)="applyFilters()">
-      <option [value]="null">Todos los roles</option>
-      <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
-    </select>
-
-    <select class="filter-select" [(ngModel)]="filterEnabled" (change)="applyFilters()">
-      <option [value]="null">Todos los estados</option>
-      <option [value]="true">Activos</option>
-      <option [value]="false">Inactivos</option>
-    </select>
-
-    <select class="filter-select" [(ngModel)]="filterLocked" (change)="applyFilters()">
-      <option [value]="null">Todas las cuentas</option>
-      <option [value]="false">Desbloqueadas</option>
-      <option [value]="true">Bloqueadas</option>
-    </select>
-
-    <button class="filter-reset-btn" (click)="clearFilters()" title="Limpiar filtros">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-    </button>
-
-  </div>
-
-  <!-- ── Filter bar: Invitations tab ── -->
-  <div *ngIf="activeTab === 'invitations'" class="filter-bar mb-4">
-
-    <div class="filter-search-wrap">
-      <svg class="filter-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input
-        type="text"
-        class="filter-input"
-        placeholder="Nombre o email..."
-        [(ngModel)]="invitationFilters.search">
-    </div>
-
-    <select class="filter-select" [(ngModel)]="invitationFilters.status">
-      <option value="">Todos los estados</option>
-      <option value="PENDING">Pendiente</option>
-      <option value="ACCEPTED">Aceptada</option>
-      <option value="EXPIRED">Expirada</option>
-      <option value="CANCELLED">Cancelada</option>
-    </select>
-
-    <button class="filter-reset-btn" (click)="clearInvitationFilters(); loadInvitations()" title="Limpiar filtros y recargar">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-    </button>
-
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       TAB 1: TABLA DE STAFF (existente)
-       ═══════════════════════════════════════════════════ -->
-  <div *ngIf="activeTab === 'staff'" class="card shadow-sm staff-table-card">
-
-    <!-- ── Spinner de carga ── -->
-    <div *ngIf="loading" class="text-center py-5">
-      <div class="spinner-border text-wine" role="status">
-        <span class="visually-hidden">Cargando...</span>
+  @if (activeTab === 'staff') {
+    <div class="filter-bar mb-4">
+      <div class="filter-search-wrap">
+        <svg class="filter-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          type="text"
+          class="filter-input"
+          placeholder="Nombre o email..."
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          (ngModelChange)="onSearch()">
+        </div>
+        <select class="filter-select" [(ngModel)]="selectedRoleId" (change)="applyFilters()">
+          <option [value]="null">Todos los roles</option>
+          @for (role of roles; track role) {
+            <option [value]="role.id">{{ role.name }}</option>
+          }
+        </select>
+        <select class="filter-select" [(ngModel)]="filterEnabled" (change)="applyFilters()">
+          <option [value]="null">Todos los estados</option>
+          <option [value]="true">Activos</option>
+          <option [value]="false">Inactivos</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filterLocked" (change)="applyFilters()">
+          <option [value]="null">Todas las cuentas</option>
+          <option [value]="false">Desbloqueadas</option>
+          <option [value]="true">Bloqueadas</option>
+        </select>
+        <button class="filter-reset-btn" (click)="clearFilters()" title="Limpiar filtros">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
       </div>
-      <p class="text-muted mt-3 mb-0">Cargando usuarios...</p>
-    </div>
+    }
 
-    <!-- ── Tabla ── -->
-    <div *ngIf="!loading">
+    <!-- ── Filter bar: Invitations tab ── -->
+    @if (activeTab === 'invitations') {
+      <div class="filter-bar mb-4">
+        <div class="filter-search-wrap">
+          <svg class="filter-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            type="text"
+            class="filter-input"
+            placeholder="Nombre o email..."
+            [(ngModel)]="invitationFilters.search">
+          </div>
+          <select class="filter-select" [(ngModel)]="invitationFilters.status">
+            <option value="">Todos los estados</option>
+            <option value="PENDING">Pendiente</option>
+            <option value="ACCEPTED">Aceptada</option>
+            <option value="EXPIRED">Expirada</option>
+            <option value="CANCELLED">Cancelada</option>
+          </select>
+          <button class="filter-reset-btn" (click)="clearInvitationFilters(); loadInvitations()" title="Limpiar filtros y recargar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+        </div>
+      }
 
-      <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle mb-0">
-          <thead class="thead-staff">
-            <tr>
-              <th style="width:210px">Usuario</th>
-              <th>Email</th>
-              <th style="width:140px">Roles</th>
-              <th class="text-center" style="width:100px">Estado</th>
-              <th class="text-center" style="width:110px">Cuenta</th>
-              <th class="text-center" style="width:70px">Intentos</th>
-              <th class="text-center" style="width:90px">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-
-            <tr *ngFor="let user of staffList; trackBy: trackByUserId">
-
-              <!-- ①  Usuario -->
-              <td>
-                <div class="d-flex align-items-center gap-2">
-                  <div class="avatar-circle flex-shrink-0">
-                    {{ (user.firstName || '?').charAt(0).toUpperCase() }}{{ (user.lastName || '?').charAt(0).toUpperCase() }}
+      <!-- ═══════════════════════════════════════════════════
+      TAB 1: TABLA DE STAFF (existente)
+      ═══════════════════════════════════════════════════ -->
+      @if (activeTab === 'staff') {
+        <div class="card shadow-sm staff-table-card">
+          <!-- ── Spinner de carga ── -->
+          @if (loading) {
+            <div class="text-center py-5">
+              <div class="spinner-border text-wine" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+              <p class="text-muted mt-3 mb-0">Cargando usuarios...</p>
+            </div>
+          }
+          <!-- ── Tabla ── -->
+          @if (!loading) {
+            <div>
+              <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                  <thead class="thead-staff">
+                    <tr>
+                      <th style="width:210px">Usuario</th>
+                      <th>Email</th>
+                      <th style="width:140px">Roles</th>
+                      <th class="text-center" style="width:100px">Estado</th>
+                      <th class="text-center" style="width:110px">Cuenta</th>
+                      <th class="text-center" style="width:70px">Intentos</th>
+                      <th class="text-center" style="width:90px">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (user of staffList; track trackByUserId($index, user)) {
+                      <tr>
+                        <!-- ①  Usuario -->
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-circle flex-shrink-0">
+                              {{ (user.firstName || '?').charAt(0).toUpperCase() }}{{ (user.lastName || '?').charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="lh-sm overflow-hidden">
+                              <div class="fw-semibold cell-text text-truncate" style="max-width:155px" [title]="getFullName(user)">
+                                {{ getFullName(user) }}
+                                @if (user.protectedOwner) {
+                                  <span class="badge bg-danger ms-1" style="font-size: 0.6rem;" title="Propietario del Sistema">Propietario</span>
+                                }
+                                @if (user.currentUser) {
+                                  <span class="badge bg-secondary ms-1" style="font-size: 0.6rem;" title="Tú">Tú</span>
+                                }
+                              </div>
+                              <div class="text-muted cell-sub">ID #{{ user.id }}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <!-- ②  Email -->
+                        <td class="text-nowrap">
+                          @if (user.displayEmail || user.maskedEmail || user.email) {
+                            @if ((user.displayEmail || user.maskedEmail || user.email).includes('****') || (user.displayEmail || user.maskedEmail || user.email) === 'Correo protegido') {
+                              <span class="text-muted fst-italic cell-text" [title]="user.displayEmail || user.maskedEmail || user.email">
+                                {{ user.displayEmail || user.maskedEmail || user.email }}
+                              </span>
+                            } @else {
+                              <a [href]="'mailto:' + (user.displayEmail || user.maskedEmail || user.email)"
+                                class="text-decoration-none text-dark cell-text"
+                                [title]="user.displayEmail || user.maskedEmail || user.email">
+                                {{ user.displayEmail || user.maskedEmail || user.email }}
+                              </a>
+                            }
+                          } @else {
+                            <span class="text-muted fst-italic">Correo protegido</span>
+                          }
+                        </td>
+                        <!-- ③  Roles -->
+                        <td>
+                          <div class="d-flex flex-wrap gap-1">
+                            @for (role of user.roles; track role) {
+                              <span class="badge role-badge" [title]="role.name">
+                                {{ role.name | slice:5 }}
+                              </span>
+                            }
+                            @if (!user.roles || user.roles.length === 0) {
+                              <span class="text-muted fst-italic cell-sub">–</span>
+                            }
+                          </div>
+                        </td>
+                        <!-- ④  Estado -->
+                        <td class="text-center">
+                          <div class="d-flex justify-content-center align-items-center gap-1">
+                            <!-- Solo mostrar si tiene permiso de actualización y no es el currentUser ni un Owner protegido que no somos -->
+                            @if (authService.hasPermission('USER_UPDATE') && user.canDisable === true && !user.currentUser && !(user.protectedOwner && !user.currentUser)) {
+                              <input class="form-check-input staff-switch m-0"
+                                type="checkbox"
+                                role="switch"
+                                [id]="'sw-' + user.id"
+                                [checked]="user.enabled"
+                                (click)="$event.preventDefault(); toggleEnabled(user)"
+                                [title]="user.enabled ? 'Activo – click para desactivar' : 'Inactivo – click para activar'">
+                              }
+                              <span class="badge fs-badge"
+                                [class.badge-activo]="user.enabled"
+                                [class.badge-inactivo]="!user.enabled">
+                                {{ user.enabled ? 'Activo' : 'Inactivo' }}
+                              </span>
+                            </div>
+                          </td>
+                          <!-- ⑤  Cuenta -->
+                          <td class="text-center">
+                            <span class="badge fs-badge d-inline-flex align-items-center gap-1"
+                              [class.badge-ok]="user.accountNonLocked"
+                              [class.badge-bloqueado]="!user.accountNonLocked"
+                              [class.cursor-pointer]="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser)"
+                              (click)="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser) ? toggleLock(user) : null"
+                              [title]="!(user.protectedOwner && !user.currentUser) ? (user.canDisable === false ? 'No modificable por jerarquía' : (user.accountNonLocked ? 'Desbloqueada' + (authService.hasPermission('USER_UPDATE') ? ' – click para bloquear' : '') : 'Bloqueada' + (authService.hasPermission('USER_UPDATE') ? ' – click para desbloquear' : ''))) : 'Protegido'"
+                              [style.cursor]="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser) ? 'pointer' : 'default'">
+                              <i class="bi" [class.bi-unlock-fill]="user.accountNonLocked" [class.bi-lock-fill]="!user.accountNonLocked"></i>
+                              {{ user.accountNonLocked ? 'OK' : 'Bloqueado' }}
+                            </span>
+                          </td>
+                          <!-- ⑥  Intentos -->
+                          <td class="text-center">
+                            <div class="d-flex justify-content-center align-items-center gap-1">
+                              <span class="badge fs-badge"
+                                [class.bg-success]="(user.failedLoginAttempts || 0) === 0"
+                                [class.bg-warning]="(user.failedLoginAttempts || 0) > 0 && (user.failedLoginAttempts || 0) < 3"
+                                [class.bg-danger]="(user.failedLoginAttempts || 0) >= 3"
+                                [class.text-dark]="(user.failedLoginAttempts || 0) > 0 && (user.failedLoginAttempts || 0) < 3"
+                                [title]="(user.failedLoginAttempts || 0) + ' intentos fallidos'">
+                                {{ user.failedLoginAttempts || 0 }}
+                              </span>
+                              @if (!(user.protectedOwner && !user.currentUser)) {
+                                @if ((user.failedLoginAttempts || 0) > 0) {
+                                  <button
+                                    class="btn-reset-link"
+                                    (click)="resetFailedAttempts(user)"
+                                    title="Resetear intentos">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                  </button>
+                                }
+                              }
+                            </div>
+                          </td>
+                          <!-- ⑦  Acciones -->
+                          <td class="text-center">
+                            <!-- Modo Protección: Owner visto por otro admin -->
+                            @if (user.protectedOwner && !user.currentUser) {
+                              <div class="d-flex justify-content-center">
+                                <span class="badge bg-secondary d-flex align-items-center" title="Cuenta protegida por el sistema">
+                                  <i class="bi bi-shield-lock-fill me-1"></i> Protegida
+                                </span>
+                              </div>
+                            }
+                            <!-- Acciones normales si no es un Owner protegido visto por otro -->
+                            @if (!(user.protectedOwner && !user.currentUser)) {
+                              <div class="d-flex justify-content-center gap-1">
+                                <!-- EDITAR (No mostrar si no tiene canEdit) -->
+                                @if (authService.hasPermission('USER_UPDATE') && user.canEdit === true) {
+                                  <button
+                                    class="accion-btn accion-edit"
+                                    (click)="openEditModal(user)"
+                                    title="Editar usuario">
+                                    <i class="bi bi-pencil-fill"></i>
+                                  </button>
+                                }
+                                <!-- Candado informativo si no puede editar pero tiene permiso de vista -->
+                                @if (authService.hasPermission('USER_UPDATE') && user.canEdit === false) {
+                                  <span
+                                    class="accion-btn text-muted" style="cursor: help; opacity: 0.5"
+                                    title="Acción restringida por jerarquía de seguridad">
+                                    <i class="bi bi-lock-fill"></i>
+                                  </span>
+                                }
+                                <!-- ELIMINAR (No mostrar si es current user o no puede eliminar) -->
+                                @if (authService.hasPermission('USER_DELETE') && user.canDelete === true && !user.currentUser) {
+                                  <button
+                                    class="accion-btn accion-delete"
+                                    (click)="deleteUser(user)"
+                                    title="Eliminar usuario">
+                                    <i class="bi bi-trash-fill"></i>
+                                  </button>
+                                }
+                              </div>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <!-- ── Estado vacío ── -->
+                @if (staffList.length === 0) {
+                  <div class="text-center py-5">
+                    <i class="bi bi-people display-1 text-muted"></i>
+                    <p class="text-muted mt-3 mb-1 fw-semibold">No se encontraron usuarios</p>
+                    <p class="text-muted small mb-3">
+                      {{ searchTerm || selectedRoleId || filterEnabled !== null || filterLocked !== null
+                      ? 'Prueba con otros filtros o limpia la búsqueda.'
+                      : 'Aún no tienes empleados registrados en el sistema.' }}
+                    </p>
+                    @if (authService.hasPermission('USER_CREATE')) {
+                      <button class="btn btn-tinto" (click)="openInviteModal()">
+                        <i class="bi bi-person-plus me-2"></i>
+                        Invitar primer empleado
+                      </button>
+                    }
                   </div>
-                  <div class="lh-sm overflow-hidden">
-                    <div class="fw-semibold cell-text text-truncate" style="max-width:155px" [title]="getFullName(user)">
-                      {{ getFullName(user) }}
-                      <span *ngIf="user.protectedOwner" class="badge bg-danger ms-1" style="font-size: 0.6rem;" title="Propietario del Sistema">Propietario</span>
-                      <span *ngIf="user.currentUser" class="badge bg-secondary ms-1" style="font-size: 0.6rem;" title="Tú">Tú</span>
+                }
+                <!-- ── Pie: info + paginación ── -->
+                @if (staffList.length > 0) {
+                  <div class="staff-table-footer">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                      <!-- Conteo de registros -->
+                      <div class="footer-info">
+                        <span class="footer-count">
+                          Mostrando
+                          <strong>{{ currentPage * pageSize + 1 }}</strong>
+                          –
+                          <strong>{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</strong>
+                          de
+                          <strong>{{ totalElements }}</strong>
+                          usuario{{ totalElements !== 1 ? 's' : '' }}
+                        </span>
+                      </div>
+                      <!-- Paginación profesional -->
+                      <nav aria-label="Paginación de empleados" class="pagination-nav">
+                        <div class="pagination-wrapper">
+                          <!-- Botón Primera página -->
+                          <button class="page-btn page-btn-nav"
+                            [disabled]="currentPage === 0"
+                            (click)="onPageChange(0)"
+                            title="Primera página">
+                            <i class="bi bi-chevron-double-left"></i>
+                          </button>
+                          <!-- Botón Anterior -->
+                          <button class="page-btn page-btn-nav"
+                            [disabled]="currentPage === 0"
+                            (click)="onPageChange(currentPage - 1)"
+                            title="Página anterior">
+                            <i class="bi bi-chevron-left"></i>
+                          </button>
+                          <!-- Números de página -->
+                          @for (page of getPageNumbers(); track page) {
+                            <button
+                              class="page-btn"
+                              [class.page-btn-active]="page === currentPage"
+                              (click)="onPageChange(page)"
+                              [title]="'Ir a página ' + (page + 1)">
+                              {{ page + 1 }}
+                            </button>
+                          }
+                          <!-- Botón Siguiente -->
+                          <button class="page-btn page-btn-nav"
+                            [disabled]="currentPage >= totalPages - 1"
+                            (click)="onPageChange(currentPage + 1)"
+                            title="Página siguiente">
+                            <i class="bi bi-chevron-right"></i>
+                          </button>
+                          <!-- Botón Última página -->
+                          <button class="page-btn page-btn-nav"
+                            [disabled]="currentPage >= totalPages - 1"
+                            (click)="onPageChange(totalPages - 1)"
+                            title="Última página">
+                            <i class="bi bi-chevron-double-right"></i>
+                          </button>
+                        </div>
+                      </nav>
                     </div>
-                    <div class="text-muted cell-sub">ID #{{ user.id }}</div>
                   </div>
-                </div>
-              </td>
-
-              <!-- ②  Email -->
-              <td class="text-nowrap">
-                <ng-container *ngIf="user.displayEmail || user.maskedEmail || user.email; else emailProtegido">
-                  <ng-container *ngIf="(user.displayEmail || user.maskedEmail || user.email).includes('****') || (user.displayEmail || user.maskedEmail || user.email) === 'Correo protegido'; else mailtoLink">
-                    <span class="text-muted fst-italic cell-text" [title]="user.displayEmail || user.maskedEmail || user.email">
-                      {{ user.displayEmail || user.maskedEmail || user.email }}
-                    </span>
-                  </ng-container>
-                  <ng-template #mailtoLink>
-                    <a [href]="'mailto:' + (user.displayEmail || user.maskedEmail || user.email)" 
-                       class="text-decoration-none text-dark cell-text" 
-                       [title]="user.displayEmail || user.maskedEmail || user.email">
-                      {{ user.displayEmail || user.maskedEmail || user.email }}
-                    </a>
-                  </ng-template>
-                </ng-container>
-                <ng-template #emailProtegido>
-                  <span class="text-muted fst-italic">Correo protegido</span>
-                </ng-template>
-              </td>
-
-              <!-- ③  Roles -->
-              <td>
-                <div class="d-flex flex-wrap gap-1">
-                  <span *ngFor="let role of user.roles" class="badge role-badge" [title]="role.name">
-                    {{ role.name | slice:5 }}
-                  </span>
-                  <span *ngIf="!user.roles || user.roles.length === 0" class="text-muted fst-italic cell-sub">–</span>
-                </div>
-              </td>
-
-              <!-- ④  Estado -->
-              <td class="text-center">
-                <div class="d-flex justify-content-center align-items-center gap-1">
-                  <!-- Solo mostrar si tiene permiso de actualización y no es el currentUser ni un Owner protegido que no somos -->
-                  <ng-container *ngIf="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !user.currentUser && !(user.protectedOwner && !user.currentUser)">
-                    <input class="form-check-input staff-switch m-0"
-                           type="checkbox"
-                           role="switch"
-                           [id]="'sw-' + user.id"
-                           [checked]="user.enabled"
-                           (click)="$event.preventDefault(); toggleEnabled(user)"
-                           [title]="user.enabled ? 'Activo – click para desactivar' : 'Inactivo – click para activar'">
-                  </ng-container>
-                  <span class="badge fs-badge"
-                        [class.badge-activo]="user.enabled"
-                        [class.badge-inactivo]="!user.enabled">
-                    {{ user.enabled ? 'Activo' : 'Inactivo' }}
-                  </span>
-                </div>
-              </td>
-
-              <!-- ⑤  Cuenta -->
-              <td class="text-center">
-                <span class="badge fs-badge d-inline-flex align-items-center gap-1"
-                      [class.badge-ok]="user.accountNonLocked"
-                      [class.badge-bloqueado]="!user.accountNonLocked"
-                      [class.cursor-pointer]="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser)"
-                      (click)="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser) ? toggleLock(user) : null"
-                      [title]="!(user.protectedOwner && !user.currentUser) ? (user.canDisable === false ? 'No modificable por jerarquía' : (user.accountNonLocked ? 'Desbloqueada' + (authService.hasPermission('USER_UPDATE') ? ' – click para bloquear' : '') : 'Bloqueada' + (authService.hasPermission('USER_UPDATE') ? ' – click para desbloquear' : ''))) : 'Protegido'"
-                      [style.cursor]="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser) ? 'pointer' : 'default'">
-                  <i class="bi" [class.bi-unlock-fill]="user.accountNonLocked" [class.bi-lock-fill]="!user.accountNonLocked"></i>
-                  {{ user.accountNonLocked ? 'OK' : 'Bloqueado' }}
-                </span>
-              </td>
-
-              <!-- ⑥  Intentos -->
-              <td class="text-center">
-                <div class="d-flex justify-content-center align-items-center gap-1">
-                  <span class="badge fs-badge"
-                        [class.bg-success]="(user.failedLoginAttempts || 0) === 0"
-                        [class.bg-warning]="(user.failedLoginAttempts || 0) > 0 && (user.failedLoginAttempts || 0) < 3"
-                        [class.bg-danger]="(user.failedLoginAttempts || 0) >= 3"
-                        [class.text-dark]="(user.failedLoginAttempts || 0) > 0 && (user.failedLoginAttempts || 0) < 3"
-                        [title]="(user.failedLoginAttempts || 0) + ' intentos fallidos'">
-                    {{ user.failedLoginAttempts || 0 }}
-                  </span>
-                  <ng-container *ngIf="!(user.protectedOwner && !user.currentUser)">
-                    <button *ngIf="(user.failedLoginAttempts || 0) > 0"
-                            class="btn-reset-link"
-                            (click)="resetFailedAttempts(user)"
-                            title="Resetear intentos">
-                      <i class="bi bi-arrow-counterclockwise"></i>
-                    </button>
-                  </ng-container>
-                </div>
-              </td>
-
-              <!-- ⑦  Acciones -->
-              <td class="text-center">
-                <!-- Modo Protección: Owner visto por otro admin -->
-                <ng-container *ngIf="user.protectedOwner && !user.currentUser">
-                  <div class="d-flex justify-content-center">
-                    <span class="badge bg-secondary d-flex align-items-center" title="Cuenta protegida por el sistema">
-                      <i class="bi bi-shield-lock-fill me-1"></i> Protegida
-                    </span>
-                  </div>
-                </ng-container>
-                
-                <!-- Acciones normales si no es un Owner protegido visto por otro -->
-                <ng-container *ngIf="!(user.protectedOwner && !user.currentUser)">
-                  <div class="d-flex justify-content-center gap-1">
-                    
-                    <!-- EDITAR (No mostrar si no tiene canEdit) -->
-                    <button *ngIf="authService.hasPermission('USER_UPDATE') && user.canEdit === true"
-                            class="accion-btn accion-edit"
-                            (click)="openEditModal(user)"
-                            title="Editar usuario">
-                      <i class="bi bi-pencil-fill"></i>
-                    </button>
-                    <!-- Candado informativo si no puede editar pero tiene permiso de vista -->
-                    <span *ngIf="authService.hasPermission('USER_UPDATE') && user.canEdit === false"
-                          class="accion-btn text-muted" style="cursor: help; opacity: 0.5"
-                          title="Acción restringida por jerarquía de seguridad">
-                      <i class="bi bi-lock-fill"></i>
-                    </span>
-                    
-                    <!-- ELIMINAR (No mostrar si es current user o no puede eliminar) -->
-                    <button *ngIf="authService.hasPermission('USER_DELETE') && user.canDelete === true && !user.currentUser"
-                            class="accion-btn accion-delete"
-                            (click)="deleteUser(user)"
-                            title="Eliminar usuario">
-                      <i class="bi bi-trash-fill"></i>
-                    </button>
-                    
-                  </div>
-                </ng-container>
-              </td>
-
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- ── Estado vacío ── -->
-      <div *ngIf="staffList.length === 0" class="text-center py-5">
-        <i class="bi bi-people display-1 text-muted"></i>
-        <p class="text-muted mt-3 mb-1 fw-semibold">No se encontraron usuarios</p>
-        <p class="text-muted small mb-3">
-          {{ searchTerm || selectedRoleId || filterEnabled !== null || filterLocked !== null
-              ? 'Prueba con otros filtros o limpia la búsqueda.'
-              : 'Aún no tienes empleados registrados en el sistema.' }}
-        </p>
-        <button *ngIf="authService.hasPermission('USER_CREATE')" class="btn btn-tinto" (click)="openInviteModal()">
-          <i class="bi bi-person-plus me-2"></i>
-          Invitar primer empleado
-        </button>
-      </div>
-
-      <!-- ── Pie: info + paginación ── -->
-      <div *ngIf="staffList.length > 0" class="staff-table-footer">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-
-          <!-- Conteo de registros -->
-          <div class="footer-info">
-            <span class="footer-count">
-              Mostrando
-              <strong>{{ currentPage * pageSize + 1 }}</strong>
-              –
-              <strong>{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</strong>
-              de
-              <strong>{{ totalElements }}</strong>
-              usuario{{ totalElements !== 1 ? 's' : '' }}
-            </span>
-          </div>
-
-          <!-- Paginación profesional -->
-          <nav aria-label="Paginación de empleados" class="pagination-nav">
-            <div class="pagination-wrapper">
-
-              <!-- Botón Primera página -->
-              <button class="page-btn page-btn-nav"
-                      [disabled]="currentPage === 0"
-                      (click)="onPageChange(0)"
-                      title="Primera página">
-                <i class="bi bi-chevron-double-left"></i>
-              </button>
-
-              <!-- Botón Anterior -->
-              <button class="page-btn page-btn-nav"
-                      [disabled]="currentPage === 0"
-                      (click)="onPageChange(currentPage - 1)"
-                      title="Página anterior">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-
-              <!-- Números de página -->
-              <button *ngFor="let page of getPageNumbers()"
-                      class="page-btn"
-                      [class.page-btn-active]="page === currentPage"
-                      (click)="onPageChange(page)"
-                      [title]="'Ir a página ' + (page + 1)">
-                {{ page + 1 }}
-              </button>
-
-              <!-- Botón Siguiente -->
-              <button class="page-btn page-btn-nav"
-                      [disabled]="currentPage >= totalPages - 1"
-                      (click)="onPageChange(currentPage + 1)"
-                      title="Página siguiente">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-
-              <!-- Botón Última página -->
-              <button class="page-btn page-btn-nav"
-                      [disabled]="currentPage >= totalPages - 1"
-                      (click)="onPageChange(totalPages - 1)"
-                      title="Última página">
-                <i class="bi bi-chevron-double-right"></i>
-              </button>
-
+                }
+              </div>
+              }<!-- /!loading -->
             </div>
-          </nav>
+            }<!-- /card staff tab -->
 
-        </div>
-      </div>
-
-    </div><!-- /!loading -->
-  </div><!-- /card staff tab -->
-
-  <!-- ═══════════════════════════════════════════════════
-       TAB 2: INVITACIONES
-       ═══════════════════════════════════════════════════ -->
-  <div *ngIf="activeTab === 'invitations'" class="card shadow-sm staff-table-card">
-
-    <!-- Spinner -->
-    <div *ngIf="invitationsLoading" class="text-center py-5">
-      <div class="spinner-border text-wine" role="status">
-        <span class="visually-hidden">Cargando...</span>
-      </div>
-      <p class="text-muted mt-3 mb-0">Cargando invitaciones...</p>
-    </div>
-
-    <div *ngIf="!invitationsLoading">
-      <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle mb-0">
-          <thead class="thead-staff">
-            <tr>
-              <th style="width:200px">Invitado</th>
-              <th>Email</th>
-              <th style="width:140px">Roles</th>
-              <th class="text-center" style="width:110px">Estado</th>
-              <th style="width:130px">Invitado por</th>
-              <th class="text-center" style="width:110px">Expira</th>
-              <th class="text-center" style="width:110px">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let inv of filteredInvitations">
-
-              <!-- Invitado -->
-              <td>
-                <div class="d-flex align-items-center gap-2">
-                  <div class="avatar-circle avatar-circle--pending flex-shrink-0">
-                    {{ inv.firstName.charAt(0).toUpperCase() }}{{ inv.lastName.charAt(0).toUpperCase() }}
+            <!-- ═══════════════════════════════════════════════════
+            TAB 2: INVITACIONES
+            ═══════════════════════════════════════════════════ -->
+            @if (activeTab === 'invitations') {
+              <div class="card shadow-sm staff-table-card">
+                <!-- Spinner -->
+                @if (invitationsLoading) {
+                  <div class="text-center py-5">
+                    <div class="spinner-border text-wine" role="status">
+                      <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">Cargando invitaciones...</p>
                   </div>
-                  <div class="lh-sm">
-                    <div class="fw-semibold cell-text">{{ inv.firstName }} {{ inv.lastName }}</div>
-                    <div class="text-muted cell-sub">ID #{{ inv.id }}</div>
+                }
+                @if (!invitationsLoading) {
+                  <div>
+                    <div class="table-responsive">
+                      <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="thead-staff">
+                          <tr>
+                            <th style="width:200px">Invitado</th>
+                            <th>Email</th>
+                            <th style="width:140px">Roles</th>
+                            <th class="text-center" style="width:110px">Estado</th>
+                            <th style="width:130px">Invitado por</th>
+                            <th class="text-center" style="width:110px">Expira</th>
+                            <th class="text-center" style="width:110px">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (inv of filteredInvitations; track inv) {
+                            <tr>
+                              <!-- Invitado -->
+                              <td>
+                                <div class="d-flex align-items-center gap-2">
+                                  <div class="avatar-circle avatar-circle--pending flex-shrink-0">
+                                    {{ inv.firstName.charAt(0).toUpperCase() }}{{ inv.lastName.charAt(0).toUpperCase() }}
+                                  </div>
+                                  <div class="lh-sm">
+                                    <div class="fw-semibold cell-text">{{ inv.firstName }} {{ inv.lastName }}</div>
+                                    <div class="text-muted cell-sub">ID #{{ inv.id }}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <!-- Email -->
+                              <td class="cell-text">{{ inv.email }}</td>
+                              <!-- Roles -->
+                              <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                  @for (rn of inv.roleNames; track rn) {
+                                    <span class="badge role-badge" [title]="rn">
+                                      {{ rn | slice:5 }}
+                                    </span>
+                                  }
+                                </div>
+                              </td>
+                              <!-- Estado -->
+                              <td class="text-center">
+                                <span class="badge fs-badge"
+                                  [class.badge-inv-pending]="inv.status === 'PENDING'"
+                                  [class.badge-inv-accepted]="inv.status === 'ACCEPTED'"
+                                  [class.badge-inv-expired]="inv.status === 'EXPIRED'"
+                                  [class.badge-inv-cancelled]="inv.status === 'CANCELLED'">
+                                  @switch (inv.status) {
+                                    @case ('PENDING') {
+                                      <i class="bi bi-hourglass-split me-1"></i>Pendiente
+                                    }
+                                    @case ('ACCEPTED') {
+                                      <i class="bi bi-check-circle-fill me-1"></i>Aceptada
+                                    }
+                                    @case ('EXPIRED') {
+                                      <i class="bi bi-clock-history me-1"></i>Expirada
+                                    }
+                                    @case ('CANCELLED') {
+                                      <i class="bi bi-x-circle-fill me-1"></i>Cancelada
+                                    }
+                                  }
+                                </span>
+                                @if (isExpiringSoon(inv)) {
+                                  <div class="text-danger cell-sub mt-1">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Expira pronto
+                                  </div>
+                                }
+                              </td>
+                              <!-- Invitado por -->
+                              <td class="cell-text">{{ inv.invitedByName }}</td>
+                              <!-- Expira -->
+                              <td class="text-center cell-sub">
+                                {{ inv.expiresAt | date:'dd/MM/yy HH:mm' }}
+                              </td>
+                              <!-- Acciones -->
+                              <td class="text-center">
+                                @if (inv.status === 'PENDING') {
+                                  <div class="d-flex justify-content-center gap-1">
+                                    @if (authService.hasPermission('USER_CREATE')) {
+                                      <button
+                                        class="accion-btn accion-resend"
+                                        (click)="resendInvitation(inv)"
+                                        title="Reenviar invitación">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                      </button>
+                                    }
+                                    @if (authService.hasPermission('USER_CREATE')) {
+                                      <button
+                                        class="accion-btn accion-delete"
+                                        (click)="cancelInvitation(inv)"
+                                        title="Cancelar invitación">
+                                        <i class="bi bi-x-lg"></i>
+                                      </button>
+                                    }
+                                  </div>
+                                }
+                                @if (inv.status !== 'PENDING') {
+                                  <span class="text-muted cell-sub">—</span>
+                                }
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                    <!-- Estado vacío -->
+                    @if (invitations.length === 0) {
+                      <div class="text-center py-5">
+                        <i class="bi bi-envelope-paper display-1 text-muted"></i>
+                        <p class="text-muted mt-3 mb-1 fw-semibold">No hay invitaciones</p>
+                        <p class="text-muted small mb-3">Aún no has enviado invitaciones a nuevos empleados.</p>
+                        @if (authService.hasPermission('USER_CREATE')) {
+                          <button class="btn btn-tinto" (click)="openInviteModal()">
+                            <i class="bi bi-person-plus me-2"></i>Invitar primer empleado
+                          </button>
+                        }
+                      </div>
+                    }
                   </div>
+                }
+              </div>
+              }<!-- /invitations tab -->
+
+            </div><!-- /container-fluid -->
+
+            <!-- ═══════════════════════════════════════════════════
+            Modal de edición — diseño brand-modal-*
+            z-index: 9999 (sobre sidebar 1000 y topbar 200)
+            ═══════════════════════════════════════════════════ -->
+            @if (showModal) {
+              <div
+                class="brand-modal-overlay staff-modal-overlay"
+                (click)="closeModal()">
+                <div class="brand-modal-panel staff-modal-panel" (click)="$event.stopPropagation()">
+                  <app-staff-form-modal
+                    [isEditMode]="isEditMode"
+                    [user]="selectedUser"
+                    [roles]="roles"
+                    (close)="closeModal()"
+                    (saved)="onUserSaved()">
+                  </app-staff-form-modal>
                 </div>
-              </td>
+              </div>
+            }
 
-              <!-- Email -->
-              <td class="cell-text">{{ inv.email }}</td>
-
-              <!-- Roles -->
-              <td>
-                <div class="d-flex flex-wrap gap-1">
-                  <span *ngFor="let rn of inv.roleNames" class="badge role-badge" [title]="rn">
-                    {{ rn | slice:5 }}
-                  </span>
-                </div>
-              </td>
-
-              <!-- Estado -->
-              <td class="text-center">
-                <span class="badge fs-badge"
-                      [class.badge-inv-pending]="inv.status === 'PENDING'"
-                      [class.badge-inv-accepted]="inv.status === 'ACCEPTED'"
-                      [class.badge-inv-expired]="inv.status === 'EXPIRED'"
-                      [class.badge-inv-cancelled]="inv.status === 'CANCELLED'">
-                  <ng-container [ngSwitch]="inv.status">
-                    <ng-container *ngSwitchCase="'PENDING'">
-                      <i class="bi bi-hourglass-split me-1"></i>Pendiente
-                    </ng-container>
-                    <ng-container *ngSwitchCase="'ACCEPTED'">
-                      <i class="bi bi-check-circle-fill me-1"></i>Aceptada
-                    </ng-container>
-                    <ng-container *ngSwitchCase="'EXPIRED'">
-                      <i class="bi bi-clock-history me-1"></i>Expirada
-                    </ng-container>
-                    <ng-container *ngSwitchCase="'CANCELLED'">
-                      <i class="bi bi-x-circle-fill me-1"></i>Cancelada
-                    </ng-container>
-                  </ng-container>
-                </span>
-                <div *ngIf="isExpiringSoon(inv)" class="text-danger cell-sub mt-1">
-                  <i class="bi bi-exclamation-triangle-fill me-1"></i>Expira pronto
-                </div>
-              </td>
-
-              <!-- Invitado por -->
-              <td class="cell-text">{{ inv.invitedByName }}</td>
-
-              <!-- Expira -->
-              <td class="text-center cell-sub">
-                {{ inv.expiresAt | date:'dd/MM/yy HH:mm' }}
-              </td>
-
-              <!-- Acciones -->
-              <td class="text-center">
-                <div class="d-flex justify-content-center gap-1" *ngIf="inv.status === 'PENDING'">
-                  <button *ngIf="authService.hasPermission('USER_CREATE')"
-                          class="accion-btn accion-resend"
-                          (click)="resendInvitation(inv)"
-                          title="Reenviar invitación">
-                    <i class="bi bi-arrow-repeat"></i>
-                  </button>
-                  <button *ngIf="authService.hasPermission('USER_CREATE')"
-                          class="accion-btn accion-delete"
-                          (click)="cancelInvitation(inv)"
-                          title="Cancelar invitación">
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                </div>
-                <span *ngIf="inv.status !== 'PENDING'" class="text-muted cell-sub">—</span>
-              </td>
-
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Estado vacío -->
-      <div *ngIf="invitations.length === 0" class="text-center py-5">
-        <i class="bi bi-envelope-paper display-1 text-muted"></i>
-        <p class="text-muted mt-3 mb-1 fw-semibold">No hay invitaciones</p>
-        <p class="text-muted small mb-3">Aún no has enviado invitaciones a nuevos empleados.</p>
-        <button *ngIf="authService.hasPermission('USER_CREATE')" class="btn btn-tinto" (click)="openInviteModal()">
-          <i class="bi bi-person-plus me-2"></i>Invitar primer empleado
-        </button>
-      </div>
-    </div>
-  </div><!-- /invitations tab -->
-
-</div><!-- /container-fluid -->
-
-<!-- ═══════════════════════════════════════════════════
-     Modal de edición — diseño brand-modal-*
-     z-index: 9999 (sobre sidebar 1000 y topbar 200)
-     ═══════════════════════════════════════════════════ -->
-<div *ngIf="showModal"
-     class="brand-modal-overlay staff-modal-overlay"
-     (click)="closeModal()">
-  <div class="brand-modal-panel staff-modal-panel" (click)="$event.stopPropagation()">
-    <app-staff-form-modal
-      [isEditMode]="isEditMode"
-      [user]="selectedUser"
-      [roles]="roles"
-      (close)="closeModal()"
-      (saved)="onUserSaved()">
-    </app-staff-form-modal>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════
-     Modal de INVITACIÓN (nuevo)
-     ═══════════════════════════════════════════════════ -->
-<div *ngIf="showInviteModal"
-     class="brand-modal-overlay invite-modal-overlay"
-     (click)="closeInviteModal()">
-  <div class="invite-modal-panel" (click)="$event.stopPropagation()">
-
-    <!-- Header -->
-    <div class="invite-modal-header">
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-envelope-paper-fill" style="font-size:1.3rem"></i>
-        <h5 class="mb-0 fw-bold">Invitar Nuevo Empleado</h5>
-      </div>
-      <button class="btn-close btn-close-white" (click)="closeInviteModal()"></button>
-    </div>
-
-    <!-- Body -->
-    <div class="invite-modal-body">
-
-      <!-- Info banner -->
-      <div class="invite-info-banner mb-3">
-        <i class="bi bi-info-circle-fill me-2"></i>
-        <small>Se enviará un correo electrónico con un enlace de activación. El empleado creará su propia contraseña. El enlace expira en <strong>48 horas</strong>.</small>
-      </div>
-
-      <!-- Nombre y Apellido -->
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">Nombre <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="invite.firstName"
-                 placeholder="Nombre del empleado">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">Apellido <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="invite.lastName"
-                 placeholder="Apellido del empleado">
-        </div>
-      </div>
-
-      <!-- Email con verificación en tiempo real -->
-      <div class="mb-3">
-        <label class="form-label fw-semibold small">Correo Electrónico <span class="text-danger">*</span></label>
-        <div class="input-group">
-          <span class="input-group-text bg-white">
-            <i class="bi bi-envelope text-wine"></i>
-          </span>
-          <input type="email" class="form-control"
-                 [(ngModel)]="invite.email"
-                 (input)="onEmailInput()"
-                 placeholder="empleado@empresa.com"
-                 [class.is-valid]="emailCheckState === 'available'"
-                 [class.is-invalid]="emailCheckState === 'taken' || emailCheckState === 'invalid'">
-        </div>
-        <!-- Email status -->
-        <div class="email-status mt-1">
-          <small *ngIf="emailCheckState === 'checking'" class="text-muted">
-            <span class="spinner-border spinner-border-sm me-1" role="status"></span>Verificando...
-          </small>
-          <small *ngIf="emailCheckState === 'available'" class="text-success">
-            <i class="bi bi-check-circle-fill me-1"></i>Email disponible
-          </small>
-          <small *ngIf="emailCheckState === 'taken'" class="text-danger">
-            <i class="bi bi-x-circle-fill me-1"></i>Ya existe un usuario con este correo
-          </small>
-          <small *ngIf="emailCheckState === 'invalid'" class="text-danger">
-            <i class="bi bi-exclamation-circle me-1"></i>Ingresa un correo válido
-          </small>
-        </div>
-      </div>
-
-      <!-- Selección de roles -->
-      <div class="mb-2">
-        <label class="form-label fw-semibold small">Roles <span class="text-danger">*</span></label>
-        <div class="invite-roles-grid">
-          <div *ngFor="let role of filteredRoles"
-               class="invite-role-card"
-               [class.selected]="isInviteRoleSelected(role.id)"
-               [class.locked]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
-               (click)="role.name !== 'ROLE_SUPER_ADMIN' || isCurrentUserSuperAdmin ? toggleInviteRole(role.id) : null">
-            <div class="d-flex align-items-center gap-2">
-              <input type="checkbox" class="form-check-input m-0"
-                     [checked]="isInviteRoleSelected(role.id)"
-                     [disabled]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
-                     (click)="$event.stopPropagation()">
-              <i class="bi" [class]="'bi-' + getRoleIcon(role.name)" style="color:#722f37"></i>
-              <span class="fw-semibold small">{{ getRoleDisplayName(role.name) }}</span>
-              <span *ngIf="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
-                    class="badge bg-secondary ms-auto" style="font-size:0.65rem">
-                <i class="bi bi-lock-fill"></i>
-              </span>
-            </div>
-          </div>
-        </div>
-        <div *ngIf="invite.roleIds.length === 0" class="text-muted small mt-1">
-          <i class="bi bi-exclamation-circle me-1"></i>Selecciona al menos un rol
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="invite-modal-footer">
-      <button class="btn btn-outline-secondary" (click)="closeInviteModal()" [disabled]="inviteSending">
-        <i class="bi bi-x-lg me-1"></i>Cancelar
-      </button>
-      <button class="btn btn-tinto" (click)="sendInvitation()" [disabled]="!isInviteFormValid">
-        <span *ngIf="!inviteSending">
-          <i class="bi bi-send-fill me-1"></i>Enviar Invitación
-        </span>
-        <span *ngIf="inviteSending">
-          <span class="spinner-border spinner-border-sm me-1" role="status"></span>Enviando...
-        </span>
-      </button>
-    </div>
-
-  </div>
-</div>
+            <!-- ═══════════════════════════════════════════════════
+            Modal de INVITACIÓN (nuevo)
+            ═══════════════════════════════════════════════════ -->
+            @if (showInviteModal) {
+              <div
+                class="brand-modal-overlay invite-modal-overlay"
+                (click)="closeInviteModal()">
+                <div class="invite-modal-panel" (click)="$event.stopPropagation()">
+                  <!-- Header -->
+                  <div class="invite-modal-header">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-envelope-paper-fill" style="font-size:1.3rem"></i>
+                      <h5 class="mb-0 fw-bold">Invitar Nuevo Empleado</h5>
+                    </div>
+                    <button class="btn-close btn-close-white" (click)="closeInviteModal()"></button>
+                  </div>
+                  <!-- Body -->
+                  <div class="invite-modal-body">
+                    <!-- Info banner -->
+                    <div class="invite-info-banner mb-3">
+                      <i class="bi bi-info-circle-fill me-2"></i>
+                      <small>Se enviará un correo electrónico con un enlace de activación. El empleado creará su propia contraseña. El enlace expira en <strong>48 horas</strong>.</small>
+                    </div>
+                    <!-- Nombre y Apellido -->
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" [(ngModel)]="invite.firstName"
+                          placeholder="Nombre del empleado">
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold small">Apellido <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" [(ngModel)]="invite.lastName"
+                            placeholder="Apellido del empleado">
+                          </div>
+                        </div>
+                        <!-- Email con verificación en tiempo real -->
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold small">Correo Electrónico <span class="text-danger">*</span></label>
+                          <div class="input-group">
+                            <span class="input-group-text bg-white">
+                              <i class="bi bi-envelope text-wine"></i>
+                            </span>
+                            <input type="email" class="form-control"
+                              [(ngModel)]="invite.email"
+                              (input)="onEmailInput()"
+                              placeholder="empleado@empresa.com"
+                              [class.is-valid]="emailCheckState === 'available'"
+                              [class.is-invalid]="emailCheckState === 'taken' || emailCheckState === 'invalid'">
+                            </div>
+                            <!-- Email status -->
+                            <div class="email-status mt-1">
+                              @if (emailCheckState === 'checking') {
+                                <small class="text-muted">
+                                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>Verificando...
+                                </small>
+                              }
+                              @if (emailCheckState === 'available') {
+                                <small class="text-success">
+                                  <i class="bi bi-check-circle-fill me-1"></i>Email disponible
+                                </small>
+                              }
+                              @if (emailCheckState === 'taken') {
+                                <small class="text-danger">
+                                  <i class="bi bi-x-circle-fill me-1"></i>Ya existe un usuario con este correo
+                                </small>
+                              }
+                              @if (emailCheckState === 'invalid') {
+                                <small class="text-danger">
+                                  <i class="bi bi-exclamation-circle me-1"></i>Ingresa un correo válido
+                                </small>
+                              }
+                            </div>
+                          </div>
+                          <!-- Selección de roles -->
+                          <div class="mb-2">
+                            <label class="form-label fw-semibold small">Roles <span class="text-danger">*</span></label>
+                            <div class="invite-roles-grid">
+                              @for (role of filteredRoles; track role) {
+                                <div
+                                  class="invite-role-card"
+                                  [class.selected]="isInviteRoleSelected(role.id)"
+                                  [class.locked]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
+                                  (click)="role.name !== 'ROLE_SUPER_ADMIN' || isCurrentUserSuperAdmin ? toggleInviteRole(role.id) : null">
+                                  <div class="d-flex align-items-center gap-2">
+                                    <input type="checkbox" class="form-check-input m-0"
+                                      [checked]="isInviteRoleSelected(role.id)"
+                                      [disabled]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
+                                      (click)="$event.stopPropagation()">
+                                      <i class="bi" [class]="'bi-' + getRoleIcon(role.name)" style="color:#722f37"></i>
+                                      <span class="fw-semibold small">{{ getRoleDisplayName(role.name) }}</span>
+                                      @if (role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin) {
+                                        <span
+                                          class="badge bg-secondary ms-auto" style="font-size:0.65rem">
+                                          <i class="bi bi-lock-fill"></i>
+                                        </span>
+                                      }
+                                    </div>
+                                  </div>
+                                }
+                              </div>
+                              @if (invite.roleIds.length === 0) {
+                                <div class="text-muted small mt-1">
+                                  <i class="bi bi-exclamation-circle me-1"></i>Selecciona al menos un rol
+                                </div>
+                              }
+                            </div>
+                          </div>
+                          <!-- Footer -->
+                          <div class="invite-modal-footer">
+                            <button class="btn btn-outline-secondary" (click)="closeInviteModal()" [disabled]="inviteSending">
+                              <i class="bi bi-x-lg me-1"></i>Cancelar
+                            </button>
+                            <button class="btn btn-tinto" (click)="sendInvitation()" [disabled]="!isInviteFormValid">
+                              @if (!inviteSending) {
+                                <span>
+                                  <i class="bi bi-send-fill me-1"></i>Enviar Invitación
+                                </span>
+                              }
+                              @if (inviteSending) {
+                                <span>
+                                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>Enviando...
+                                </span>
+                              }
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    }

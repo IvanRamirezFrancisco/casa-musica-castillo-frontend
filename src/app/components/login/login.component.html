@@ -11,30 +11,38 @@
 
         <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <!-- Mensaje de error global -->
-          <div class="error-alert" *ngIf="errorMessage && !isBlocked">
-            <span class="material-icons">error</span>
-            <span>{{ errorMessage }}</span>
-          </div>
+          @if (errorMessage && !isBlocked) {
+            <div class="error-alert">
+              <span class="material-icons">error</span>
+              <span>{{ errorMessage }}</span>
+            </div>
+          }
 
           <!-- Mensaje de bloqueo por rate limiting -->
-          <div class="warning-alert" *ngIf="isBlocked">
-            <span class="material-icons">lock_clock</span>
-            <div class="alert-content">
-              <strong>Cuenta temporalmente bloqueada</strong>
-              <p>Demasiados intentos fallidos. Intenta nuevamente en:</p>
-              <div class="countdown-timer">
-                <div class="time-block" *ngIf="blockTimeLeft > 0">
-                  <span class="time-value">{{ blockTimeLeft }}</span>
-                  <span class="time-label">{{ blockTimeLeft === 1 ? 'minuto' : 'minutos' }}</span>
-                </div>
-                <span class="time-separator" *ngIf="blockTimeLeft > 0 && blockSecondsLeft > 0">:</span>
-                <div class="time-block">
-                  <span class="time-value">{{ blockSecondsLeft < 10 ? '0' + blockSecondsLeft : blockSecondsLeft }}</span>
-                  <span class="time-label">{{ blockSecondsLeft === 1 ? 'segundo' : 'segundos' }}</span>
+          @if (isBlocked) {
+            <div class="warning-alert">
+              <span class="material-icons">lock_clock</span>
+              <div class="alert-content">
+                <strong>Cuenta temporalmente bloqueada</strong>
+                <p>Demasiados intentos fallidos. Intenta nuevamente en:</p>
+                <div class="countdown-timer">
+                  @if (blockTimeLeft > 0) {
+                    <div class="time-block">
+                      <span class="time-value">{{ blockTimeLeft }}</span>
+                      <span class="time-label">{{ blockTimeLeft === 1 ? 'minuto' : 'minutos' }}</span>
+                    </div>
+                  }
+                  @if (blockTimeLeft > 0 && blockSecondsLeft > 0) {
+                    <span class="time-separator">:</span>
+                  }
+                  <div class="time-block">
+                    <span class="time-value">{{ blockSecondsLeft < 10 ? '0' + blockSecondsLeft : blockSecondsLeft }}</span>
+                    <span class="time-label">{{ blockSecondsLeft === 1 ? 'segundo' : 'segundos' }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          }
 
           <div class="form-group">
             <label for="email">
@@ -50,279 +58,320 @@
               [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
               [class.success]="loginForm.get('email')?.valid && loginForm.get('email')?.touched"
               #emailInput
-            />
-            <div class="field-error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-              <span class="material-icons">error</span>
-              <span *ngIf="loginForm.get('email')?.errors?.['required']">El email es requerido</span>
-              <span *ngIf="loginForm.get('email')?.errors?.['email']">Email inválido</span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="password">
-              <span class="material-icons">lock</span>
-              Contraseña
-            </label>
-            <div class="password-wrapper">
-              <input
-                [type]="showPassword ? 'text' : 'password'"
-                id="password"
-                formControlName="password"
-                placeholder="Tu contraseña"
-                autocomplete="current-password"
-                [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-                [class.success]="loginForm.get('password')?.valid && loginForm.get('password')?.touched"
               />
-              <button
-                type="button"
-                class="toggle-password"
-                (click)="togglePassword()"
-              >
-                <span class="material-icons">
-                  {{ showPassword ? 'visibility_off' : 'visibility' }}
-                </span>
-              </button>
+              @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+                <div class="field-error">
+                  <span class="material-icons">error</span>
+                  @if (loginForm.get('email')?.errors?.['required']) {
+                    <span>El email es requerido</span>
+                  }
+                  @if (loginForm.get('email')?.errors?.['email']) {
+                    <span>Email inválido</span>
+                  }
+                </div>
+              }
             </div>
-            <div class="field-error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-              <span class="material-icons">error</span>
-              <span *ngIf="loginForm.get('password')?.errors?.['required']">La contraseña es requerida</span>
-              <span *ngIf="loginForm.get('password')?.errors?.['minlength']">Mínimo 6 caracteres</span>
-            </div>
-          </div>
 
-          <div class="form-options">
-            <a (click)="goToForgotPassword()" class="forgot-link" style="cursor: pointer;">
-              ¿Olvidaste tu contraseña?
-            </a>
-          </div>
-
-          <button type="submit" class="btn-login" [disabled]="isLoading || isBlocked" [class.loading]="isLoading">
-            <span class="material-icons" *ngIf="!isLoading">login</span>
-            <span class="material-icons spinning" *ngIf="isLoading">sync</span>
-            {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
-          </button>
-
-          <div class="register-section">
-            ¿No tienes una cuenta?
-            <a routerLink="/register">Regístrate aquí</a>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Verificación 2FA -->
-<div class="modal-overlay" *ngIf="showTwoFactorForm" (click)="cancelTwoFactor()">
-  <div class="modal-2fa" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <div class="header-icon">
-        <span class="material-icons">verified_user</span>
-      </div>
-      <h2>Verificación en Dos Pasos</h2>
-      <p>Selecciona tu método de autenticación</p>
-      <button type="button" class="modal-close" (click)="cancelTwoFactor()" title="Cancelar">
-        <span class="material-icons">close</span>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <!-- Error en 2FA -->
-      <div class="error-alert" *ngIf="errorMessage">
-        <span class="material-icons">error</span>
-        <span>{{ errorMessage }}</span>
-      </div>
-
-      <!-- Selección de Método 2FA (si hay más de uno) -->
-      <div class="methods-selection" *ngIf="!selectedMethod && availableMethods.length > 1">
-        <h3>
-          <span class="material-icons">security</span>
-          Elige tu método de verificación
-        </h3>
-        <div class="methods-grid">
-          <button 
-            *ngFor="let method of availableMethods"
-            type="button"
-            class="method-card"
-            (click)="selectMethod(method.id)"
-            [disabled]="!method.enabled"
-          >
-            <span class="material-icons">{{ method.icon }}</span>
-            <h4>{{ method.name }}</h4>
-            <p>{{ method.description }}</p>
-          </button>
-        </div>
-
-        <!-- Opción de códigos de respaldo -->
-        <div class="backup-option" *ngIf="backupCodesAvailable">
-          <button type="button" class="backup-link" (click)="useBackupCode = true">
-            <span class="material-icons">vpn_key</span>
-            ¿Tienes un código de respaldo?
-          </button>
-        </div>
-      </div>
-
-      <!-- Formulario Google Authenticator -->
-      <div class="method-form" *ngIf="selectedMethod === 'GOOGLE_AUTHENTICATOR' && !useBackupCode">
-        <div class="method-header">
-          <span class="material-icons">smartphone</span>
-          <h3>Google Authenticator</h3>
-        </div>
-        <p class="method-instruction">Ingresa el código de 6 dígitos de tu aplicación Google Authenticator</p>
-        
-        <form (submit)="verifyTwoFactorCode($event)">
-          <div class="code-input-group">
-            <label for="twoFactorCode">
-              <span class="material-icons">pin</span>
-              Código de Verificación
-            </label>
-            <input
-              type="text"
-              id="twoFactorCode"
-              [(ngModel)]="twoFactorCode"
-              name="twoFactorCode"
-              placeholder="000000"
-              maxlength="6"
-              pattern="[0-9]{6}"
-              class="code-input"
-              autocomplete="off"
-              #twoFactorInput
-            >
-          </div>
-
-          <button type="submit" class="btn-verify" [disabled]="isLoading || twoFactorCode.length !== 6">
-            <span class="material-icons" *ngIf="!isLoading">check_circle</span>
-            <span class="material-icons spinning" *ngIf="isLoading">sync</span>
-            {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
-          </button>
-        </form>
-
-        <div class="alternative-methods">
-          <button type="button" class="link-btn" (click)="selectedMethod = ''" *ngIf="availableMethods.length > 1">
-            <span class="material-icons">arrow_back</span>
-            Usar otro método
-          </button>
-          <button type="button" class="link-btn" (click)="useBackupCode = true" *ngIf="backupCodesAvailable">
-            <span class="material-icons">vpn_key</span>
-            Usar código de respaldo
-          </button>
-        </div>
-      </div>
-
-      <!-- Formulario Email 2FA -->
-      <div class="method-form" *ngIf="selectedMethod === 'EMAIL' && !useBackupCode">
-        <div class="method-header">
-          <span class="material-icons">mail</span>
-          <h3>Verificación por Email</h3>
-        </div>
-        
-        <!-- Enviar código -->
-        <div *ngIf="!codeSent" class="send-code-section">
-          <p class="method-instruction">Te enviaremos un código de verificación a tu correo electrónico</p>
-          <div class="email-display">
-            <span class="material-icons">email</span>
-            <span>{{ pendingUser?.email }}</span>
-          </div>
-          <button type="button" class="btn-send-code" (click)="sendEmailCode()" [disabled]="isLoading">
-            <span class="material-icons" *ngIf="!isLoading">send</span>
-            <span class="material-icons spinning" *ngIf="isLoading">sync</span>
-            {{ isLoading ? 'Enviando...' : 'Enviar Código' }}
-          </button>
-        </div>
-
-        <!-- Ingresar código -->
-        <div *ngIf="codeSent" class="verify-code-section">
-          <div class="success-message">
-            <span class="material-icons">mark_email_read</span>
-            <span>Código enviado. Revisa tu bandeja de entrada</span>
-          </div>
-
-          <form (submit)="verifyTwoFactorCode($event)">
-            <div class="code-input-group">
-              <label for="twoFactorCodeEmail">
-                <span class="material-icons">pin</span>
-                Código de Verificación
+            <div class="form-group">
+              <label for="password">
+                <span class="material-icons">lock</span>
+                Contraseña
               </label>
-              <input
-                type="text"
-                id="twoFactorCodeEmail"
-                [(ngModel)]="twoFactorCode"
-                name="twoFactorCodeEmail"
-                placeholder="000000"
-                maxlength="6"
-                pattern="[0-9]{6}"
-                class="code-input"
-                autocomplete="off"
-              >
-            </div>
+              <div class="password-wrapper">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  formControlName="password"
+                  placeholder="Tu contraseña"
+                  autocomplete="current-password"
+                  [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                  [class.success]="loginForm.get('password')?.valid && loginForm.get('password')?.touched"
+                  />
+                  <button
+                    type="button"
+                    class="toggle-password"
+                    (click)="togglePassword()"
+                    >
+                    <span class="material-icons">
+                      {{ showPassword ? 'visibility_off' : 'visibility' }}
+                    </span>
+                  </button>
+                </div>
+                @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                  <div class="field-error">
+                    <span class="material-icons">error</span>
+                    @if (loginForm.get('password')?.errors?.['required']) {
+                      <span>La contraseña es requerida</span>
+                    }
+                    @if (loginForm.get('password')?.errors?.['minlength']) {
+                      <span>Mínimo 6 caracteres</span>
+                    }
+                  </div>
+                }
+              </div>
 
-            <button type="submit" class="btn-verify" [disabled]="isLoading || twoFactorCode.length !== 6">
-              <span class="material-icons" *ngIf="!isLoading">check_circle</span>
-              <span class="material-icons spinning" *ngIf="isLoading">sync</span>
-              {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
-            </button>
-          </form>
+              <div class="form-options">
+                <a (click)="goToForgotPassword()" class="forgot-link" style="cursor: pointer;">
+                  ¿Olvidaste tu contraseña?
+                </a>
+              </div>
 
-          <div class="resend-section">
-            <button type="button" class="link-btn" (click)="sendEmailCode()">
-              <span class="material-icons">refresh</span>
-              Reenviar código
-            </button>
+              <button type="submit" class="btn-login" [disabled]="isLoading || isBlocked" [class.loading]="isLoading">
+                @if (!isLoading) {
+                  <span class="material-icons">login</span>
+                }
+                @if (isLoading) {
+                  <span class="material-icons spinning">sync</span>
+                }
+                {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+              </button>
+
+              <div class="register-section">
+                ¿No tienes una cuenta?
+                <a routerLink="/register">Regístrate aquí</a>
+              </div>
+            </form>
           </div>
-        </div>
-
-        <div class="alternative-methods">
-          <button type="button" class="link-btn" (click)="selectedMethod = ''; codeSent = false" *ngIf="availableMethods.length > 1">
-            <span class="material-icons">arrow_back</span>
-            Usar otro método
-          </button>
-          <button type="button" class="link-btn" (click)="useBackupCode = true; codeSent = false" *ngIf="backupCodesAvailable">
-            <span class="material-icons">vpn_key</span>
-            Usar código de respaldo
-          </button>
-        </div>
-      </div>
-
-      <!-- Formulario de Código de Respaldo -->
-      <div class="method-form" *ngIf="useBackupCode">
-        <div class="method-header">
-          <span class="material-icons">vpn_key</span>
-          <h3>Código de Respaldo</h3>
-        </div>
-        <p class="method-instruction">Ingresa uno de tus códigos de respaldo de 8 caracteres</p>
-        
-        <form (submit)="verifyBackupCodeSubmit($event)">
-          <div class="code-input-group">
-            <label for="backupCodeInput">
-              <span class="material-icons">password</span>
-              Código de Respaldo
-            </label>
-            <input
-              type="text"
-              id="backupCodeInput"
-              [(ngModel)]="backupCode"
-              name="backupCodeInput"
-              placeholder="XXXX-XXXX"
-              maxlength="9"
-              class="code-input"
-              autocomplete="off"
-            >
-          </div>
-
-          <button type="submit" class="btn-verify" [disabled]="isLoading || backupCode.length < 8">
-            <span class="material-icons" *ngIf="!isLoading">check_circle</span>
-            <span class="material-icons spinning" *ngIf="isLoading">sync</span>
-            {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
-          </button>
-        </form>
-
-        <div class="alternative-methods">
-          <button type="button" class="link-btn" (click)="useBackupCode = false; backupCode = ''">
-            <span class="material-icons">arrow_back</span>
-            Volver a métodos principales
-          </button>
         </div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- Modal de Verificación 2FA -->
+    @if (showTwoFactorForm) {
+      <div class="modal-overlay" (click)="cancelTwoFactor()">
+        <div class="modal-2fa" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="header-icon">
+              <span class="material-icons">verified_user</span>
+            </div>
+            <h2>Verificación en Dos Pasos</h2>
+            <p>Selecciona tu método de autenticación</p>
+            <button type="button" class="modal-close" (click)="cancelTwoFactor()" title="Cancelar">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Error en 2FA -->
+            @if (errorMessage) {
+              <div class="error-alert">
+                <span class="material-icons">error</span>
+                <span>{{ errorMessage }}</span>
+              </div>
+            }
+            <!-- Selección de Método 2FA (si hay más de uno) -->
+            @if (!selectedMethod && availableMethods.length > 1) {
+              <div class="methods-selection">
+                <h3>
+                  <span class="material-icons">security</span>
+                  Elige tu método de verificación
+                </h3>
+                <div class="methods-grid">
+                  @for (method of availableMethods; track method) {
+                    <button
+                      type="button"
+                      class="method-card"
+                      (click)="selectMethod(method.id)"
+                      [disabled]="!method.enabled"
+                      >
+                      <span class="material-icons">{{ method.icon }}</span>
+                      <h4>{{ method.name }}</h4>
+                      <p>{{ method.description }}</p>
+                    </button>
+                  }
+                </div>
+                <!-- Opción de códigos de respaldo -->
+                @if (backupCodesAvailable) {
+                  <div class="backup-option">
+                    <button type="button" class="backup-link" (click)="useBackupCode = true">
+                      <span class="material-icons">vpn_key</span>
+                      ¿Tienes un código de respaldo?
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+            <!-- Formulario Google Authenticator -->
+            @if (selectedMethod === 'GOOGLE_AUTHENTICATOR' && !useBackupCode) {
+              <div class="method-form">
+                <div class="method-header">
+                  <span class="material-icons">smartphone</span>
+                  <h3>Google Authenticator</h3>
+                </div>
+                <p class="method-instruction">Ingresa el código de 6 dígitos de tu aplicación Google Authenticator</p>
+                <form (submit)="verifyTwoFactorCode($event)">
+                  <div class="code-input-group">
+                    <label for="twoFactorCode">
+                      <span class="material-icons">pin</span>
+                      Código de Verificación
+                    </label>
+                    <input
+                      type="text"
+                      id="twoFactorCode"
+                      [(ngModel)]="twoFactorCode"
+                      name="twoFactorCode"
+                      placeholder="000000"
+                      maxlength="6"
+                      pattern="[0-9]{6}"
+                      class="code-input"
+                      autocomplete="off"
+                      #twoFactorInput
+                      >
+                    </div>
+                    <button type="submit" class="btn-verify" [disabled]="isLoading || twoFactorCode.length !== 6">
+                      @if (!isLoading) {
+                        <span class="material-icons">check_circle</span>
+                      }
+                      @if (isLoading) {
+                        <span class="material-icons spinning">sync</span>
+                      }
+                      {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
+                    </button>
+                  </form>
+                  <div class="alternative-methods">
+                    @if (availableMethods.length > 1) {
+                      <button type="button" class="link-btn" (click)="selectedMethod = ''">
+                        <span class="material-icons">arrow_back</span>
+                        Usar otro método
+                      </button>
+                    }
+                    @if (backupCodesAvailable) {
+                      <button type="button" class="link-btn" (click)="useBackupCode = true">
+                        <span class="material-icons">vpn_key</span>
+                        Usar código de respaldo
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+              <!-- Formulario Email 2FA -->
+              @if (selectedMethod === 'EMAIL' && !useBackupCode) {
+                <div class="method-form">
+                  <div class="method-header">
+                    <span class="material-icons">mail</span>
+                    <h3>Verificación por Email</h3>
+                  </div>
+                  <!-- Enviar código -->
+                  @if (!codeSent) {
+                    <div class="send-code-section">
+                      <p class="method-instruction">Te enviaremos un código de verificación a tu correo electrónico</p>
+                      <div class="email-display">
+                        <span class="material-icons">email</span>
+                        <span>{{ pendingUser?.email }}</span>
+                      </div>
+                      <button type="button" class="btn-send-code" (click)="sendEmailCode()" [disabled]="isLoading">
+                        @if (!isLoading) {
+                          <span class="material-icons">send</span>
+                        }
+                        @if (isLoading) {
+                          <span class="material-icons spinning">sync</span>
+                        }
+                        {{ isLoading ? 'Enviando...' : 'Enviar Código' }}
+                      </button>
+                    </div>
+                  }
+                  <!-- Ingresar código -->
+                  @if (codeSent) {
+                    <div class="verify-code-section">
+                      <div class="success-message">
+                        <span class="material-icons">mark_email_read</span>
+                        <span>Código enviado. Revisa tu bandeja de entrada</span>
+                      </div>
+                      <form (submit)="verifyTwoFactorCode($event)">
+                        <div class="code-input-group">
+                          <label for="twoFactorCodeEmail">
+                            <span class="material-icons">pin</span>
+                            Código de Verificación
+                          </label>
+                          <input
+                            type="text"
+                            id="twoFactorCodeEmail"
+                            [(ngModel)]="twoFactorCode"
+                            name="twoFactorCodeEmail"
+                            placeholder="000000"
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            class="code-input"
+                            autocomplete="off"
+                            >
+                          </div>
+                          <button type="submit" class="btn-verify" [disabled]="isLoading || twoFactorCode.length !== 6">
+                            @if (!isLoading) {
+                              <span class="material-icons">check_circle</span>
+                            }
+                            @if (isLoading) {
+                              <span class="material-icons spinning">sync</span>
+                            }
+                            {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
+                          </button>
+                        </form>
+                        <div class="resend-section">
+                          <button type="button" class="link-btn" (click)="sendEmailCode()">
+                            <span class="material-icons">refresh</span>
+                            Reenviar código
+                          </button>
+                        </div>
+                      </div>
+                    }
+                    <div class="alternative-methods">
+                      @if (availableMethods.length > 1) {
+                        <button type="button" class="link-btn" (click)="selectedMethod = ''; codeSent = false">
+                          <span class="material-icons">arrow_back</span>
+                          Usar otro método
+                        </button>
+                      }
+                      @if (backupCodesAvailable) {
+                        <button type="button" class="link-btn" (click)="useBackupCode = true; codeSent = false">
+                          <span class="material-icons">vpn_key</span>
+                          Usar código de respaldo
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+                <!-- Formulario de Código de Respaldo -->
+                @if (useBackupCode) {
+                  <div class="method-form">
+                    <div class="method-header">
+                      <span class="material-icons">vpn_key</span>
+                      <h3>Código de Respaldo</h3>
+                    </div>
+                    <p class="method-instruction">Ingresa uno de tus códigos de respaldo de 8 caracteres</p>
+                    <form (submit)="verifyBackupCodeSubmit($event)">
+                      <div class="code-input-group">
+                        <label for="backupCodeInput">
+                          <span class="material-icons">password</span>
+                          Código de Respaldo
+                        </label>
+                        <input
+                          type="text"
+                          id="backupCodeInput"
+                          [(ngModel)]="backupCode"
+                          name="backupCodeInput"
+                          placeholder="XXXX-XXXX"
+                          maxlength="9"
+                          class="code-input"
+                          autocomplete="off"
+                          >
+                        </div>
+                        <button type="submit" class="btn-verify" [disabled]="isLoading || backupCode.length < 8">
+                          @if (!isLoading) {
+                            <span class="material-icons">check_circle</span>
+                          }
+                          @if (isLoading) {
+                            <span class="material-icons spinning">sync</span>
+                          }
+                          {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
+                        </button>
+                      </form>
+                      <div class="alternative-methods">
+                        <button type="button" class="link-btn" (click)="useBackupCode = false; backupCode = ''">
+                          <span class="material-icons">arrow_back</span>
+                          Volver a métodos principales
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
