@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, tap, catchError, throwError, map, of } fro
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
-import { AuthResponse, User } from '../models/user.model';
+import { AuthResponse, User, AvailableLoginMethods, LoginFactorMethod, LoginFactorResponse, SendLoginCodeRequest, VerifyLoginFactorRequest } from '../models/user.model';
 import { ApiResponse } from '../models/api-response.model';
 import { CartService } from './cart.service';
 import { NotificationCenterService } from '../core/services/notification-center.service';
@@ -68,6 +68,8 @@ export interface SpringBootAuthResponse {
     expiresIn?: number;
     expiresAt?: string | null;
     user?: User;
+    preAuthChallenge?: string;
+    availableMethods?: AvailableLoginMethods;
     twoFactorRequired?: boolean;
     pendingUser?: User;
   };
@@ -98,6 +100,11 @@ export interface SpringBootAuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
+  private preAuthChallenge: string | null = null;
+  private loginFlowVersion = 0;
+  clearPendingLogin(): void { this.preAuthChallenge = null; this.loginFlowVersion++; }
+  hasPendingLogin(): boolean { return this.preAuthChallenge !== null; }
+
   private readonly API_URL = `${environment.apiUrl}/auth`;
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
   private userSubject = new BehaviorSubject<User | null>(this.getStoredUser());
@@ -139,15 +146,20 @@ export class AuthService {
 
 
 login(credentials: LoginRequest): Observable<AuthResponse> {
+  this.clearPendingLogin();
+  const flowVersion = this.loginFlowVersion;
   return this.http.post<SpringBootAuthResponse>(`${this.API_URL}/login`, credentials)
     .pipe(
       map(response => {
+        if (flowVersion !== this.loginFlowVersion) throw new Error('Flujo de login cancelado');
         // Maneja el caso donde la respuesta indica que se requiere 2FA
         if (response.data?.twoFactorRequired || response.twoFactorRequired) {
-          return {
-            twoFactorRequired: true,
-            pendingUser: response.data?.user ?? response.user
-          } as AuthResponse;
+          const challenge = response.data?.preAuthChallenge;
+          if (!challenge || !/^[A-Za-z0-9_-]{43}$/.test(challenge) || !response.data?.availableMethods) {
+            throw new Error('Respuesta de autenticación inválida');
+          }
+          this.preAuthChallenge = challenge;
+          return { twoFactorRequired: true, availableMethods: response.data.availableMethods } as AuthResponse;
         }
         
         // Buscar token en la estructura correcta de respuesta
@@ -229,12 +241,10 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   }
 
   logout(): void {
+    this.clearPendingLogin();
     const currentUrl = this.router.url;
     
-    if (['/login', '/register', '/'].includes(currentUrl)) {
-      return;
-    }
-    
+    const token = this.getStoredToken();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.tokenSubject.next(null);
@@ -242,8 +252,11 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
     this.isLoggedIn$.next(false);
     this.cartService.clearLocal();
     this.notifService.clearAll();
-    
-    this.router.navigate(['/login']);
+    if (token) {
+      this.http.post(`${this.API_URL}/logout`, {}, {headers: new HttpHeaders({Authorization: `Bearer ${token}`})})
+        .subscribe({error: () => { /* Local credentials remain cleared even if the server is unavailable. */ }});
+    }
+    if (currentUrl !== '/login') this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
@@ -281,6 +294,7 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
 
 
   public completeLogin(token: string, user: User): void {
+    this.clearPendingLogin();
     if (token && token.trim() !== '') {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -331,19 +345,31 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   }
 
 
-  verifyTwoFactor(payload: { email: string; code: string; method: string }): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/2fa/verify`, payload);
+  verifyTwoFactor(payload: { code: string; method: LoginFactorMethod }): Observable<LoginFactorResponse> {
+    if (!this.preAuthChallenge) return throwError(() => new Error('Inicia sesión nuevamente'));
+    const flowVersion = this.loginFlowVersion;
+    const body: VerifyLoginFactorRequest = { ...payload, preAuthChallenge: this.preAuthChallenge };
+    return this.http.post<LoginFactorResponse>(`${environment.apiUrl}/2fa/verify`, body).pipe(
+      map(result => {
+        if (flowVersion !== this.loginFlowVersion) throw new Error('Flujo de login cancelado');
+        return result;
+      }),
+      tap(() => this.clearPendingLogin()),
+      catchError(error => { if (flowVersion === this.loginFlowVersion) this.clearPendingLogin(); return throwError(() => error); })
+    );
   }
 
-  /**
-   * Enviar código 2FA por email durante el login
-   */
-  sendTwoFactorCode(email: string, method: 'EMAIL'): Observable<any> {
-    // El endpoint en el backend es /api/2fa/send-login-code
-    return this.http.post<any>(`${environment.apiUrl}/2fa/send-login-code`, {
-      email: email,
-      method: method
-    });
+  sendTwoFactorCode(method: 'EMAIL'): Observable<{success: boolean; message: string}> {
+    if (!this.preAuthChallenge) return throwError(() => new Error('Inicia sesión nuevamente'));
+    const flowVersion = this.loginFlowVersion;
+    const body: SendLoginCodeRequest = { preAuthChallenge: this.preAuthChallenge, method };
+    return this.http.post<{success: boolean; message: string}>(`${environment.apiUrl}/2fa/send-login-code`, body).pipe(
+      map(result => {
+        if (flowVersion !== this.loginFlowVersion) throw new Error('Flujo de login cancelado');
+        return result;
+      }),
+      catchError(error => { if (flowVersion === this.loginFlowVersion) this.clearPendingLogin(); return throwError(() => error); })
+    );
   }
 
   // ===== NUEVOS MÉTODOS PARA MÚLTIPLES 2FA =====
@@ -691,18 +717,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   /**
    * Verificar código de respaldo para login (devuelve JWT)
    */
-  verifyBackupCodeForLogin(email: string, code: string): Observable<any> {
-    const payload = {
-      email: email,
-      code: code,
-      method: 'BACKUP_CODE'
-    };
-    
-    return this.http.post<any>(`${environment.apiUrl}/2fa/verify`, payload).pipe(
-      catchError(error => {
-        return throwError(() => error);
-      })
-    );
+  verifyBackupCodeForLogin(code: string): Observable<LoginFactorResponse> {
+    return this.verifyTwoFactor({ code, method: 'BACKUP_CODE' });
   }
 
   verifyEmail(token: string): Observable<ApiResponse<any>> {

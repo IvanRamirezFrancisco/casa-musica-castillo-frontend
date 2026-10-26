@@ -15,6 +15,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/public/',                // ← STOREFRONT: todas las rutas públicas del catálogo
     '/auth/check-username',        // Validación username - variante 1
     '/api/auth/check-username',    // Validación username - variante 2
+    '/api/2fa/verify',
+    '/api/2fa/send-login-code',
     '/login',                      // Login de usuario
     '/register',                   // Registro de usuario
     '/check-username',             // Validación username - variante 3
@@ -67,7 +69,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     (req.method === 'GET' || req.method === 'HEAD') &&
     (req.url.includes('/api/public/') || req.url.includes('/actuator/health'));
   
-  if (token && !isExternalApi && !isAnonymousPublicReadOnly) {
+  if (token && !isExternalApi && !isAnonymousPublicReadOnly && !isPublicUrl) {
     authReq = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -79,7 +81,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError(error => {
       if (error.status === 401) {
         // Nunca cerrar sesión ni redirigir a login si el fallo ocurre en un endpoint público (ej. reseñas públicas)
-        if (!isPublicRequest) {
+        if (!isPublicRequest && !req.url.endsWith('/auth/logout')) {
           const shouldRedirect = token || !(isPublicFrontendRoute || isRootRoute);
 
           if (shouldRedirect) {

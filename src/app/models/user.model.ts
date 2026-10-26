@@ -39,11 +39,18 @@ export interface AuthResponse {
   user?: User;
   twoFactorRequired?: boolean;
   pendingUser?: User;
+  availableMethods?: AvailableLoginMethods;
   message?: string;
   data?: {
     accessToken?: string; // <-- también aquí
     user?: User;
     twoFactorRequired?: boolean;
-    [key: string]: any;
+    availableMethods?: AvailableLoginMethods;
   };
 }
+export type LoginFactorMethod = 'EMAIL' | 'GOOGLE_AUTHENTICATOR' | 'BACKUP_CODE';
+export type AvailableLoginMethods = Record<LoginFactorMethod, boolean>;
+export interface SendLoginCodeRequest { preAuthChallenge: string; method: 'EMAIL'; }
+export interface VerifyLoginFactorRequest { preAuthChallenge: string; method: LoginFactorMethod; code: string; }
+export interface LoginJwtResponse { accessToken: string; tokenType: string; expiresIn: number; user: User; }
+export interface LoginFactorResponse { success: boolean; message: string; data?: LoginJwtResponse; }
