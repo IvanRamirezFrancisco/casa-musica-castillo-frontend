@@ -225,6 +225,20 @@
                   </div>
                 </div>
 
+                <!-- Confirmaci?n reforzada Step-Up para operaciones sensibles 2FA -->
+                @if (isTwoFactorEnabled) {
+                  <div class="form-group">
+                    <label for="stepUpPassword">Contraseña actual (requerida para desactivar 2FA o generar códigos de respaldo)</label>
+                    <input
+                      type="password"
+                      id="stepUpPassword"
+                      name="stepUpPassword"
+                      autocomplete="current-password"
+                      [(ngModel)]="stepUpPassword"
+                      placeholder="Confirma tu contraseña actual">
+                  </div>
+                }
+
                 <!-- Separador -->
                 <hr class="methods-divider">
 

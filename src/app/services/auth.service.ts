@@ -377,8 +377,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   /**
    * Desactivar método específico de 2FA
    */
-  disableSpecificTwoFactor(method: string): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/disable/${method}`, {});
+  disableSpecificTwoFactor(method: string, currentPassword: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/disable/${method}`, { currentPassword });
   }
 
   /**
@@ -696,8 +696,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   /**
    * Generar códigos de respaldo
    */
-  generateBackupCodes(): Observable<ApiResponse<{codes: string[]}>> {
-    return this.http.post<ApiResponse<{codes: string[]}>>(`${environment.apiUrl}/2fa/backup-codes/generate`, {});
+  generateBackupCodes(currentPassword: string): Observable<ApiResponse<{codes: string[]}>> {
+    return this.http.post<ApiResponse<{codes: string[]}>>(`${environment.apiUrl}/2fa/backup-codes/generate`, { currentPassword });
   }
 
   /**
@@ -733,8 +733,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   /**
    * Desactivar códigos de respaldo
    */
-  disableBackupCodes(): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/backup-codes/disable`, {});
+  disableBackupCodes(currentPassword: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/backup-codes/disable`, { currentPassword });
   }
 
   // =====================================================================
