@@ -17,10 +17,10 @@ interface Receipt { requestId: string; status: 'RECEIVED' }
       <p>Puedes iniciar y consultar una solicitud desde este sitio. Inicia sesión con la cuenta correspondiente y completa la verificación en dos pasos si está activada.</p>
       <p>Eliminar la cuenta afecta el acceso, los favoritos y el carrito. Algunos registros de pedidos podrían conservarse cuando exista una obligación aplicable. Consulta el <a routerLink="/privacidad">Aviso de Privacidad</a>.</p>
       @if (receipt(); as result) {
-        <p role="status">Solicitud recibida. Identificador: {{ result.requestId }}.</p>
+        <output>Solicitud recibida. Identificador: {{ result.requestId }}.</output>
         <p>Conserva el identificador y regresa a esta página con la misma cuenta para consultar el estado. Tu cuenta sigue activa durante el trámite.</p>
       } @else if (!available()) {
-        <p role="status">{{ available() === null ? 'Consultando disponibilidad…' : 'La recepción de solicitudes aún no está disponible.' }}</p>
+        <output>{{ available() === null ? 'Consultando disponibilidad…' : 'La recepción de solicitudes aún no está disponible.' }}</output>
       } @else if (signIn()) {
         <p><a routerLink="/login">Iniciar sesión para solicitar eliminación</a></p>
       } @else {

@@ -33,7 +33,7 @@ export class VerifyAccountComponent {
   }
 
   activate(): void {
-    if (this.busy() || !/^[0-9]{6}$/.test(this.code)) return;
+    if (this.busy() || !/^\d{6}$/.test(this.code)) return;
     this.submit(this.auth.verifyEmailCode(this.email.trim(), this.code), true);
   }
 

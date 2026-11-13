@@ -2,10 +2,10 @@
   <section class="verify-card" aria-labelledby="activation-title" [attr.aria-busy]="busy()">
     <h1 id="activation-title">{{ verified() ? 'Cuenta verificada' : 'Activa tu cuenta' }}</h1>
     @if (error()) { <p class="error-message" role="alert">{{ error() }}</p> }
-    @if (notice()) { <p role="status">{{ notice() }}</p> }
-    @if (busy()) { <p role="status">Procesando solicitud…</p> }
+    @if (notice()) { <output>{{ notice() }}</output> }
+    @if (busy()) { <output>Procesando solicitud…</output> }
     @if (verified()) {
-      <p role="status">Ya puedes iniciar sesión en Casa de Música Castillo.</p>
+      <output>Ya puedes iniciar sesión en Casa de Música Castillo.</output>
     } @else {
       <p>Usa el enlace o el código del correo de activación. Si no lo encuentras, revisa la carpeta de no deseados.</p>
       <form class="activation-form" #activation="ngForm" (ngSubmit)="activate()">
