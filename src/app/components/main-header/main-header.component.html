@@ -63,7 +63,7 @@
             </button>
             <!-- Dropdown del usuario -->
             @if (showUserMenu) {
-              <div class="user-dropdown" (click)="$event.stopPropagation()">
+              <div class="user-dropdown">
                 <div class="user-dropdown-header">
                   <div class="user-avatar">
                     <span class="material-icons">person</span>
@@ -128,7 +128,7 @@
 
   <!-- Overlay para cerrar el menú (fuera del nav) -->
   @if (isMobileMenuOpen) {
-    <div class="mobile-overlay" (click)="closeMobileMenu()"></div>
+    <button type="button" aria-label="Cerrar menú" class="mobile-overlay" (click)="closeMobileMenu()"></button>
   }
 
   <!-- Navegación Secundaria (integrada al header para que se comporte como parte del sticky header) -->
@@ -186,7 +186,7 @@
 
             <!-- Desktop: Popover refinado | Mobile: Acordeón interno -->
             @if (showInfoMenu) {
-              <div id="info-menu" class="dropdown-menu-nav" (click)="$event.stopPropagation()">
+              <div id="info-menu" class="dropdown-menu-nav">
                 <div class="dropdown-content-grid">
                   <div class="dropdown-group">
                     <span class="dropdown-group-title">LA TIENDA</span>

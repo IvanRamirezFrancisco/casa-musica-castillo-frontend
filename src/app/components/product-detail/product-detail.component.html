@@ -859,7 +859,7 @@ ESTADO 3: CONTENIDO PRINCIPAL DEL PRODUCTO (CARGA PROGRESIVA)
               </div>
               <!-- Bottom Area (Thumbnails) -->
               @if (allImages.length > 1) {
-                <div class="lightbox-bottom-area w-full flex justify-center items-center pointer-events-auto" (click)="$event.stopPropagation()">
+                <div class="lightbox-bottom-area w-full flex justify-center items-center pointer-events-auto">
                   <div class="lightbox-thumbnails-scroll">
                     @for (img of allImages; track img; let i = $index) {
                       <button

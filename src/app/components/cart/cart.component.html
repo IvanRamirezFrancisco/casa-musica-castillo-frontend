@@ -403,7 +403,7 @@ FASE 1.2 - Carrito UX - 2026-05-15
 
     <!-- MODAL: Confirmar vaciar carrito -->
     @if (showClearConfirm) {
-      <div class="modal-overlay" (click)="showClearConfirm = false">
+      <div class="modal-overlay" (click)="showClearConfirm = false" (keydown.escape)="$event.stopPropagation(); showClearConfirm = false">
         <div class="modal-content" (click)="$event.stopPropagation()">
           <div class="modal-icon warning">
             <span class="material-icons">warning</span>
