@@ -214,3 +214,8 @@
     width: 100%;
   }
 }
+.activation-form { display: grid; gap: .65rem; margin-block: 1.25rem; text-align: left; }
+.activation-form label { font-weight: 700; }
+.activation-form input { min-width: 0; min-height: 44px; border: 1px solid #9b8587; border-radius: .6rem; padding: .5rem .75rem; font: inherit; }
+.activation-form :focus-visible { outline: 2px solid #722f37; outline-offset: 3px; }
+.activation-form button:disabled { opacity: .7; cursor: default; }

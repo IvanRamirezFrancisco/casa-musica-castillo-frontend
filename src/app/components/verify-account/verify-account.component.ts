@@ -1,83 +1,72 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-
-import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Observable, timeout } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ApiResponse } from '../../models/api-response.model';
 
 @Component({
   selector: 'app-verify-account',
   standalone: true,
-  imports: [RouterModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './verify-account.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
-  styleUrls: ['./verify-account.component.css']
+  styleUrl: './verify-account.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VerifyAccountComponent implements OnInit {
-  loading = true;
-  verified = false;
-  error = '';
-  message = '';
-  token = '';
+export class VerifyAccountComponent {
+  private readonly auth = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  readonly busy = signal(false);
+  readonly verified = signal(false);
+  readonly error = signal('');
+  readonly notice = signal('');
+  email = '';
+  code = '';
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
-
-  ngOnInit(): void {
-    // Obtener el token de la URL
-    this.route.queryParams.subscribe(params => {
-      this.token = params['token'];
-      if (this.token) {
-        this.verifyToken();
-      } else {
-        this.loading = false;
-        this.error = 'Token de verificación no válido';
-      }
-    });
+  constructor() {
+    const token = inject(ActivatedRoute).snapshot.queryParamMap.get('token');
+    if (!token) return;
+    this.submit(this.auth.verifyEmail(token), true);
+    void this.router.navigate([], { queryParams: {}, replaceUrl: true });
   }
 
-  verifyToken(): void {
-    this.loading = true;
-    this.authService.verifyEmail(this.token).subscribe({
-      next: (response: ApiResponse<any>) => {
-        this.loading = false;
-        if (response.success) {
-          this.verified = true;
-          this.message = response.message || '¡Cuenta verificada exitosamente!';
-          
-          // Redirigir al login después de 3 segundos
-          setTimeout(() => {
-            this.router.navigate(['/login'], { 
-              queryParams: { message: 'Cuenta verificada. Ya puedes iniciar sesión' }
-            });
-          }, 3000);
+  activate(): void {
+    if (this.busy() || !/^[0-9]{6}$/.test(this.code)) return;
+    this.submit(this.auth.verifyEmailCode(this.email.trim(), this.code), true);
+  }
+
+  resend(): void {
+    if (this.busy() || !this.email.trim()) return;
+    this.submit(this.auth.resendAccountVerification(this.email.trim()), false);
+  }
+
+  private submit(request: Observable<ApiResponse<unknown>>, activation: boolean): void {
+    this.busy.set(true);
+    this.error.set('');
+    this.notice.set('');
+    request.pipe(timeout(15000), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => {
+        this.busy.set(false);
+        if (!response.success) {
+          this.error.set('No se pudo completar la solicitud.');
+          return;
+        }
+        this.code = '';
+        if (activation) this.verified.set(true);
+        else this.notice.set('Si tu cuenta puede recibir un reenvío, revisa tu correo y la carpeta de no deseados.');
+      },
+      error: (error: { status?: number }) => {
+        this.busy.set(false);
+        if (error.status === 400 && activation) {
+          this.error.set('El enlace o código es inválido o ha vencido. Puedes solicitar uno nuevo.');
+        } else if (error.status === 429) {
+          this.error.set('Demasiadas solicitudes. Intenta nuevamente en unos minutos.');
         } else {
-          this.error = response.message || 'Error al verificar la cuenta';
+          this.error.set('No pudimos completar la solicitud. Comprueba tu conexión e inténtalo de nuevo.');
         }
       },
-      error: (err: any) => {
-        this.loading = false;
-        
-        if (err.error?.message) {
-          this.error = err.error.message;
-        } else if (err.status === 400) {
-          this.error = 'El enlace de verificación ha expirado o es inválido';
-        } else if (err.status === 404) {
-          this.error = 'El token de verificación no existe';
-        } else {
-          this.error = 'Error del servidor. Intenta nuevamente más tarde';
-        }
-      }
     });
-  }
-
-  goToLogin(): void {
-    this.router.navigate(['/login']);
-  }
-
-  resendVerification(): void {
-    // Reenvío de verificación
   }
 }

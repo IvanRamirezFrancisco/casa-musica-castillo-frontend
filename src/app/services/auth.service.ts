@@ -721,6 +721,13 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.verifyTwoFactor({ code, method: 'BACKUP_CODE' });
   }
 
+  verifyEmailCode(email: string, code: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${environment.apiUrl}/auth/verify-email-code`, { email, code });
+  }
+
+  resendAccountVerification(email: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${environment.apiUrl}/auth/resend-verification`, { email });
+  }
   verifyEmail(token: string): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/auth/verify-email`, { token })
       .pipe(
