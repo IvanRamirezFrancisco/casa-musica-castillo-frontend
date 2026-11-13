@@ -149,7 +149,7 @@
 
 <!-- Modal Create/Edit Coupon -->
 @if (showModal) {
-  <div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-overlay" (click)="closeModal()" (keydown.escape)="$event.stopPropagation(); closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>
@@ -333,7 +333,7 @@
 
                   <!-- Modal Statistics -->
                   @if (showStatsModal) {
-                    <div class="modal-overlay" (click)="closeStatsModal()">
+                    <div class="modal-overlay" (click)="closeStatsModal()" (keydown.escape)="$event.stopPropagation(); closeStatsModal()">
                       <div class="modal-content stats-modal" (click)="$event.stopPropagation()">
                         <div class="modal-header">
                           <h2>

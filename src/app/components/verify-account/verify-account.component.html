@@ -1,59 +1,28 @@
-<!-- Verificación de Cuenta -->
-<div class="verify-container">
-  <div class="verify-card">
-
-    <!-- Loading State -->
-    @if (loading) {
-      <div class="loading-section">
-        <div class="spinner"></div>
-        <h2>Verificando tu cuenta...</h2>
-        <p>Por favor espera mientras procesamos tu verificación.</p>
-      </div>
+<main class="verify-container">
+  <section class="verify-card" aria-labelledby="activation-title" [attr.aria-busy]="busy()">
+    <h1 id="activation-title">{{ verified() ? 'Cuenta verificada' : 'Activa tu cuenta' }}</h1>
+    @if (error()) { <p class="error-message" role="alert">{{ error() }}</p> }
+    @if (notice()) { <output>{{ notice() }}</output> }
+    @if (busy()) { <output>Procesando solicitud…</output> }
+    @if (verified()) {
+      <output>Ya puedes iniciar sesión en Casa de Música Castillo.</output>
+    } @else {
+      <p>Usa el enlace o el código del correo de activación. Si no lo encuentras, revisa la carpeta de no deseados.</p>
+      <form class="activation-form" #activation="ngForm" (ngSubmit)="activate()">
+        <label for="activation-email">Correo de la cuenta</label>
+        <input id="activation-email" name="email" type="email" autocomplete="email" required email
+          [(ngModel)]="email" [disabled]="busy()">
+        <label for="activation-code">Código de seis dígitos</label>
+        <input id="activation-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code"
+          pattern="[0-9]{6}" maxlength="6" [(ngModel)]="code" [disabled]="busy()">
+        <button class="btn btn-primary" type="submit" [disabled]="busy() || activation.invalid || code.length !== 6">
+          Verificar código
+        </button>
+        <button class="btn btn-secondary" type="button" [disabled]="busy() || activation.controls['email']?.invalid" (click)="resend()">
+          Reenviar enlace y código
+        </button>
+      </form>
     }
-
-    <!-- Success State -->
-    @if (!loading && verified) {
-      <div class="success-section">
-        <div class="success-icon">
-          <span class="material-symbols-outlined">check_circle</span>
-        </div>
-        <h2>¡Cuenta Verificada!</h2>
-        <p class="success-message">{{ message }}</p>
-        <p class="redirect-info">Serás redirigido al login en unos segundos...</p>
-        <div class="action-buttons">
-          <button (click)="goToLogin()" class="btn btn-primary">
-            Ir al Login
-          </button>
-        </div>
-      </div>
-    }
-
-    <!-- Error State -->
-    @if (!loading && !verified && error) {
-      <div class="error-section">
-        <div class="error-icon">
-          <span class="material-symbols-outlined">error</span>
-        </div>
-        <h2>Error de Verificación</h2>
-        <p class="error-message">{{ error }}</p>
-        <div class="error-suggestions">
-          <h3>¿Qué puedes hacer?</h3>
-          <ul>
-            <li>Verificar que el enlace esté completo y no se haya cortado</li>
-            <li>Solicitar un nuevo enlace de verificación</li>
-            <li>Contactar soporte si el problema persiste</li>
-          </ul>
-        </div>
-        <div class="action-buttons">
-          <button (click)="goToLogin()" class="btn btn-secondary">
-            Ir al Login
-          </button>
-          <button (click)="resendVerification()" class="btn btn-primary">
-            Reenviar Verificación
-          </button>
-        </div>
-      </div>
-    }
-
-  </div>
-</div>
+    <a class="btn btn-secondary" routerLink="/login">Volver a iniciar sesión</a>
+  </section>
+</main>

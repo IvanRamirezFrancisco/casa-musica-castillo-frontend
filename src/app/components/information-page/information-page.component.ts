@@ -110,6 +110,9 @@ export interface InfoSection {
                     <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
                   </a>
                 }
+                @if (pageType === 'privacidad') {
+                  <a routerLink="/eliminar-cuenta">Solicitar la eliminación de mi cuenta</a>
+                }
                 @if (pageType !== 'privacidad') {
                   <a routerLink="/privacidad"
                     class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FCFAF7] hover:bg-[#FAF6F0] text-slate-700 hover:text-[#722F37] border border-slate-200/70 transition-colors">

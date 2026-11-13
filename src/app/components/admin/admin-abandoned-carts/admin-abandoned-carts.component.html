@@ -238,7 +238,7 @@
 
     <!-- Details Modal -->
     @if (showDetailsModal) {
-      <div class="modal-overlay" (click)="closeDetailsModal()">
+      <div class="modal-overlay" (click)="closeDetailsModal()" (keydown.escape)="$event.stopPropagation(); closeDetailsModal()">
         <div class="modal-content details-modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h2>Detalles del Carrito #{{ selectedCart?.cart?.id }}</h2>

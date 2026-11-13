@@ -38,6 +38,8 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
+  legalAcceptance?: { termsAccepted: boolean; privacyRead: boolean; termsVersion: string; privacyVersion: string };
+
   username: string;
   email: string;
   password: string;
@@ -240,7 +242,7 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
       );
   }
 
-  logout(): void {
+  logout({ navigate = true, remote = true } = {}): void {
     this.clearPendingLogin();
     const currentUrl = this.router.url;
     
@@ -252,11 +254,11 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
     this.isLoggedIn$.next(false);
     this.cartService.clearLocal();
     this.notifService.clearAll();
-    if (token) {
+    if (remote && token) {
       this.http.post(`${this.API_URL}/logout`, {}, {headers: new HttpHeaders({Authorization: `Bearer ${token}`})})
         .subscribe({error: () => { /* Local credentials remain cleared even if the server is unavailable. */ }});
     }
-    if (currentUrl !== '/login') this.router.navigate(['/login']);
+    if (navigate && currentUrl !== '/login') this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
@@ -377,8 +379,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   /**
    * Desactivar método específico de 2FA
    */
-  disableSpecificTwoFactor(method: string): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/disable/${method}`, {});
+  disableSpecificTwoFactor(method: string, currentPassword: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/disable/${method}`, { currentPassword });
   }
 
   /**
@@ -568,23 +570,24 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
    * Si se proporciona una returnUrl, valida que pertenezca al Allowlist estricto.
    */
   public resolveSafeReturnUrl(url: string | null): string | null {
-    if (!url) return null;
+    if (!url?.startsWith('/') || url.startsWith('//') || url.includes('\\')) return null;
 
     // Minimal Allowlist de rutas protegidas que pueden requerir redirección tras login
     const ALLOWED_ROUTES = [
       '/orders/my',
       '/checkout',
       '/carrito',
-      '/wishlist'
+      '/wishlist',
+      '/eliminar-cuenta'
     ];
 
     try {
       // Usar URL API para validar path y bloquear open redirects (http://, javascript:, etc.)
       // Al anteponer un dummy origin, podemos parsear de forma segura si la URL intenta salir del dominio.
-      const parsedUrl = new URL(url, 'http://dummy.local');
+      const parsedUrl = new URL(url, 'https://return-url.invalid');
       
       // Bloquear explícitamente redirects que intentan escapar o inyectar schemes
-      if (parsedUrl.origin !== 'http://dummy.local') {
+      if (parsedUrl.origin !== 'https://return-url.invalid') {
         return null;
       }
       
@@ -696,8 +699,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   /**
    * Generar códigos de respaldo
    */
-  generateBackupCodes(): Observable<ApiResponse<{codes: string[]}>> {
-    return this.http.post<ApiResponse<{codes: string[]}>>(`${environment.apiUrl}/2fa/backup-codes/generate`, {});
+  generateBackupCodes(currentPassword: string): Observable<ApiResponse<{codes: string[]}>> {
+    return this.http.post<ApiResponse<{codes: string[]}>>(`${environment.apiUrl}/2fa/backup-codes/generate`, { currentPassword });
   }
 
   /**
@@ -721,6 +724,18 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.verifyTwoFactor({ code, method: 'BACKUP_CODE' });
   }
 
+  registrationDocuments(): Observable<{ required: boolean; termsVersion: string; privacyVersion: string }> {
+    return this.http.get<{ required: boolean; termsVersion: string; privacyVersion: string }>(
+      environment.apiUrl + '/public/legal/registration');
+  }
+
+  verifyEmailCode(email: string, code: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${environment.apiUrl}/auth/verify-email-code`, { email, code });
+  }
+
+  resendAccountVerification(email: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${environment.apiUrl}/auth/resend-verification`, { email });
+  }
   verifyEmail(token: string): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/auth/verify-email`, { token })
       .pipe(
@@ -733,8 +748,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   /**
    * Desactivar códigos de respaldo
    */
-  disableBackupCodes(): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/backup-codes/disable`, {});
+  disableBackupCodes(currentPassword: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/backup-codes/disable`, { currentPassword });
   }
 
   // =====================================================================

@@ -15,6 +15,7 @@ export const routes: Routes = [
   { path: 'register', loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent), canActivate: [guestGuard] },
   { path: 'forgot-password', loadComponent: () => import('./components/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent), canActivate: [guestGuard] },
   { path: 'reset-password', loadComponent: () => import('./components/reset-password/reset-password.component').then(m => m.ResetPasswordComponent), canActivate: [guestGuard] },
+  { path: 'eliminar-cuenta', loadComponent: () => import('./components/account-deletion/account-deletion.component').then(m => m.AccountDeletionComponent) },
   { path: 'verify-account', loadComponent: () => import('./components/verify-account/verify-account.component').then(m => m.VerifyAccountComponent) },
   
   // Ruta pública de aceptación de invitación (sin auth guard)

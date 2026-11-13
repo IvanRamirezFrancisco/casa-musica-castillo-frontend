@@ -505,7 +505,7 @@
             @if (showModal) {
               <div
                 class="brand-modal-overlay staff-modal-overlay"
-                (click)="closeModal()">
+                (click)="closeModal()" (keydown.escape)="$event.stopPropagation(); closeModal()">
                 <div class="brand-modal-panel staff-modal-panel" (click)="$event.stopPropagation()">
                   <app-staff-form-modal
                     [isEditMode]="isEditMode"
@@ -524,7 +524,7 @@
             @if (showInviteModal) {
               <div
                 class="brand-modal-overlay invite-modal-overlay"
-                (click)="closeInviteModal()">
+                (click)="closeInviteModal()" (keydown.escape)="$event.stopPropagation(); closeInviteModal()">
                 <div class="invite-modal-panel" (click)="$event.stopPropagation()">
                   <!-- Header -->
                   <div class="invite-modal-header">
@@ -597,16 +597,15 @@
                             <label class="form-label fw-semibold small">Roles <span class="text-danger">*</span></label>
                             <div class="invite-roles-grid">
                               @for (role of filteredRoles; track role) {
-                                <div
+                                <label
                                   class="invite-role-card"
                                   [class.selected]="isInviteRoleSelected(role.id)"
-                                  [class.locked]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
-                                  (click)="role.name !== 'ROLE_SUPER_ADMIN' || isCurrentUserSuperAdmin ? toggleInviteRole(role.id) : null">
-                                  <div class="d-flex align-items-center gap-2">
+                                  [class.locked]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin">
+                                  <span class="d-flex align-items-center gap-2">
                                     <input type="checkbox" class="form-check-input m-0"
                                       [checked]="isInviteRoleSelected(role.id)"
                                       [disabled]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
-                                      (click)="$event.stopPropagation()">
+                                      [attr.aria-label]="getRoleDisplayName(role.name)" (change)="toggleInviteRole(role.id)">
                                       <i class="bi" [class]="'bi-' + getRoleIcon(role.name)" style="color:#722f37"></i>
                                       <span class="fw-semibold small">{{ getRoleDisplayName(role.name) }}</span>
                                       @if (role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin) {
@@ -615,8 +614,8 @@
                                           <i class="bi bi-lock-fill"></i>
                                         </span>
                                       }
-                                    </div>
-                                  </div>
+                                    </span>
+                                  </label>
                                 }
                               </div>
                               @if (invite.roleIds.length === 0) {

@@ -686,7 +686,7 @@
 
         <!-- MODAL CANCELACIÓN -->
         @if (showCancelModal) {
-          <div class="modal-overlay" (click)="closeCancelModal()">
+          <div class="modal-overlay" (click)="closeCancelModal()" (keydown.escape)="$event.stopPropagation(); closeCancelModal()">
             <div class="modal-content" (click)="$event.stopPropagation()">
               <div class="modal-header">
                 <span class="material-icons modal-icon warning-icon">warning_amber</span>
@@ -731,7 +731,7 @@
 
         <!-- VISOR PROFESIONAL DE COMPROBANTE -->
         @if (showProofPreviewModal) {
-          <div class="modal-overlay visor-overlay" (click)="closeProofPreview()">
+          <div class="modal-overlay visor-overlay" (click)="closeProofPreview()" (keydown.escape)="$event.stopPropagation(); closeProofPreview()">
             <div class="modal-content visor-modal" (click)="$event.stopPropagation()">
               <div class="visor-header">
                 <div class="visor-title-group">
@@ -763,13 +763,13 @@
                     <p>{{ proofPreviewError }}</p>
                   </div>
                 }
-                @if (!loadingProofPreview && !proofPreviewError && proofPreviewSafeUrl) {
+                @if (!loadingProofPreview && !proofPreviewError && proofPreviewUrl) {
                   <div class="visor-content" style="display: flex; justify-content: center; align-items: center; min-height: 400px; width: 100%; background: #f9fafb;">
                     @if (proofPreviewContentType === 'application/pdf') {
                       <canvas #pdfCanvas class="visor-pdf-canvas" style="max-width: 100%; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></canvas>
                     }
                     @if (proofPreviewContentType?.startsWith('image/')) {
-                      <img [src]="proofPreviewSafeUrl" alt="Comprobante" class="visor-img" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
+                      <img [src]="proofPreviewUrl" alt="Comprobante" class="visor-img" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
                     }
                   </div>
                 }

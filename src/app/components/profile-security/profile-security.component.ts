@@ -80,6 +80,7 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   }
   
   backupCodesCount: number = 0;
+  stepUpPassword: string = '';
   lastPasswordChange: Date | null = null;
   
   // Estados de formularios
@@ -423,13 +424,18 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   }
 
   disableEmail2FA(): void {
+    if (!this.stepUpPassword || !this.stepUpPassword.trim()) {
+      this.errorMessage = 'Se requiere confirmar la contrase\u00f1a actual';
+      return;
+    }
     if (confirm('¿Estás seguro de que deseas desactivar la verificación por Email?')) {
       this.loading = true;
       this.clearMessages();
 
       const headers = this.getAuthHeaders();
 
-      this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/email/disable`, {}, { headers })
+      const body = { currentPassword: this.stepUpPassword }; this.stepUpPassword = '';
+      this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/email/disable`, body, { headers })
         .subscribe({
           next: (response: ApiResponse) => {
             this.loading = false;
@@ -451,13 +457,18 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   // ===== MÉTODOS DE GOOGLE AUTHENTICATOR =====
 
   disableGoogleAuth(): void {
+    if (!this.stepUpPassword || !this.stepUpPassword.trim()) {
+      this.errorMessage = 'Se requiere confirmar la contrase\u00f1a actual';
+      return;
+    }
     if (confirm('¿Estás seguro de que deseas desactivar Google Authenticator?')) {
       this.loading = true;
       this.clearMessages();
 
       const headers = this.getAuthHeaders();
 
-      this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/google/disable`, {}, { headers })
+      const body = { currentPassword: this.stepUpPassword }; this.stepUpPassword = '';
+      this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/google/disable`, body, { headers })
         .subscribe({
           next: (response: ApiResponse) => {
             this.loading = false;
@@ -479,13 +490,18 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   }
 
   disable2FA(): void {
+    if (!this.stepUpPassword || !this.stepUpPassword.trim()) {
+      this.errorMessage = 'Se requiere confirmar la contrase\u00f1a actual';
+      return;
+    }
     if (confirm('¿Estás seguro de que deseas deshabilitar la autenticación de dos factores?')) {
       this.loading = true;
       this.clearMessages();
 
       const headers = this.getAuthHeaders();
 
-      this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/disable`, {}, { headers })
+      const body = { currentPassword: this.stepUpPassword }; this.stepUpPassword = '';
+      this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/disable`, body, { headers })
         .subscribe({
           next: (response: ApiResponse) => {
             this.loading = false;
@@ -557,7 +573,9 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
 
     const headers = this.getAuthHeaders();
 
-    this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/backup-codes/generate`, {}, { headers })
+    if (!this.stepUpPassword || !this.stepUpPassword.trim()) { this.loading = false; this.errorMessage = 'Se requiere confirmar la contrase\u00f1a actual'; return; }
+    const body = { currentPassword: this.stepUpPassword }; this.stepUpPassword = '';
+    this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/backup-codes/generate`, body, { headers })
       .subscribe({
         next: (response: ApiResponse) => {
           this.loading = false;
