@@ -138,7 +138,7 @@
 
     <!-- Modal de Verificación 2FA -->
     @if (showTwoFactorForm) {
-      <div class="modal-overlay" (click)="cancelTwoFactor()">
+      <div class="modal-overlay" (click)="cancelTwoFactor()" (keydown.escape)="$event.stopPropagation(); cancelTwoFactor()">
         <div class="modal-2fa" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <div class="header-icon">

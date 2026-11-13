@@ -476,7 +476,7 @@
 
       <!-- MODAL PROFESIONAL CON SISTEMA DE TABS/PESTAÑAS -->
       @if (showCreateModal || showEditModal) {
-        <div class="modal-overlay" (click)="confirmCloseProductModal()">
+        <div class="modal-overlay" (click)="confirmCloseProductModal()" (keydown.escape)="$event.stopPropagation(); confirmCloseProductModal()">
           <div class="modal-content modal-large-tabs" (click)="$event.stopPropagation()">
             <!-- OVERLAY DE CARGA PROFESIONAL -->
             @if (isProcessingUploads) {
@@ -1443,7 +1443,7 @@
                                   }
                                   <!-- Modal Eliminar -->
                                   @if (showDeleteModal) {
-                                    <div class="modal-overlay" (click)="closeModal()">
+                                    <div class="modal-overlay" (click)="closeModal()" (keydown.escape)="$event.stopPropagation(); closeModal()">
                                       <div class="modal-content modal-small" (click)="$event.stopPropagation()">
                                         <div class="modal-header">
                                           <h2>Confirmar Eliminación</h2>
@@ -1474,7 +1474,7 @@
                                   LIGHTBOX (VISTA AMPLIADA)
                                   ============================================ -->
                                   @if (showLightbox && lightboxImage) {
-                                    <div class="lightbox-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 40px;" (click)="closeLightbox()">
+                                    <div class="lightbox-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 40px;" (click)="closeLightbox()" (keydown.escape)="$event.stopPropagation(); closeLightbox()">
                                       <button type="button" class="btn-close-lightbox" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;" (click)="closeLightbox(); $event.stopPropagation()">
                                         <span class="material-symbols-outlined" style="font-size: 32px;">close</span>
                                       </button>

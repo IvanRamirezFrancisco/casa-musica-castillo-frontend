@@ -265,7 +265,7 @@ Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
     MODAL: CREAR ROL (incluye selector de permisos obligatorio)
     ================================================================ -->
     @if (showRoleModal) {
-      <div class="overlay" (click)="closeRoleModal()">
+      <div class="overlay" (click)="closeRoleModal()" (keydown.escape)="$event.stopPropagation(); closeRoleModal()">
         <div class="modal-box modal-box--lg" (click)="$event.stopPropagation()">
           <div class="modal-box__header">
             <div class="modal-box__header-info">
@@ -360,17 +360,16 @@ Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
                     @if (!isCreateCategoryCollapsed(category)) {
                       <div class="create-perms-list">
                         @for (perm of permissionsByCategory[category]; track perm) {
-                          <div
+                          <label
                             class="create-perm-item"
-                            [class.create-perm-item--on]="isPermissionSelected(perm.id)"
-                            (click)="togglePermission(perm.id)">
+                            [class.create-perm-item--on]="isPermissionSelected(perm.id)">
                             <input type="checkbox" class="create-perm-check"
                               [checked]="isPermissionSelected(perm.id)"
-                              (click)="$event.stopPropagation()">
-                            <div class="create-perm-info">
+                              [attr.aria-label]="translatePermission(perm.name)" (change)="togglePermission(perm.id)">
+                            <span class="create-perm-info">
                               <span class="create-perm-name">{{ translatePermission(perm.name) }}</span>
                               <span class="create-perm-desc">{{ perm.description }}</span>
-                              <div class="create-perm-tags">
+                              <span class="create-perm-tags">
                                 @if (perm.ownerOnly) {
                                   <span class="tag-owner-only" title="Solo el Protected Owner puede asignar esto">Owner Only</span>
                                 }
@@ -379,9 +378,9 @@ Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
                                 }
                                 <span class="tag-action" [ngClass]="getActionClass(perm.name)">{{ getPermissionAction(perm.name) }}</span>
                                 <span class="tag-technical">{{ perm.name }}</span>
-                              </div>
-                            </div>
-                          </div>
+                              </span>
+                            </span>
+                          </label>
                         }
                       </div>
                     }
@@ -417,7 +416,7 @@ Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
     MODAL: CONFIGURAR PERMISOS (para roles ya creados)
     ================================================================ -->
     @if (showPermissionsModal) {
-      <div class="overlay" (click)="closePermissionsModal()">
+      <div class="overlay" (click)="closePermissionsModal()" (keydown.escape)="$event.stopPropagation(); closePermissionsModal()">
         <div class="modal-box modal-box--xl" (click)="$event.stopPropagation()">
           <div class="modal-box__header">
             <div class="modal-box__header-info">
@@ -494,19 +493,18 @@ Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
                     <div class="cat-body">
                       <div class="perms-grid">
                         @for (perm of permissionsByCategory[category]; track perm) {
-                          <div
+                          <label
                             class="perm-item"
                             [class.perm-item--on]="isPermissionSelected(perm.id)"
-                            [class.perm-item--readonly]="permissionsModalReadOnly"
-                            (click)="togglePermission(perm.id)">
+                            [class.perm-item--readonly]="permissionsModalReadOnly">
                             <input type="checkbox" class="perm-check"
                               [checked]="isPermissionSelected(perm.id)"
                               [disabled]="permissionsModalReadOnly"
-                              (click)="$event.stopPropagation()">
-                            <div class="perm-info">
+                              [attr.aria-label]="translatePermission(perm.name)" (change)="togglePermission(perm.id)">
+                            <span class="perm-info">
                               <span class="perm-name">{{ translatePermission(perm.name) }}</span>
                               <span class="perm-desc">{{ perm.description }}</span>
-                              <div class="perm-tags">
+                              <span class="perm-tags">
                                 @if (perm.ownerOnly) {
                                   <span class="tag-owner-only" title="Solo el Protected Owner puede asignar esto">Owner Only</span>
                                 }
@@ -515,9 +513,9 @@ Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
                                 }
                                 <span class="tag-action" [ngClass]="getActionClass(perm.name)">{{ getPermissionAction(perm.name) }}</span>
                                 <span class="tag-technical">{{ perm.name }}</span>
-                              </div>
-                            </div>
-                          </div>
+                              </span>
+                            </span>
+                          </label>
                         }
                       </div>
                     </div>
@@ -556,7 +554,7 @@ Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
     MODAL: USUARIOS POR ROL (auditoría — lista paginada)
     ================================================================ -->
     @if (showUsersModal) {
-      <div class="overlay" (click)="closeUsersModal()">
+      <div class="overlay" (click)="closeUsersModal()" (keydown.escape)="$event.stopPropagation(); closeUsersModal()">
         <div class="modal-box modal-box--lg" (click)="$event.stopPropagation()">
           <div class="modal-box__header">
             <div class="modal-box__header-info">

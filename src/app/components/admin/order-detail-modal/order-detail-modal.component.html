@@ -659,7 +659,7 @@
 
   <!-- VISOR PROFESIONAL DE COMPROBANTE (ADMIN) -->
   @if (showProofPreviewModal) {
-    <div class="fixed inset-0 bg-black/70 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm" (click)="closeProofPreview()">
+    <div class="fixed inset-0 bg-black/70 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm" (click)="closeProofPreview()" (keydown.escape)="$event.stopPropagation(); closeProofPreview()">
       <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]" (click)="$event.stopPropagation()">
         <!-- HEADER -->
         <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">

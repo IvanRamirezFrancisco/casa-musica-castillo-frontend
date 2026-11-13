@@ -686,7 +686,7 @@
 
         <!-- MODAL CANCELACIÓN -->
         @if (showCancelModal) {
-          <div class="modal-overlay" (click)="closeCancelModal()">
+          <div class="modal-overlay" (click)="closeCancelModal()" (keydown.escape)="$event.stopPropagation(); closeCancelModal()">
             <div class="modal-content" (click)="$event.stopPropagation()">
               <div class="modal-header">
                 <span class="material-icons modal-icon warning-icon">warning_amber</span>
@@ -731,7 +731,7 @@
 
         <!-- VISOR PROFESIONAL DE COMPROBANTE -->
         @if (showProofPreviewModal) {
-          <div class="modal-overlay visor-overlay" (click)="closeProofPreview()">
+          <div class="modal-overlay visor-overlay" (click)="closeProofPreview()" (keydown.escape)="$event.stopPropagation(); closeProofPreview()">
             <div class="modal-content visor-modal" (click)="$event.stopPropagation()">
               <div class="visor-header">
                 <div class="visor-title-group">
