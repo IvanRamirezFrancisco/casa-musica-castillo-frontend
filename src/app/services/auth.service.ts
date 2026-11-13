@@ -242,7 +242,7 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
       );
   }
 
-  logout(): void {
+  logout({ navigate = true, remote = true } = {}): void {
     this.clearPendingLogin();
     const currentUrl = this.router.url;
     
@@ -254,11 +254,11 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
     this.isLoggedIn$.next(false);
     this.cartService.clearLocal();
     this.notifService.clearAll();
-    if (token) {
+    if (remote && token) {
       this.http.post(`${this.API_URL}/logout`, {}, {headers: new HttpHeaders({Authorization: `Bearer ${token}`})})
         .subscribe({error: () => { /* Local credentials remain cleared even if the server is unavailable. */ }});
     }
-    if (currentUrl !== '/login') this.router.navigate(['/login']);
+    if (navigate && currentUrl !== '/login') this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
