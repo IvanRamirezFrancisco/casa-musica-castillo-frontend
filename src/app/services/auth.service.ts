@@ -38,6 +38,8 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
+  legalAcceptance?: { termsAccepted: boolean; privacyRead: boolean; termsVersion: string; privacyVersion: string };
+
   username: string;
   email: string;
   password: string;
@@ -719,6 +721,11 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
    */
   verifyBackupCodeForLogin(code: string): Observable<LoginFactorResponse> {
     return this.verifyTwoFactor({ code, method: 'BACKUP_CODE' });
+  }
+
+  registrationDocuments(): Observable<{ required: boolean; termsVersion: string; privacyVersion: string }> {
+    return this.http.get<{ required: boolean; termsVersion: string; privacyVersion: string }>(
+      environment.apiUrl + '/public/legal/registration');
   }
 
   verifyEmailCode(email: string, code: string): Observable<ApiResponse<unknown>> {

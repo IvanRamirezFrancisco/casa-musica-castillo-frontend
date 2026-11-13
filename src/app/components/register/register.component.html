@@ -223,13 +223,19 @@
                               [attr.aria-invalid]="registerForm.get('acceptTerms')?.invalid && registerForm.get('acceptTerms')?.touched ? 'true' : null"
                               >
                               <label for="acceptTerms" class="checkbox-label">
-                                Acepto los <a routerLink="/terminos" target="_blank" rel="noopener noreferrer">Términos y Condiciones</a> y la <a routerLink="/privacidad" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
+                                Acepto los <a routerLink="/terminos" target="_blank" rel="noopener noreferrer">Términos y Condiciones</a>.
                               </label>
                               @if (registerForm.get('acceptTerms')?.invalid && registerForm.get('acceptTerms')?.touched) {
                                 <div class="error-message" aria-live="polite">
                                   <span>Debes aceptar los términos y condiciones</span>
                                 </div>
                               }
+                            </div>
+                            <div class="form-group full-width checkbox-group">
+                              <input id="privacyRead" type="checkbox" class="checkbox-input" formControlName="privacyRead">
+                              <label for="privacyRead" class="checkbox-label">Confirmo que leí el
+                                <a routerLink="/privacidad" target="_blank" rel="noopener">Aviso de Privacidad</a>.
+                              </label>
                             </div>
                             <!-- Submit Button (El botón no está disabled por .invalid, se gestiona vía TS y onsubmit) -->
                             <div class="form-group full-width register-actions">

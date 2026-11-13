@@ -16,6 +16,7 @@ import zxcvbn from 'zxcvbn';
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
+  legalDocuments: { required: boolean; termsVersion: string; privacyVersion: string } | null = null;
   isLoading = false;
   errorMessage = '';
   successMessage = '';
@@ -75,6 +76,7 @@ export class RegisterComponent implements OnInit {
       ]],
       confirmPassword: ['', [Validators.required]],
       phone: [''], // Opcional
+      privacyRead: [false],
       acceptTerms: [false, [Validators.requiredTrue]]
     }, { validators: this.passwordMatchValidator });
 
@@ -82,6 +84,10 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.authService.registrationDocuments().subscribe({
+      next: documents => { if (documents?.required === true) this.legalDocuments = documents; },
+      error: () => undefined,
+    });
     this.route.queryParams.subscribe(params => {
       if (params['email']) {
         this.registerForm.patchValue({ email: params['email'] });
@@ -976,6 +982,7 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.isLoading) return;
     this.errorMessage = '';
     this.successMessage = '';
     this.showEmailVerification = false;
@@ -988,6 +995,10 @@ export class RegisterComponent implements OnInit {
     }
     
     const rawData = this.registerForm.value;
+    if (this.legalDocuments?.required && (!rawData.acceptTerms || !rawData.privacyRead)) {
+      this.errorMessage = 'Confirma por separado los términos y la lectura del aviso de privacidad.';
+      return;
+    }
     const sanitizedData = {
       username: this.sanitizationService.sanitizeUserInput(rawData.username || ''),
       email: this.sanitizationService.sanitizeUserInput(rawData.email || ''),
@@ -1017,7 +1028,13 @@ export class RegisterComponent implements OnInit {
       email: sanitizedData.email,
       password: sanitizedData.password,
       firstName: sanitizedData.firstName,
-      lastName: sanitizedData.lastName
+      lastName: sanitizedData.lastName,
+      ...(this.legalDocuments?.required ? { legalAcceptance: {
+        termsAccepted: rawData.acceptTerms === true,
+        privacyRead: rawData.privacyRead === true,
+        termsVersion: this.legalDocuments.termsVersion,
+        privacyVersion: this.legalDocuments.privacyVersion,
+      } } : {})
     };
     
     this.authService.register(registerData).subscribe({
