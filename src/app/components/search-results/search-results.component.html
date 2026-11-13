@@ -5,129 +5,145 @@
       <span class="material-symbols-outlined">arrow_back</span>
       Volver
     </button>
-    
+
     <div class="search-info">
       <h1>Resultados de búsqueda</h1>
-      <div class="query-display" *ngIf="!isLoading">
-        <span class="query-label">Buscaste:</span>
-        <span class="query-text">"{{ searchQuery }}"</span>
-      </div>
-      <div class="results-meta" *ngIf="!isLoading">
-        <span class="results-count">{{ totalResults }} productos encontrados</span>
-        <span class="execution-time" *ngIf="executionTime > 0">
-          ({{ executionTime }}ms)
-        </span>
-      </div>
+      @if (!isLoading) {
+        <div class="query-display">
+          <span class="query-label">Buscaste:</span>
+          <span class="query-text">"{{ searchQuery }}"</span>
+        </div>
+      }
+      @if (!isLoading) {
+        <div class="results-meta">
+          <span class="results-count">{{ totalResults }} productos encontrados</span>
+          @if (executionTime > 0) {
+            <span class="execution-time">
+              ({{ executionTime }}ms)
+            </span>
+          }
+        </div>
+      }
     </div>
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="isLoading">
-    <div class="spinner"></div>
-    <p>Buscando productos...</p>
-  </div>
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Buscando productos...</p>
+    </div>
+  }
 
   <!-- Empty State -->
-  <div class="empty-state" *ngIf="!isLoading && searchResults.length === 0">
-    <span class="material-symbols-outlined empty-icon">search_off</span>
-    <h2>No se encontraron resultados</h2>
-    <p>No encontramos productos que coincidan con "{{ searchQuery }}"</p>
-    
-    <div class="suggestions">
-      <h3>Sugerencias:</h3>
-      <ul>
-        <li>Verifica que las palabras estén escritas correctamente</li>
-        <li>Intenta con palabras más generales</li>
-        <li>Intenta con menos palabras clave</li>
-        <li>Explora nuestro catálogo completo</li>
-      </ul>
-    </div>
-
-    <div class="empty-actions">
-      <button class="btn-primary" routerLink="/catalogo">
-        <span class="material-symbols-outlined">store</span>
-        Ver Catálogo Completo
-      </button>
-
-    </div>
-  </div>
-
-  <!-- Results Grid -->
-  <div class="results-grid" *ngIf="!isLoading && searchResults.length > 0">
-    <div class="product-card" *ngFor="let producto of searchResults">
-      <!-- Discount Badge -->
-      <div class="discount-badge" *ngIf="producto.discountPrice && producto.discountPrice < producto.price">
-        <span class="discount-percent">-{{ ((1 - producto.discountPrice / producto.price) * 100) | number:'1.0-0' }}%</span>
+  @if (!isLoading && searchResults.length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">search_off</span>
+      <h2>No se encontraron resultados</h2>
+      <p>No encontramos productos que coincidan con "{{ searchQuery }}"</p>
+      <div class="suggestions">
+        <h3>Sugerencias:</h3>
+        <ul>
+          <li>Verifica que las palabras estén escritas correctamente</li>
+          <li>Intenta con palabras más generales</li>
+          <li>Intenta con menos palabras clave</li>
+          <li>Explora nuestro catálogo completo</li>
+        </ul>
       </div>
-
-      <!-- Product Image -->
-      <div class="product-image" (click)="viewProductDetail(producto)">
-        <img 
-          [src]="producto.imageUrl || 'assets/placeholder.jpg'" 
-          [alt]="producto.name"
-          loading="lazy">
-      </div>
-
-      <!-- Product Info -->
-      <div class="product-info">
-        <p class="product-category" *ngIf="producto.category">{{ producto.category.name }}</p>
-        <h3 class="product-name" (click)="viewProductDetail(producto)">
-          {{ producto.name }}
-        </h3>
-        
-        <div class="product-meta">
-          <div class="rating" *ngIf="producto.averageRating">
-            <span class="material-symbols-outlined star">star</span>
-            <span class="rating-value">{{ producto.averageRating }}</span>
-            <span class="rating-count">({{ producto.reviewCount }})</span>
-          </div>
-          
-          <div class="stock-badge" [class.in-stock]="producto.stock > 0" [class.out-of-stock]="producto.stock <= 0">
-            <span class="material-symbols-outlined">
-              {{ producto.stock > 0 ? 'check_circle' : 'cancel' }}
-            </span>
-            <span>{{ producto.stock > 0 ? 'Disponible' : 'Agotado' }}</span>
-          </div>
-        </div>
-
-        <!-- Brand -->
-        <p class="product-brand" *ngIf="producto.brand">
-          <span class="material-symbols-outlined">verified</span>
-          {{ producto.brand.name }}
-        </p>
-
-        <!-- Price Section -->
-        <div class="price-section">
-          <div class="price-header" *ngIf="producto.discountPrice && producto.discountPrice < producto.price">
-            <span class="price-label">Precio anterior:</span>
-            <span class="price-original">${{ producto.price | number:'1.2-2' }}</span>
-          </div>
-          
-          <div class="price-main">
-            <span class="price-current">
-              ${{ (producto.discountPrice || producto.price) | number:'1.2-2' }}
-            </span>
-            <span class="price-badge" *ngIf="producto.discountPrice && producto.discountPrice < producto.price">
-              <span class="material-symbols-outlined">savings</span>
-              Ahorras ${{ (producto.price - producto.discountPrice) | number:'1.2-2' }}
-            </span>
-          </div>
-          
-          <div class="price-installments" *ngIf="producto.stock > 0">
-            <span class="material-symbols-outlined">credit_card</span>
-            <span>18x de ${{ ((producto.discountPrice || producto.price) / 18) | number:'1.2-2' }}</span>
-          </div>
-        </div>
-
-        <!-- Action Button -->
-        <button 
-          class="btn-view-detail" 
-          (click)="viewProductDetail(producto)"
-          [disabled]="producto.stock <= 0">
-          <span class="material-symbols-outlined">visibility</span>
-          Ver Detalles
+      <div class="empty-actions">
+        <button class="btn-primary" routerLink="/catalogo">
+          <span class="material-symbols-outlined">store</span>
+          Ver Catálogo Completo
         </button>
       </div>
     </div>
+  }
+
+  <!-- Results Grid -->
+  @if (!isLoading && searchResults.length > 0) {
+    <div class="results-grid">
+      @for (producto of searchResults; track producto) {
+        <div class="product-card">
+          <!-- Discount Badge -->
+          @if (producto.discountPrice && producto.discountPrice < producto.price) {
+            <div class="discount-badge">
+              <span class="discount-percent">-{{ ((1 - producto.discountPrice / producto.price) * 100) | number:'1.0-0' }}%</span>
+            </div>
+          }
+          <!-- Product Image -->
+          <div class="product-image" (click)="viewProductDetail(producto)">
+            <img
+              [src]="producto.imageUrl || 'assets/placeholder.jpg'"
+              [alt]="producto.name"
+              loading="lazy">
+            </div>
+            <!-- Product Info -->
+            <div class="product-info">
+              @if (producto.category) {
+                <p class="product-category">{{ producto.category.name }}</p>
+              }
+              <h3 class="product-name" (click)="viewProductDetail(producto)">
+                {{ producto.name }}
+              </h3>
+              <div class="product-meta">
+                @if (producto.averageRating) {
+                  <div class="rating">
+                    <span class="material-symbols-outlined star">star</span>
+                    <span class="rating-value">{{ producto.averageRating }}</span>
+                    <span class="rating-count">({{ producto.reviewCount }})</span>
+                  </div>
+                }
+                <div class="stock-badge" [class.in-stock]="producto.stock > 0" [class.out-of-stock]="producto.stock <= 0">
+                  <span class="material-symbols-outlined">
+                    {{ producto.stock > 0 ? 'check_circle' : 'cancel' }}
+                  </span>
+                  <span>{{ producto.stock > 0 ? 'Disponible' : 'Agotado' }}</span>
+                </div>
+              </div>
+              <!-- Brand -->
+              @if (producto.brand) {
+                <p class="product-brand">
+                  <span class="material-symbols-outlined">verified</span>
+                  {{ producto.brand.name }}
+                </p>
+              }
+              <!-- Price Section -->
+              <div class="price-section">
+                @if (producto.discountPrice && producto.discountPrice < producto.price) {
+                  <div class="price-header">
+                    <span class="price-label">Precio anterior:</span>
+                    <span class="price-original">${{ producto.price | number:'1.2-2' }}</span>
+                  </div>
+                }
+                <div class="price-main">
+                  <span class="price-current">
+                    ${{ (producto.discountPrice || producto.price) | number:'1.2-2' }}
+                  </span>
+                  @if (producto.discountPrice && producto.discountPrice < producto.price) {
+                    <span class="price-badge">
+                      <span class="material-symbols-outlined">savings</span>
+                      Ahorras ${{ (producto.price - producto.discountPrice) | number:'1.2-2' }}
+                    </span>
+                  }
+                </div>
+                @if (producto.stock > 0) {
+                  <div class="price-installments">
+                    <span class="material-symbols-outlined">credit_card</span>
+                    <span>18x de ${{ ((producto.discountPrice || producto.price) / 18) | number:'1.2-2' }}</span>
+                  </div>
+                }
+              </div>
+              <!-- Action Button -->
+              <button
+                class="btn-view-detail"
+                (click)="viewProductDetail(producto)"
+                [disabled]="producto.stock <= 0">
+                <span class="material-symbols-outlined">visibility</span>
+                Ver Detalles
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
   </div>
-</div>

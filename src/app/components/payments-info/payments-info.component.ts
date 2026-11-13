@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './payments-info.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './payments-info.component.css'
 })
 export class PaymentsInfoComponent {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,6 +33,7 @@ const ErrorToast = Swal.mixin({
   imports: [CommonModule, FormsModule, CurrencyPipe],
   templateUrl: './admin-customers.component.html',
   styleUrls: ['./admin-customers.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   encapsulation: ViewEncapsulation.Emulated
 })
 export class AdminCustomersComponent implements OnInit, OnDestroy {

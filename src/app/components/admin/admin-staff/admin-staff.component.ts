@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,6 +16,7 @@ import { StaffFormModalComponent } from './staff-form-modal.component';
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, StaffFormModalComponent],
   templateUrl: './admin-staff.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-staff.component.css']
 })
 export class AdminStaffComponent implements OnInit, OnDestroy {

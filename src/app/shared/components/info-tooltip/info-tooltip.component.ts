@@ -1,11 +1,11 @@
-import { Component, Input, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, HostListener, ChangeDetectionStrategy } from '@angular/core';
+
 import { OverlayModule, ConnectionPositionPair } from '@angular/cdk/overlay';
 
 @Component({
   selector: 'app-info-tooltip',
   standalone: true,
-  imports: [CommonModule, OverlayModule],
+  imports: [OverlayModule],
   template: `
     <span #triggerOrigin
           class="inline-flex items-center justify-center text-gray-400 hover:text-[#6D1331] transition-colors cursor-help outline-none focus-visible:ring-2 focus-visible:ring-[#6D1331] rounded-full"
@@ -39,6 +39,7 @@ import { OverlayModule, ConnectionPositionPair } from '@angular/cdk/overlay';
       </div>
     </ng-template>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host {
       display: inline-flex;

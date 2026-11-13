@@ -3,10 +3,12 @@
   <aside class="admin-sidebar" [class.collapsed]="isSidebarCollapsed">
     <!-- Logo -->
     <div class="sidebar-header">
-      <div class="logo" *ngIf="!isSidebarCollapsed">
-        <span class="material-icons logo-icon">music_note</span>
-        <span class="logo-text">Admin Panel</span>
-      </div>
+      @if (!isSidebarCollapsed) {
+        <div class="logo">
+          <span class="material-icons logo-icon">music_note</span>
+          <span class="logo-text">Admin Panel</span>
+        </div>
+      }
       <button class="toggle-btn" (click)="toggleSidebar()">
         <span class="material-icons">{{ isSidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
       </button>
@@ -14,38 +16,51 @@
 
     <!-- Navigation Menu -->
     <nav class="sidebar-nav">
-      <a 
-        *ngFor="let item of visibleMenuItems; trackBy: trackByMenuItem" 
-        [routerLink]="item.route"
-        class="nav-item"
-        [class.active]="isActive(item.route)"
-        [title]="item.title">
-        <span class="material-icons nav-icon">{{ item.icon }}</span>
-        <span class="nav-text" *ngIf="!isSidebarCollapsed">{{ item.title }}</span>
-        <span class="badge" *ngIf="item.badge && !isSidebarCollapsed">{{ item.badge }}</span>
-      </a>
+      @for (item of visibleMenuItems; track trackByMenuItem($index, item)) {
+        <a
+          [routerLink]="item.route"
+          class="nav-item"
+          [class.active]="isActive(item.route)"
+          [title]="item.title">
+          <span class="material-icons nav-icon">{{ item.icon }}</span>
+          @if (!isSidebarCollapsed) {
+            <span class="nav-text">{{ item.title }}</span>
+          }
+          @if (item.badge && !isSidebarCollapsed) {
+            <span class="badge">{{ item.badge }}</span>
+          }
+        </a>
+      }
     </nav>
 
     <!-- User Section -->
     <div class="sidebar-footer">
-      <div class="user-info" *ngIf="currentUser && !isSidebarCollapsed">
-        <div class="user-avatar">
-          <span class="material-icons">admin_panel_settings</span>
+      @if (currentUser && !isSidebarCollapsed) {
+        <div class="user-info">
+          <div class="user-avatar">
+            <span class="material-icons">admin_panel_settings</span>
+          </div>
+          <div class="user-details">
+            <span class="user-name">{{ currentUser.firstName }}</span>
+            <span class="user-role">{{ userRoleLabel }}</span>
+          </div>
         </div>
-        <div class="user-details">
-          <span class="user-name">{{ currentUser.firstName }}</span>
-          <span class="user-role">{{ userRoleLabel }}</span>
-        </div>
-      </div>
-      
-      <button *ngIf="showStoreButton" class="btn-action" (click)="goToStore()" [title]="'Ver Tienda'">
-        <span class="material-icons">storefront</span>
-        <span *ngIf="!isSidebarCollapsed">Ver Tienda</span>
-      </button>
-      
+      }
+
+      @if (showStoreButton) {
+        <button class="btn-action" (click)="goToStore()" [title]="'Ver Tienda'">
+          <span class="material-icons">storefront</span>
+          @if (!isSidebarCollapsed) {
+            <span>Ver Tienda</span>
+          }
+        </button>
+      }
+
       <button class="btn-logout" (click)="logout()" [title]="'Cerrar Sesión'">
         <span class="material-icons">logout</span>
-        <span *ngIf="!isSidebarCollapsed">Cerrar Sesión</span>
+        @if (!isSidebarCollapsed) {
+          <span>Cerrar Sesión</span>
+        }
       </button>
     </div>
   </aside>
@@ -64,40 +79,45 @@
           </div>
           <div class="module-text">
             <span class="module-title">{{ currentModuleHeader.title }}</span>
-            <span class="module-subtitle" *ngIf="currentModuleHeader.subtitle">
-              {{ currentModuleHeader.subtitle }}
-            </span>
+            @if (currentModuleHeader.subtitle) {
+              <span class="module-subtitle">
+                {{ currentModuleHeader.subtitle }}
+              </span>
+            }
           </div>
         </div>
       </div>
-      
+
       <div class="topbar-right">
-        <div class="module-action-group" *ngIf="canShowAnyModuleAction || isActive('/admin/products')">
-          <!-- Botón secundario (ej. "Actualizar" en Clientes) -->
-          <button
-            *ngIf="currentModuleHeader.secondaryActionLabel && canShowSecondaryModuleAction"
-            class="module-action-btn module-action-btn--secondary"
-            (click)="triggerSecondaryModuleAction()">
-            <span class="material-icons">{{ currentModuleHeader.secondaryActionIcon || 'refresh' }}</span>
-            <span>{{ currentModuleHeader.secondaryActionLabel }}</span>
-          </button>
-
-          <!-- Botón CSV: solo visible en la sección de Productos -->
-          <app-csv-import-export
-            *ngIf="isActive('/admin/products')"
-            moduleType="products"
-            (importSuccess)="triggerSecondaryModuleAction()">
-          </app-csv-import-export>
-
-          <!-- Botón de acción principal (ej. "Nuevo Producto") -->
-          <button
-            *ngIf="currentModuleHeader.actionLabel && canShowModuleAction"
-            class="module-action-btn"
-            (click)="triggerModuleAction()">
-            <span class="material-icons">{{ currentModuleHeader.actionIcon || 'add' }}</span>
-            <span>{{ currentModuleHeader.actionLabel }}</span>
-          </button>
-        </div>
+        @if (canShowAnyModuleAction || isActive('/admin/products')) {
+          <div class="module-action-group">
+            <!-- Botón secundario (ej. "Actualizar" en Clientes) -->
+            @if (currentModuleHeader.secondaryActionLabel && canShowSecondaryModuleAction) {
+              <button
+                class="module-action-btn module-action-btn--secondary"
+                (click)="triggerSecondaryModuleAction()">
+                <span class="material-icons">{{ currentModuleHeader.secondaryActionIcon || 'refresh' }}</span>
+                <span>{{ currentModuleHeader.secondaryActionLabel }}</span>
+              </button>
+            }
+            <!-- Botón CSV: solo visible en la sección de Productos -->
+            @if (isActive('/admin/products')) {
+              <app-csv-import-export
+                moduleType="products"
+                (importSuccess)="triggerSecondaryModuleAction()">
+              </app-csv-import-export>
+            }
+            <!-- Botón de acción principal (ej. "Nuevo Producto") -->
+            @if (currentModuleHeader.actionLabel && canShowModuleAction) {
+              <button
+                class="module-action-btn"
+                (click)="triggerModuleAction()">
+                <span class="material-icons">{{ currentModuleHeader.actionIcon || 'add' }}</span>
+                <span>{{ currentModuleHeader.actionLabel }}</span>
+              </button>
+            }
+          </div>
+        }
 
         <!-- Separador visual -->
         <div class="topbar-divider"></div>

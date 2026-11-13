@@ -19,111 +19,120 @@
   <div class="container orders-body">
 
     <!-- LOADING -->
-    <div class="state-center" *ngIf="isLoading">
-      <div class="spinner-large"></div>
-      <p>Cargando tus pedidos...</p>
-    </div>
+    @if (isLoading) {
+      <div class="state-center">
+        <div class="spinner-large"></div>
+        <p>Cargando tus pedidos...</p>
+      </div>
+    }
 
     <!-- ERROR -->
-    <div class="state-center" *ngIf="!isLoading && error">
-      <span class="material-icons state-icon error-icon">error_outline</span>
-      <h2>{{ error }}</h2>
-      <button class="btn-retry" (click)="loadOrders()">
-        <span class="material-icons">refresh</span>Reintentar
-      </button>
-    </div>
+    @if (!isLoading && error) {
+      <div class="state-center">
+        <span class="material-icons state-icon error-icon">error_outline</span>
+        <h2>{{ error }}</h2>
+        <button class="btn-retry" (click)="loadOrders()">
+          <span class="material-icons">refresh</span>Reintentar
+        </button>
+      </div>
+    }
 
     <!-- VACÍO -->
-    <div class="state-center" *ngIf="!isLoading && !error && orders.length === 0">
-      <span class="material-icons state-icon empty-icon">receipt_long</span>
-      <h2>Aún no tienes pedidos</h2>
-      <p>Explora nuestro catálogo y realiza tu primera compra.</p>
-      <a routerLink="/catalogo" class="btn-primary">
-        <span class="material-icons">explore</span>Ir al Catálogo
-      </a>
-    </div>
+    @if (!isLoading && !error && orders.length === 0) {
+      <div class="state-center">
+        <span class="material-icons state-icon empty-icon">receipt_long</span>
+        <h2>Aún no tienes pedidos</h2>
+        <p>Explora nuestro catálogo y realiza tu primera compra.</p>
+        <a routerLink="/catalogo" class="btn-primary">
+          <span class="material-icons">explore</span>Ir al Catálogo
+        </a>
+      </div>
+    }
 
     <!-- LISTA DE PEDIDOS -->
-    <div *ngIf="!isLoading && !error && orders.length > 0">
-      <p class="results-count">{{ totalElements }} pedido{{ totalElements !== 1 ? 's' : '' }} encontrado{{ totalElements !== 1 ? 's' : '' }}</p>
-
-      <div class="orders-list">
-        <div class="order-card" *ngFor="let order of orders; trackBy: trackByOrderId">
-
-          <!-- Card Header -->
-          <div class="order-card-header">
-            <div class="order-number-section">
-              <span class="order-label">Pedido</span>
-              <span class="order-number"># {{ order.orderNumber }}</span>
-            </div>
-            <div class="order-meta">
-              <span class="order-date">
-                <span class="material-icons">calendar_today</span>
-                {{ formatDate(order.createdAt) }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Card Body -->
-          <div class="order-card-body">
-
-            <!-- Badges de estado -->
-            <div class="status-badges">
-              <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
-                {{ getStatusLabel(order.status) }}
-              </span>
-              <span class="badge badge-gray payment-badge">
-                <span class="material-icons">payments</span>
-                {{ getPaymentLabel(order.paymentStatus) }}
-              </span>
-              <span class="badge badge-ship">
-                <span class="material-icons">local_shipping</span>
-                {{ getShippingLabel(order.shippingStatus) }}
-              </span>
-            </div>
-
-            <!-- Resumen -->
-            <div class="order-summary-row">
-              <div class="summary-stat">
-                <span class="stat-label">Productos</span>
-                <span class="stat-value">{{ order.totalItems }}</span>
+    @if (!isLoading && !error && orders.length > 0) {
+      <div>
+        <p class="results-count">{{ totalElements }} pedido{{ totalElements !== 1 ? 's' : '' }} encontrado{{ totalElements !== 1 ? 's' : '' }}</p>
+        <div class="orders-list">
+          @for (order of orders; track trackByOrderId($index, order)) {
+            <div class="order-card">
+              <!-- Card Header -->
+              <div class="order-card-header">
+                <div class="order-number-section">
+                  <span class="order-label">Pedido</span>
+                  <span class="order-number"># {{ order.orderNumber }}</span>
+                </div>
+                <div class="order-meta">
+                  <span class="order-date">
+                    <span class="material-icons">calendar_today</span>
+                    {{ formatDate(order.createdAt) }}
+                  </span>
+                </div>
               </div>
-              <div class="summary-stat">
-                <span class="stat-label">Total</span>
-                <span class="stat-value total-highlight">${{ order.total | number:'1.2-2' }}</span>
+              <!-- Card Body -->
+              <div class="order-card-body">
+                <!-- Badges de estado -->
+                <div class="status-badges">
+                  <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                  <span class="badge badge-gray payment-badge">
+                    <span class="material-icons">payments</span>
+                    {{ getPaymentLabel(order.paymentStatus) }}
+                  </span>
+                  <span class="badge badge-ship">
+                    <span class="material-icons">local_shipping</span>
+                    {{ getShippingLabel(order.shippingStatus) }}
+                  </span>
+                </div>
+                <!-- Resumen -->
+                <div class="order-summary-row">
+                  <div class="summary-stat">
+                    <span class="stat-label">Productos</span>
+                    <span class="stat-value">{{ order.totalItems }}</span>
+                  </div>
+                  <div class="summary-stat">
+                    <span class="stat-label">Total</span>
+                    <span class="stat-value total-highlight">${{ order.total | number:'1.2-2' }}</span>
+                  </div>
+                  @if (order.paymentMethod) {
+                    <div class="summary-stat">
+                      <span class="stat-label">Método de pago</span>
+                      <span class="stat-value payment-method">
+                        {{ order.paymentMethod === 'CASH_ON_DELIVERY' ? 'Pago al recibir' : 'Transferencia' }}
+                      </span>
+                    </div>
+                  }
+                </div>
               </div>
-              <div class="summary-stat" *ngIf="order.paymentMethod">
-                <span class="stat-label">Método de pago</span>
-                <span class="stat-value payment-method">
-                  {{ order.paymentMethod === 'CASH_ON_DELIVERY' ? 'Pago al recibir' : 'Transferencia' }}
-                </span>
+              <!-- Card Footer -->
+              <div class="order-card-footer">
+                <a [routerLink]="['/orders/my', order.id]" class="btn-view-detail">
+                  <span class="material-icons">visibility</span>Ver detalle
+                </a>
+                @if (canClientCancel(order.status)) {
+                  <span class="cancel-hint">
+                    <span class="material-icons">info</span>Para cancelar, entra al detalle
+                  </span>
+                }
               </div>
             </div>
-          </div>
-
-          <!-- Card Footer -->
-          <div class="order-card-footer">
-            <a [routerLink]="['/orders/my', order.id]" class="btn-view-detail">
-              <span class="material-icons">visibility</span>Ver detalle
-            </a>
-            <span class="cancel-hint" *ngIf="canClientCancel(order.status)">
-              <span class="material-icons">info</span>Para cancelar, entra al detalle
-            </span>
-          </div>
+          }
         </div>
+        <!-- PAGINACIÓN -->
+        @if (totalPages > 1) {
+          <div class="pagination">
+            <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
+              <span class="material-icons">chevron_left</span>
+            </button>
+            <span class="page-info">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+            <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1">
+              <span class="material-icons">chevron_right</span>
+            </button>
+          </div>
+        }
       </div>
-
-      <!-- PAGINACIÓN -->
-      <div class="pagination" *ngIf="totalPages > 1">
-        <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
-          <span class="material-icons">chevron_left</span>
-        </button>
-        <span class="page-info">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
-        <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1">
-          <span class="material-icons">chevron_right</span>
-        </button>
-      </div>
-    </div>
+    }
 
   </div>
 </div>

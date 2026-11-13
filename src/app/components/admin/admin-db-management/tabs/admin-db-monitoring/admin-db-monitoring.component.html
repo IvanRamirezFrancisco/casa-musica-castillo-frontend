@@ -131,7 +131,7 @@
         <div class="mon-kpi-body">
           <p class="mon-kpi-label">Tamaño de la BD</p>
           @if (loading) { <div class="skel skel--sm" style="height:18px"></div> }
-          @else { <p class="mon-kpi-value">{{ formatBytes(metrics?.totalDatabaseSizeBytes) }}</p> }
+          @else { <p class="mon-kpi-value">{{ formatBytes($safeNavigationMigration(metrics?.totalDatabaseSizeBytes)) }}</p> }
         </div>
       </div>
 
@@ -144,7 +144,7 @@
         <div class="mon-kpi-body">
           <p class="mon-kpi-label">Servidor activo desde hace</p>
           @if (loading) { <div class="skel skel--sm" style="height:18px"></div> }
-          @else { <p class="mon-kpi-value">{{ formatUptime(metrics?.uptimeDays) }}</p> }
+          @else { <p class="mon-kpi-value">{{ formatUptime($safeNavigationMigration(metrics?.uptimeDays)) }}</p> }
         </div>
       </div>
 
@@ -352,7 +352,7 @@
         @if (loading) { <div class="skel skel--value"></div> }
         @else {
           <p class="mon-perf-value">
-            {{ formatMs(metrics?.performance?.avgQueryTimeMs) }}
+            {{ formatMs($safeNavigationMigration(metrics?.performance?.avgQueryTimeMs)) }}
           </p>
         }
       </div>

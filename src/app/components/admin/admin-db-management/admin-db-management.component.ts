@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminBackupsComponent }    from '../admin-backups/admin-backups.component';
 import { AdminDbMonitoringComponent }  from './tabs/admin-db-monitoring/admin-db-monitoring.component';
@@ -21,14 +21,14 @@ interface TabDef {
   selector: 'app-admin-db-management',
   standalone: true,
   imports: [
-    CommonModule,
     AdminBackupsComponent,
     AdminDbMonitoringComponent,
     AdminDbMaintenanceComponent,
     AdminDbQueriesComponent,
-    AdminAutomationsComponent,
-  ],
+    AdminAutomationsComponent
+],
   templateUrl: './admin-db-management.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl:    './admin-db-management.component.css',
 })
 export class AdminDbManagementComponent implements OnInit {

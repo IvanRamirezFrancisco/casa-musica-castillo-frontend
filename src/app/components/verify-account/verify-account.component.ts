@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ApiResponse } from '../../models/api-response.model';
@@ -7,8 +7,9 @@ import { ApiResponse } from '../../models/api-response.model';
 @Component({
   selector: 'app-verify-account',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './verify-account.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./verify-account.component.css']
 })
 export class VerifyAccountComponent implements OnInit {

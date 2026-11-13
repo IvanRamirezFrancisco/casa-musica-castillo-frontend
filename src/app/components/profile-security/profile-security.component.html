@@ -2,16 +2,18 @@
 <div class="security-container">
 
   <!-- Loading Overlay -->
-  <div class="loading-overlay" *ngIf="loading">
-    <div class="loading-spinner">
-      <span class="material-symbols-outlined">autorenew</span>
+  @if (loading) {
+    <div class="loading-overlay">
+      <div class="loading-spinner">
+        <span class="material-symbols-outlined">autorenew</span>
+      </div>
+      <p>Procesando...</p>
     </div>
-    <p>Procesando...</p>
-  </div>
+  }
 
   <!-- Área de Contenido Principal -->
   <main class="security-content">
-    
+
     <!-- Welcome Banner -->
     <div class="welcome-banner">
       <div class="welcome-content">
@@ -29,578 +31,605 @@
     </div>
 
     <!-- Messages -->
-    <div class="messages-container" *ngIf="successMessage || errorMessage">
-      <div class="message success" *ngIf="successMessage">
-        <span class="material-icons">check_circle</span>
-        <span>{{ successMessage }}</span>
-        <button class="message-close" (click)="clearMessages()">
-          <span class="material-icons">close</span>
-        </button>
+    @if (successMessage || errorMessage) {
+      <div class="messages-container">
+        @if (successMessage) {
+          <div class="message success">
+            <span class="material-icons">check_circle</span>
+            <span>{{ successMessage }}</span>
+            <button class="message-close" (click)="clearMessages()">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+        }
+        @if (errorMessage) {
+          <div class="message error">
+            <span class="material-icons">error</span>
+            <span>{{ errorMessage }}</span>
+            <button class="message-close" (click)="clearMessages()">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+        }
       </div>
-      <div class="message error" *ngIf="errorMessage">
-        <span class="material-icons">error</span>
-        <span>{{ errorMessage }}</span>
-        <button class="message-close" (click)="clearMessages()">
-          <span class="material-icons">close</span>
-        </button>
-      </div>
-    </div>
+    }
 
     <!-- Main Content Grid -->
-<div class="content-grid">
+    <div class="content-grid">
 
-    <!-- Profile Information Card -->
-    <section class="card profile-card">
-      <div class="card-header">
-        <span class="material-symbols-outlined">person</span>
-        <h2>Información del Perfil</h2>
-      </div>
-      
-      <div class="card-content" *ngIf="currentUser">
-        <div class="profile-info">
-          <div class="profile-avatar">
-            {{ (currentUser.firstName || 'U').charAt(0).toUpperCase() }}{{ (currentUser.lastName || 'S').charAt(0).toUpperCase() }}
-          </div>
-          <div class="profile-details">
-            <h3>{{ currentUser.firstName || 'Usuario' }} {{ currentUser.lastName || '' }}</h3>
-            <p class="email">{{ currentUser.email }}</p>
-            <div class="profile-stats">
-              <span class="stat">
-                <span class="material-symbols-outlined">verified_user</span>
-                Email Verificado
-              </span>
-              <span class="stat">
-                <span class="material-symbols-outlined">security</span>
-                2FA: {{ isTwoFactorEnabled ? 'Activado' : 'Desactivado' }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card-content" *ngIf="!currentUser">
-        <div class="profile-loading">
+      <!-- Profile Information Card -->
+      <section class="card profile-card">
+        <div class="card-header">
           <span class="material-symbols-outlined">person</span>
-          <p>Cargando información del usuario...</p>
+          <h2>Información del Perfil</h2>
         </div>
-      </div>
-    </section>
 
-    <!-- Password Security Card -->
-    <section class="card password-card">
-      <div class="card-header">
-        <span class="material-symbols-outlined">lock</span>
-        <h2>Contraseña</h2>
-      </div>
-      
-      <div class="card-content">
-        <div class="password-info">
-          <p class="last-change">
-            <strong>Último cambio:</strong> {{ getTimeSincePasswordChange() }}
-          </p>
-          <p class="security-tip">
-            Se recomienda cambiar la contraseña cada 6 meses
-          </p>
-        </div>
-        
-        <button 
-          class="btn btn-outline" 
-          (click)="togglePasswordForm()"
-          [disabled]="loading">
-          <span class="material-symbols-outlined">edit</span>
-          Cambiar Contraseña
-        </button>
-        
-        <!-- Password Change Form -->
-        <div class="password-form" *ngIf="showPasswordForm" [@slideIn]>
-          <form (ngSubmit)="changePassword()" #passwordFormRef="ngForm">
-            
-            <div class="form-group">
-              <label for="currentPassword">Contraseña Actual</label>
-              <input 
-                type="password"
-                id="currentPassword"
-                [(ngModel)]="passwordForm.currentPassword"
-                name="currentPassword"
-                placeholder="Ingrese su contraseña actual"
-                required>
-            </div>
-
-            <div class="form-group">
-              <label for="newPassword">Nueva Contraseña</label>
-              <input 
-                type="password"
-                id="newPassword"
-                [(ngModel)]="passwordForm.newPassword"
-                name="newPassword"
-                placeholder="Ingrese su nueva contraseña"
-                required
-                minlength="8">
-              
-              <!-- Password Strength Indicator -->
-              <div class="password-strength" *ngIf="passwordForm.newPassword">
-                <div class="strength-bar">
-                  <div 
-                    class="strength-fill"
-                    [class]="getPasswordStrengthClass(passwordForm.newPassword)">
-                  </div>
-                </div>
-                <span class="strength-text">
-                  Seguridad: {{ getPasswordStrengthText(passwordForm.newPassword) }}
-                </span>
+        @if (currentUser) {
+          <div class="card-content">
+            <div class="profile-info">
+              <div class="profile-avatar">
+                {{ (currentUser.firstName || 'U').charAt(0).toUpperCase() }}{{ (currentUser.lastName || 'S').charAt(0).toUpperCase() }}
               </div>
-            </div>
-
-            <div class="form-group">
-              <label for="confirmPassword">Confirmar Nueva Contraseña</label>
-              <input 
-                type="password"
-                id="confirmPassword"
-                [(ngModel)]="passwordForm.confirmPassword"
-                name="confirmPassword"
-                placeholder="Confirme su nueva contraseña"
-                required>
-            </div>
-
-            <div class="form-actions">
-              <button 
-                type="button" 
-                class="btn btn-outline" 
-                (click)="togglePasswordForm()"
-                [disabled]="loading">
-                Cancelar
-              </button>
-              <button 
-                type="submit" 
-                class="btn btn-primary"
-                [disabled]="loading || passwordFormRef.invalid">
-                <span class="material-symbols-outlined" *ngIf="loading">autorenew</span>
-                <span class="material-symbols-outlined" *ngIf="!loading">save</span>
-                {{ loading ? 'Guardando...' : 'Guardar Cambios' }}
-              </button>
-            </div>
-            
-          </form>
-        </div>
-        
-      </div>
-    </section>
-
-    <!-- Two Factor Authentication Card - Métodos Separados -->
-    <section class="card twofa-card">
-      <div class="card-header">
-        <span class="material-symbols-outlined">shield</span>
-        <h2>Autenticación de Dos Factores</h2>
-      </div>
-      
-      <div class="card-content">
-        <!-- Estado General 2FA -->
-        <div class="twofa-status">
-          <div class="status-indicator" [class.active]="isTwoFactorEnabled">
-            <span class="material-symbols-outlined">
-              {{ isTwoFactorEnabled ? 'check_circle' : 'radio_button_unchecked' }}
-            </span>
-            <div class="status-text">
-              <h3>{{ isTwoFactorEnabled ? 'Activado' : 'Desactivado' }}</h3>
-              <p>
-                {{ isTwoFactorEnabled 
-                  ? 'Tu cuenta está protegida con 2FA' 
-                  : 'Activa al menos un método de 2FA para mayor seguridad' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Separador -->
-        <hr class="methods-divider">
-
-        <!-- ===== MÉTODO 1: GOOGLE AUTHENTICATOR ===== -->
-        <div class="twofa-method">
-          <div class="method-header">
-            <div class="method-info">
-              <div class="method-icon">
-                <span class="material-symbols-outlined">smartphone</span>
-              </div>
-              <div>
-                <h4 class="method-title">Google Authenticator</h4>
-                <p class="method-desc">Usa la app para generar códigos de 6 dígitos</p>
-              </div>
-            </div>
-            <div class="method-status">
-              <span class="method-badge" [class.active]="isGoogleAuthEnabled">
-                {{ isGoogleAuthEnabled ? 'Activo' : 'Inactivo' }}
-              </span>
-            </div>
-          </div>
-
-          <div class="method-actions">
-            <button 
-              class="btn btn-primary" 
-              *ngIf="!isGoogleAuthEnabled"
-              (click)="toggle2FASetup()"
-              [disabled]="loading">
-              <span class="material-symbols-outlined">add_circle</span>
-              Configurar Google Authenticator
-            </button>
-            <button 
-              class="btn btn-outline btn-danger-outline" 
-              *ngIf="isGoogleAuthEnabled"
-              (click)="disableGoogleAuth()"
-              [disabled]="loading">
-              <span class="material-symbols-outlined">cancel</span>
-              Desactivar Google Authenticator
-            </button>
-          </div>
-        </div>
-
-        <!-- ===== MÉTODO 2: VERIFICACIÓN POR EMAIL ===== -->
-        <div class="twofa-method">
-          <div class="method-header">
-            <div class="method-info">
-              <div class="method-icon method-icon--email">
-                <span class="material-symbols-outlined">mail</span>
-              </div>
-              <div>
-                <h4 class="method-title">Verificación por Email</h4>
-                <p class="method-desc">Recibe un código de verificación en tu correo</p>
-              </div>
-            </div>
-            <div class="method-status">
-              <span class="method-badge" [class.active]="isEmailTwoFactorEnabled">
-                {{ isEmailTwoFactorEnabled ? 'Activo' : 'Inactivo' }}
-              </span>
-            </div>
-          </div>
-
-          <div class="method-actions">
-            <button 
-              class="btn btn-primary" 
-              *ngIf="!isEmailTwoFactorEnabled"
-              (click)="enableEmail2FA()"
-              [disabled]="loading">
-              <span class="material-symbols-outlined">mail</span>
-              Activar Verificación por Email
-            </button>
-            <button 
-              class="btn btn-outline btn-danger-outline" 
-              *ngIf="isEmailTwoFactorEnabled"
-              (click)="disableEmail2FA()"
-              [disabled]="loading">
-              <span class="material-symbols-outlined">cancel</span>
-              Desactivar Verificación por Email
-            </button>
-          </div>
-        </div>
-
-        <!-- Setup de Google Authenticator (Se muestra cuando se configura) -->
-        <div class="twofa-setup" *ngIf="show2FASetup" [@slideIn]>
-          <div class="setup-steps">
-            
-            <div class="setup-step">
-              <div class="step-number">1</div>
-              <div class="step-content">
-                <h4>Descarga la aplicación</h4>
-                <p>Instala Google Authenticator o cualquier aplicación TOTP compatible</p>
-                <div class="app-links">
-                  <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" class="app-link">
-                    <span class="material-symbols-outlined">android</span>
-                    Google Play
-                  </a>
-                  <a href="https://apps.apple.com/us/app/google-authenticator/id388497605" target="_blank" class="app-link">
-                    <span class="material-symbols-outlined">phone_iphone</span>
-                    App Store
-                  </a>
+              <div class="profile-details">
+                <h3>{{ currentUser.firstName || 'Usuario' }} {{ currentUser.lastName || '' }}</h3>
+                <p class="email">{{ currentUser.email }}</p>
+                <div class="profile-stats">
+                  <span class="stat">
+                    <span class="material-symbols-outlined">verified_user</span>
+                    Email Verificado
+                  </span>
+                  <span class="stat">
+                    <span class="material-symbols-outlined">security</span>
+                    2FA: {{ isTwoFactorEnabled ? 'Activado' : 'Desactivado' }}
+                  </span>
                 </div>
               </div>
             </div>
-
-            <div class="setup-step">
-              <div class="step-number">2</div>
-              <div class="step-content">
-                <h4>Escanea el código QR</h4>
-                <!-- QR disponible -->
-                <div class="qr-container" *ngIf="twoFactorData.qrCode">
-                  <img [src]="twoFactorData.qrCode" alt="Código QR para 2FA" class="qr-image">
-                  <div class="manual-entry">
-                    <p><strong>Código manual:</strong></p>
-                    <code class="secret-code">{{ twoFactorData.secret }}</code>
-                  </div>
-                </div>
-                <!-- Cargando QR -->
-                <div class="loading-qr" *ngIf="!twoFactorData.qrCode && loading">
-                  <span class="material-symbols-outlined spinning">autorenew</span>
-                  <p>Generando código QR...</p>
-                </div>
-                <!-- Error: QR no disponible -->
-                <div class="qr-error" *ngIf="!twoFactorData.qrCode && !loading">
-                  <span class="material-symbols-outlined">warning</span>
-                  <p>No se pudo cargar el código QR.</p>
-                  <button class="btn btn-outline" (click)="generate2FAQRCode()">
-                    <span class="material-symbols-outlined">refresh</span>
-                    Reintentar
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="setup-step">
-              <div class="step-number">3</div>
-              <div class="step-content">
-                <h4>Verifica el código</h4>
-                <p>Ingresa el código de 6 dígitos de tu aplicación authenticator</p>
-                <div class="verification-form">
-                  <input 
-                    type="text"
-                    [(ngModel)]="twoFactorData.verificationCode"
-                    placeholder="000000"
-                    maxlength="6"
-                    class="verification-input"
-                    #codeInput>
-                  <button 
-                    class="btn btn-primary"
-                    (click)="enable2FA()"
-                    [disabled]="loading || twoFactorData.verificationCode.length !== 6">
-                    <span class="material-symbols-outlined" *ngIf="loading">autorenew</span>
-                    <span class="material-symbols-outlined" *ngIf="!loading">verified</span>
-                    {{ loading ? 'Verificando...' : 'Verificar y Activar' }}
-                  </button>
-                </div>
-              </div>
-            </div>
-            
           </div>
+        }
 
-          <div class="setup-actions">
-            <button 
-              class="btn btn-outline" 
-              (click)="toggle2FASetup()"
-              [disabled]="loading">
-              Cancelar
-            </button>
+        @if (!currentUser) {
+          <div class="card-content">
+            <div class="profile-loading">
+              <span class="material-symbols-outlined">person</span>
+              <p>Cargando información del usuario...</p>
+            </div>
           </div>
-        </div>
-        
-      </div>
-    </section>
+        }
+      </section>
 
-    <!-- Backup Codes Card - Visible si cualquier método 2FA está activo -->
-    <section class="card backup-codes-card" *ngIf="isTwoFactorEnabled">
-      <div class="card-header">
-        <span class="material-symbols-outlined">key</span>
-        <h2>Códigos de Respaldo</h2>
-      </div>
-      
-      <div class="card-content">
-        <div class="backup-info">
-          <p class="codes-count">
-            <strong>Códigos disponibles:</strong> {{ backupCodesCount }}
-          </p>
-          <p class="codes-description">
-            Los códigos de respaldo te permiten acceder a tu cuenta si pierdes el acceso a tu aplicación authenticator o email.
-          </p>
+      <!-- Password Security Card -->
+      <section class="card password-card">
+        <div class="card-header">
+          <span class="material-symbols-outlined">lock</span>
+          <h2>Contraseña</h2>
         </div>
 
-        <div class="backup-actions">
-          <!-- Botón principal para generar códigos -->
-          <button 
-            class="btn btn-primary" 
-            (click)="generateCodes()"
+        <div class="card-content">
+          <div class="password-info">
+            <p class="last-change">
+              <strong>Último cambio:</strong> {{ getTimeSincePasswordChange() }}
+            </p>
+            <p class="security-tip">
+              Se recomienda cambiar la contraseña cada 6 meses
+            </p>
+          </div>
+
+          <button
+            class="btn btn-outline"
+            (click)="togglePasswordForm()"
             [disabled]="loading">
-            <span class="material-symbols-outlined spinning" *ngIf="loading">autorenew</span>
-            <span class="material-symbols-outlined" *ngIf="!loading">{{ backupCodes.length > 0 || backupCodesCount > 0 ? 'refresh' : 'add_circle' }}</span>
-            {{ loading ? 'Generando...' : (backupCodes.length > 0 || backupCodesCount > 0 ? 'Regenerar Códigos' : 'Generar 10 Códigos') }}
+            <span class="material-symbols-outlined">edit</span>
+            Cambiar Contraseña
           </button>
-        </div>
 
-        <!-- Loading mientras se generan los códigos -->
-        <div class="codes-loading" *ngIf="backupCodes.length === 0 && loading">
-          <span class="material-symbols-outlined spinning">autorenew</span>
-          <p>Generando códigos de respaldo...</p>
-        </div>
+          <!-- Password Change Form -->
+          @if (showPasswordForm) {
+            <div class="password-form" [@slideIn]>
+              <form (ngSubmit)="changePassword()" #passwordFormRef="ngForm">
+                <div class="form-group">
+                  <label for="currentPassword">Contraseña Actual</label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    [(ngModel)]="passwordForm.currentPassword"
+                    name="currentPassword"
+                    placeholder="Ingrese su contraseña actual"
+                    required>
+                  </div>
+                  <div class="form-group">
+                    <label for="newPassword">Nueva Contraseña</label>
+                    <input
+                      type="password"
+                      id="newPassword"
+                      [(ngModel)]="passwordForm.newPassword"
+                      name="newPassword"
+                      placeholder="Ingrese su nueva contraseña"
+                      required
+                      minlength="8">
+                      <!-- Password Strength Indicator -->
+                      @if (passwordForm.newPassword) {
+                        <div class="password-strength">
+                          <div class="strength-bar">
+                            <div
+                              class="strength-fill"
+                              [class]="getPasswordStrengthClass(passwordForm.newPassword)">
+                            </div>
+                          </div>
+                          <span class="strength-text">
+                            Seguridad: {{ getPasswordStrengthText(passwordForm.newPassword) }}
+                          </span>
+                        </div>
+                      }
+                    </div>
+                    <div class="form-group">
+                      <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        [(ngModel)]="passwordForm.confirmPassword"
+                        name="confirmPassword"
+                        placeholder="Confirme su nueva contraseña"
+                        required>
+                      </div>
+                      <div class="form-actions">
+                        <button
+                          type="button"
+                          class="btn btn-outline"
+                          (click)="togglePasswordForm()"
+                          [disabled]="loading">
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          class="btn btn-primary"
+                          [disabled]="loading || passwordFormRef.invalid">
+                          @if (loading) {
+                            <span class="material-symbols-outlined">autorenew</span>
+                          }
+                          @if (!loading) {
+                            <span class="material-symbols-outlined">save</span>
+                          }
+                          {{ loading ? 'Guardando...' : 'Guardar Cambios' }}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                }
 
-        <!-- Backup Codes Display - Solo cuando hay códigos -->
-        <div class="backup-codes-display" *ngIf="backupCodes.length > 0" [@slideIn]>
-          <div class="codes-warning">
-            <span class="material-symbols-outlined">warning</span>
-            <p><strong>¡Importante!</strong> Guarda estos códigos en un lugar seguro. Cada código solo se puede usar una vez.</p>
-          </div>
-          
-          <div class="codes-grid">
-            <div class="code-item" *ngFor="let code of backupCodes">
-              <code class="backup-code">{{ code }}</code>
+              </div>
+            </section>
+
+            <!-- Two Factor Authentication Card - Métodos Separados -->
+            <section class="card twofa-card">
+              <div class="card-header">
+                <span class="material-symbols-outlined">shield</span>
+                <h2>Autenticación de Dos Factores</h2>
+              </div>
+
+              <div class="card-content">
+                <!-- Estado General 2FA -->
+                <div class="twofa-status">
+                  <div class="status-indicator" [class.active]="isTwoFactorEnabled">
+                    <span class="material-symbols-outlined">
+                      {{ isTwoFactorEnabled ? 'check_circle' : 'radio_button_unchecked' }}
+                    </span>
+                    <div class="status-text">
+                      <h3>{{ isTwoFactorEnabled ? 'Activado' : 'Desactivado' }}</h3>
+                      <p>
+                        {{ isTwoFactorEnabled
+                        ? 'Tu cuenta está protegida con 2FA'
+                        : 'Activa al menos un método de 2FA para mayor seguridad' }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Separador -->
+                <hr class="methods-divider">
+
+                <!-- ===== MÉTODO 1: GOOGLE AUTHENTICATOR ===== -->
+                <div class="twofa-method">
+                  <div class="method-header">
+                    <div class="method-info">
+                      <div class="method-icon">
+                        <span class="material-symbols-outlined">smartphone</span>
+                      </div>
+                      <div>
+                        <h4 class="method-title">Google Authenticator</h4>
+                        <p class="method-desc">Usa la app para generar códigos de 6 dígitos</p>
+                      </div>
+                    </div>
+                    <div class="method-status">
+                      <span class="method-badge" [class.active]="isGoogleAuthEnabled">
+                        {{ isGoogleAuthEnabled ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="method-actions">
+                    @if (!isGoogleAuthEnabled) {
+                      <button
+                        class="btn btn-primary"
+                        (click)="toggle2FASetup()"
+                        [disabled]="loading">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        Configurar Google Authenticator
+                      </button>
+                    }
+                    @if (isGoogleAuthEnabled) {
+                      <button
+                        class="btn btn-outline btn-danger-outline"
+                        (click)="disableGoogleAuth()"
+                        [disabled]="loading">
+                        <span class="material-symbols-outlined">cancel</span>
+                        Desactivar Google Authenticator
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- ===== MÉTODO 2: VERIFICACIÓN POR EMAIL ===== -->
+                <div class="twofa-method">
+                  <div class="method-header">
+                    <div class="method-info">
+                      <div class="method-icon method-icon--email">
+                        <span class="material-symbols-outlined">mail</span>
+                      </div>
+                      <div>
+                        <h4 class="method-title">Verificación por Email</h4>
+                        <p class="method-desc">Recibe un código de verificación en tu correo</p>
+                      </div>
+                    </div>
+                    <div class="method-status">
+                      <span class="method-badge" [class.active]="isEmailTwoFactorEnabled">
+                        {{ isEmailTwoFactorEnabled ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="method-actions">
+                    @if (!isEmailTwoFactorEnabled) {
+                      <button
+                        class="btn btn-primary"
+                        (click)="enableEmail2FA()"
+                        [disabled]="loading">
+                        <span class="material-symbols-outlined">mail</span>
+                        Activar Verificación por Email
+                      </button>
+                    }
+                    @if (isEmailTwoFactorEnabled) {
+                      <button
+                        class="btn btn-outline btn-danger-outline"
+                        (click)="disableEmail2FA()"
+                        [disabled]="loading">
+                        <span class="material-symbols-outlined">cancel</span>
+                        Desactivar Verificación por Email
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- Setup de Google Authenticator (Se muestra cuando se configura) -->
+                @if (show2FASetup) {
+                  <div class="twofa-setup" [@slideIn]>
+                    <div class="setup-steps">
+                      <div class="setup-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                          <h4>Descarga la aplicación</h4>
+                          <p>Instala Google Authenticator o cualquier aplicación TOTP compatible</p>
+                          <div class="app-links">
+                            <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" class="app-link">
+                              <span class="material-symbols-outlined">android</span>
+                              Google Play
+                            </a>
+                            <a href="https://apps.apple.com/us/app/google-authenticator/id388497605" target="_blank" class="app-link">
+                              <span class="material-symbols-outlined">phone_iphone</span>
+                              App Store
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="setup-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                          <h4>Escanea el código QR</h4>
+                          <!-- QR disponible -->
+                          @if (twoFactorData.qrCode) {
+                            <div class="qr-container">
+                              <img [src]="twoFactorData.qrCode" alt="Código QR para 2FA" class="qr-image">
+                              <div class="manual-entry">
+                                <p><strong>Código manual:</strong></p>
+                                <code class="secret-code">{{ twoFactorData.secret }}</code>
+                              </div>
+                            </div>
+                          }
+                          <!-- Cargando QR -->
+                          @if (!twoFactorData.qrCode && loading) {
+                            <div class="loading-qr">
+                              <span class="material-symbols-outlined spinning">autorenew</span>
+                              <p>Generando código QR...</p>
+                            </div>
+                          }
+                          <!-- Error: QR no disponible -->
+                          @if (!twoFactorData.qrCode && !loading) {
+                            <div class="qr-error">
+                              <span class="material-symbols-outlined">warning</span>
+                              <p>No se pudo cargar el código QR.</p>
+                              <button class="btn btn-outline" (click)="generate2FAQRCode()">
+                                <span class="material-symbols-outlined">refresh</span>
+                                Reintentar
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                      <div class="setup-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                          <h4>Verifica el código</h4>
+                          <p>Ingresa el código de 6 dígitos de tu aplicación authenticator</p>
+                          <div class="verification-form">
+                            <input
+                              type="text"
+                              [(ngModel)]="twoFactorData.verificationCode"
+                              placeholder="000000"
+                              maxlength="6"
+                              class="verification-input"
+                              #codeInput>
+                              <button
+                                class="btn btn-primary"
+                                (click)="enable2FA()"
+                                [disabled]="loading || twoFactorData.verificationCode.length !== 6">
+                                @if (loading) {
+                                  <span class="material-symbols-outlined">autorenew</span>
+                                }
+                                @if (!loading) {
+                                  <span class="material-symbols-outlined">verified</span>
+                                }
+                                {{ loading ? 'Verificando...' : 'Verificar y Activar' }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="setup-actions">
+                        <button
+                          class="btn btn-outline"
+                          (click)="toggle2FASetup()"
+                          [disabled]="loading">
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  }
+
+                </div>
+              </section>
+
+              <!-- Backup Codes Card - Visible si cualquier método 2FA está activo -->
+              @if (isTwoFactorEnabled) {
+                <section class="card backup-codes-card">
+                  <div class="card-header">
+                    <span class="material-symbols-outlined">key</span>
+                    <h2>Códigos de Respaldo</h2>
+                  </div>
+                  <div class="card-content">
+                    <div class="backup-info">
+                      <p class="codes-count">
+                        <strong>Códigos disponibles:</strong> {{ backupCodesCount }}
+                      </p>
+                      <p class="codes-description">
+                        Los códigos de respaldo te permiten acceder a tu cuenta si pierdes el acceso a tu aplicación authenticator o email.
+                      </p>
+                    </div>
+                    <div class="backup-actions">
+                      <!-- Botón principal para generar códigos -->
+                      <button
+                        class="btn btn-primary"
+                        (click)="generateCodes()"
+                        [disabled]="loading">
+                        @if (loading) {
+                          <span class="material-symbols-outlined spinning">autorenew</span>
+                        }
+                        @if (!loading) {
+                          <span class="material-symbols-outlined">{{ backupCodes.length > 0 || backupCodesCount > 0 ? 'refresh' : 'add_circle' }}</span>
+                        }
+                        {{ loading ? 'Generando...' : (backupCodes.length > 0 || backupCodesCount > 0 ? 'Regenerar Códigos' : 'Generar 10 Códigos') }}
+                      </button>
+                    </div>
+                    <!-- Loading mientras se generan los códigos -->
+                    @if (backupCodes.length === 0 && loading) {
+                      <div class="codes-loading">
+                        <span class="material-symbols-outlined spinning">autorenew</span>
+                        <p>Generando códigos de respaldo...</p>
+                      </div>
+                    }
+                    <!-- Backup Codes Display - Solo cuando hay códigos -->
+                    @if (backupCodes.length > 0) {
+                      <div class="backup-codes-display" [@slideIn]>
+                        <div class="codes-warning">
+                          <span class="material-symbols-outlined">warning</span>
+                          <p><strong>¡Importante!</strong> Guarda estos códigos en un lugar seguro. Cada código solo se puede usar una vez.</p>
+                        </div>
+                        <div class="codes-grid">
+                          @for (code of backupCodes; track code) {
+                            <div class="code-item">
+                              <code class="backup-code">{{ code }}</code>
+                            </div>
+                          }
+                        </div>
+                        <div class="codes-actions">
+                          <button
+                            class="btn btn-outline"
+                            (click)="copyBackupCodes()">
+                            <span class="material-symbols-outlined">content_copy</span>
+                            Copiar Todos
+                          </button>
+                          <button
+                            class="btn btn-primary"
+                            (click)="downloadBackupCodes()">
+                            <span class="material-symbols-outlined">download</span>
+                            Descargar
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+
+              <!-- Security Summary Card -->
+              <section class="card security-summary-card">
+                <div class="card-header">
+                  <span class="material-symbols-outlined">verified_user</span>
+                  <h2>Resumen de Seguridad</h2>
+                </div>
+
+                <div class="card-content">
+                  <div class="security-score">
+                    <div class="score-circle" [class]="getSecurityLevel()">
+                      <span class="score-value">{{ getSecurityScore() }}%</span>
+                    </div>
+                    <div class="score-info">
+                      <h3 class="security-level">{{ getSecurityLevelText() }}</h3>
+                      <p class="security-description">{{ getSecurityDescription() }}</p>
+                    </div>
+                  </div>
+
+                  <div class="security-checklist">
+                    <div class="check-item" [class.completed]="currentUser?.email">
+                      <span class="material-symbols-outlined">
+                        {{ currentUser?.email ? 'check_circle' : 'radio_button_unchecked' }}
+                      </span>
+                      <span>Email verificado</span>
+                    </div>
+                    <div class="check-item" [class.completed]="lastPasswordChange">
+                      <span class="material-symbols-outlined">
+                        {{ lastPasswordChange ? 'check_circle' : 'radio_button_unchecked' }}
+                      </span>
+                      <span>Contraseña segura</span>
+                    </div>
+                    <div class="check-item" [class.completed]="isTwoFactorEnabled">
+                      <span class="material-symbols-outlined">
+                        {{ isTwoFactorEnabled ? 'check_circle' : 'radio_button_unchecked' }}
+                      </span>
+                      <span>2FA activado</span>
+                    </div>
+                    <div class="check-item" [class.completed]="backupCodesEnabled && backupCodesCount > 0">
+                      <span class="material-symbols-outlined">
+                        {{ (backupCodesEnabled && backupCodesCount > 0) ? 'check_circle' : 'radio_button_unchecked' }}
+                      </span>
+                      <span>Códigos de respaldo</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
             </div>
-          </div>
-          
-          <div class="codes-actions">
-            <button 
-              class="btn btn-outline"
-              (click)="copyBackupCodes()">
-              <span class="material-symbols-outlined">content_copy</span>
-              Copiar Todos
-            </button>
-            <button 
-              class="btn btn-primary"
-              (click)="downloadBackupCodes()">
-              <span class="material-symbols-outlined">download</span>
-              Descargar
-            </button>
-          </div>
+
+            <!-- Modal de Códigos de Respaldo Generados -->
+            @if (showBackupCodesModal) {
+              <div class="modal-overlay" [@slideIn]>
+                <div class="modal-container backup-codes-modal">
+                  <div class="modal-header">
+                    <h2>
+                      <span class="material-symbols-outlined">key</span>
+                      Códigos de Respaldo Generados
+                    </h2>
+                    <button class="modal-close" (click)="closeBackupCodesModal()">
+                      <span class="material-symbols-outlined">close</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <!-- Advertencia de seguridad -->
+                    <div class="security-warning">
+                      <span class="material-symbols-outlined error-icon">warning</span>
+                      <div class="warning-text">
+                        <h3>¡Guarda estos códigos!</h3>
+                        <p>Es la única vez que los verás. Si pierdes tus códigos, perderás el acceso a tu cuenta.</p>
+                      </div>
+                    </div>
+                    <!-- Lista de códigos -->
+                    <div class="backup-codes-list">
+                      <div class="codes-grid-apple">
+                        @for (code of backupCodes; track code; let i = $index) {
+                          <div class="code-item-apple">
+                            <div class="code-circle">{{ i + 1 }}</div>
+                            <div class="code-box">{{ code }}</div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                    <!-- Instrucciones -->
+                    <div class="backup-instructions">
+                      <h4>Instrucciones importantes:</h4>
+                      <ul>
+                        <li>Cada código solo se puede usar una vez</li>
+                        <li>Guárdalos en un lugar seguro (preferiblemente offline)</li>
+                        <li>Úsalos solo si pierdes el acceso a tu aplicación authenticator</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-outline" (click)="downloadBackupCodes()">
+                      <span class="material-symbols-outlined">download</span>
+                      Descargar (.txt)
+                    </button>
+                    <button class="btn btn-secondary" (click)="copyBackupCodes()">
+                      <span class="material-symbols-outlined">content_copy</span>
+                      Copiar Todo
+                    </button>
+                    <button class="btn btn-primary" (click)="closeBackupCodesModal()">
+                      <span class="material-symbols-outlined">check</span>
+                      Entendido
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Modal de Advertencia para Ver Códigos -->
+            @if (showBackupCodesWarningModal) {
+              <div class="modal-overlay" [@slideIn]>
+                <div class="modal-container warning-modal">
+                  <div class="modal-header">
+                    <h2>
+                      <span class="material-symbols-outlined">warning</span>
+                      ¡Atención!
+                    </h2>
+                    <button class="modal-close" (click)="closeWarningModal()">
+                      <span class="material-symbols-outlined">close</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="warning-content">
+                      <p class="warning-main">
+                        Ver tus códigos los <strong>invalidará todos</strong> y generará 10 nuevos códigos.
+                      </p>
+                      <p class="warning-secondary">
+                        Los códigos actuales dejarán de funcionar permanentemente.
+                      </p>
+                      <p class="warning-question">
+                        ¿Estás seguro de que deseas continuar?
+                      </p>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-outline" (click)="closeWarningModal()">
+                      <span class="material-icons">cancel</span>
+                      Cancelar
+                    </button>
+                    <button class="btn btn-danger" (click)="confirmRegenerateCodes()">
+                      <span class="material-icons">warning</span>
+                      Sí, Generar Nuevos
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+
+          </main>
+
         </div>
-        
-      </div>
-    </section>
-
-    <!-- Security Summary Card -->
-    <section class="card security-summary-card">
-      <div class="card-header">
-        <span class="material-symbols-outlined">verified_user</span>
-        <h2>Resumen de Seguridad</h2>
-      </div>
-      
-      <div class="card-content">
-        <div class="security-score">
-          <div class="score-circle" [class]="getSecurityLevel()">
-            <span class="score-value">{{ getSecurityScore() }}%</span>
-          </div>
-          <div class="score-info">
-            <h3 class="security-level">{{ getSecurityLevelText() }}</h3>
-            <p class="security-description">{{ getSecurityDescription() }}</p>
-          </div>
-        </div>
-        
-        <div class="security-checklist">
-          <div class="check-item" [class.completed]="currentUser?.email">
-            <span class="material-symbols-outlined">
-              {{ currentUser?.email ? 'check_circle' : 'radio_button_unchecked' }}
-            </span>
-            <span>Email verificado</span>
-          </div>
-          <div class="check-item" [class.completed]="lastPasswordChange">
-            <span class="material-symbols-outlined">
-              {{ lastPasswordChange ? 'check_circle' : 'radio_button_unchecked' }}
-            </span>
-            <span>Contraseña segura</span>
-          </div>
-          <div class="check-item" [class.completed]="isTwoFactorEnabled">
-            <span class="material-symbols-outlined">
-              {{ isTwoFactorEnabled ? 'check_circle' : 'radio_button_unchecked' }}
-            </span>
-            <span>2FA activado</span>
-          </div>
-          <div class="check-item" [class.completed]="backupCodesEnabled && backupCodesCount > 0">
-            <span class="material-symbols-outlined">
-              {{ (backupCodesEnabled && backupCodesCount > 0) ? 'check_circle' : 'radio_button_unchecked' }}
-            </span>
-            <span>Códigos de respaldo</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <!-- Modal de Códigos de Respaldo Generados -->
-  <div class="modal-overlay" *ngIf="showBackupCodesModal" [@slideIn]>
-    <div class="modal-container backup-codes-modal">
-      <div class="modal-header">
-        <h2>
-          <span class="material-symbols-outlined">key</span>
-          Códigos de Respaldo Generados
-        </h2>
-        <button class="modal-close" (click)="closeBackupCodesModal()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        <!-- Advertencia de seguridad -->
-        <div class="security-warning">
-          <span class="material-symbols-outlined error-icon">warning</span>
-          <div class="warning-text">
-            <h3>¡Guarda estos códigos!</h3>
-            <p>Es la única vez que los verás. Si pierdes tus códigos, perderás el acceso a tu cuenta.</p>
-          </div>
-        </div>
-
-        <!-- Lista de códigos -->
-        <div class="backup-codes-list">
-          <div class="codes-grid-apple">
-  <div class="code-item-apple" *ngFor="let code of backupCodes; let i = index">
-    <div class="code-circle">{{ i + 1 }}</div>
-    <div class="code-box">{{ code }}</div>
-  </div>
-</div>
-
-        </div>
-
-        <!-- Instrucciones -->
-        <div class="backup-instructions">
-          <h4>Instrucciones importantes:</h4>
-          <ul>
-            <li>Cada código solo se puede usar una vez</li>
-            <li>Guárdalos en un lugar seguro (preferiblemente offline)</li>
-            <li>Úsalos solo si pierdes el acceso a tu aplicación authenticator</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-outline" (click)="downloadBackupCodes()">
-          <span class="material-symbols-outlined">download</span>
-          Descargar (.txt)
-        </button>
-        <button class="btn btn-secondary" (click)="copyBackupCodes()">
-          <span class="material-symbols-outlined">content_copy</span>
-          Copiar Todo
-        </button>
-        <button class="btn btn-primary" (click)="closeBackupCodesModal()">
-          <span class="material-symbols-outlined">check</span>
-          Entendido
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de Advertencia para Ver Códigos -->
-  <div class="modal-overlay" *ngIf="showBackupCodesWarningModal" [@slideIn]>
-    <div class="modal-container warning-modal">
-      <div class="modal-header">
-        <h2>
-          <span class="material-symbols-outlined">warning</span>
-          ¡Atención!
-        </h2>
-        <button class="modal-close" (click)="closeWarningModal()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        <div class="warning-content">
-          <p class="warning-main">
-            Ver tus códigos los <strong>invalidará todos</strong> y generará 10 nuevos códigos.
-          </p>
-          <p class="warning-secondary">
-            Los códigos actuales dejarán de funcionar permanentemente.
-          </p>
-          <p class="warning-question">
-            ¿Estás seguro de que deseas continuar?
-          </p>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-outline" (click)="closeWarningModal()">
-          <span class="material-icons">cancel</span>
-          Cancelar
-        </button>
-        <button class="btn btn-danger" (click)="confirmRegenerateCodes()">
-          <span class="material-icons">warning</span>
-          Sí, Generar Nuevos
-        </button>
-        </div>
-      </div>
-    </div>
-
-  </main>
-
-</div>

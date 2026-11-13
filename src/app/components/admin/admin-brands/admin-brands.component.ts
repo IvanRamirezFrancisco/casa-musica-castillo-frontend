@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -35,6 +35,7 @@ export interface PendingBrandLogo {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-brands.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-brands.component.css']
 })
 export class AdminBrandsComponent implements OnInit, OnDestroy {

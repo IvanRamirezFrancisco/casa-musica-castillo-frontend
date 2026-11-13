@@ -7,198 +7,225 @@
         <span class="material-symbols-outlined header-icon">favorite</span>
         <div>
           <h1>Mis Favoritos</h1>
-          <p class="header-subtitle" *ngIf="!loading">
-            {{ items.length }} {{ items.length === 1 ? 'producto' : 'productos' }} guardados
-          </p>
+          @if (!loading) {
+            <p class="header-subtitle">
+              {{ items.length }} {{ items.length === 1 ? 'producto' : 'productos' }} guardados
+            </p>
+          }
         </div>
       </div>
 
       <!-- Estadísticas rápidas -->
-      <div class="header-stats" *ngIf="items.length > 0 && !loading">
-        <div class="stat-chip in-stock">
-          <span class="material-symbols-outlined">inventory_2</span>
-          {{ inStockCount }} en stock
+      @if (items.length > 0 && !loading) {
+        <div class="header-stats">
+          <div class="stat-chip in-stock">
+            <span class="material-symbols-outlined">inventory_2</span>
+            {{ inStockCount }} en stock
+          </div>
+          @if (priceDropCount > 0) {
+            <div class="stat-chip price-drop">
+              <span class="material-symbols-outlined">trending_down</span>
+              {{ priceDropCount }} con bajada de precio
+            </div>
+          }
+          <div class="stat-chip total-value">
+            <span class="material-symbols-outlined">payments</span>
+            {{ totalValue | currency:'MXN':'symbol-narrow':'1.2-2' }} en total
+          </div>
         </div>
-        <div class="stat-chip price-drop" *ngIf="priceDropCount > 0">
-          <span class="material-symbols-outlined">trending_down</span>
-          {{ priceDropCount }} con bajada de precio
-        </div>
-        <div class="stat-chip total-value">
-          <span class="material-symbols-outlined">payments</span>
-          {{ totalValue | currency:'MXN':'symbol-narrow':'1.2-2' }} en total
-        </div>
-      </div>
+      }
     </div>
   </div>
 
   <!-- ── Mensajes de feedback ──────────────────────────────────────────── -->
   <div class="toast-area">
-    <div class="toast success" *ngIf="successMessage">
-      <span class="material-symbols-outlined">check_circle</span>
-      {{ successMessage }}
-    </div>
-    <div class="toast error" *ngIf="errorMessage">
-      <span class="material-symbols-outlined">error</span>
-      {{ errorMessage }}
-    </div>
+    @if (successMessage) {
+      <div class="toast success">
+        <span class="material-symbols-outlined">check_circle</span>
+        {{ successMessage }}
+      </div>
+    }
+    @if (errorMessage) {
+      <div class="toast error">
+        <span class="material-symbols-outlined">error</span>
+        {{ errorMessage }}
+      </div>
+    }
   </div>
 
   <!-- ── Loading ──────────────────────────────────────────────────────── -->
-  <div class="loading-container" *ngIf="loading">
-    <div class="skeleton-grid">
-      <div class="skeleton-card" *ngFor="let n of [1,2,3,4,5,6]"></div>
+  @if (loading) {
+    <div class="loading-container">
+      <div class="skeleton-grid">
+        @for (n of [1,2,3,4,5,6]; track n) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
     </div>
-  </div>
+  }
 
   <!-- ── Error fatal ──────────────────────────────────────────────────── -->
-  <div class="error-state" *ngIf="error && !loading">
-    <span class="material-symbols-outlined">cloud_off</span>
-    <h3>No se pudo cargar tu lista de deseos</h3>
-    <p>{{ error }}</p>
-    <button class="btn-retry" (click)="ngOnInit()">Reintentar</button>
-  </div>
+  @if (error && !loading) {
+    <div class="error-state">
+      <span class="material-symbols-outlined">cloud_off</span>
+      <h3>No se pudo cargar tu lista de deseos</h3>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="ngOnInit()">Reintentar</button>
+    </div>
+  }
 
   <!-- ── Estado vacío ──────────────────────────────────────────────────── -->
-  <div class="empty-state" *ngIf="!loading && !error && items.length === 0">
-    <span class="material-symbols-outlined empty-icon">favorite_border</span>
-    <h2>Tu lista de deseos está vacía</h2>
-    <p>Guarda los productos que te gustan para comprarlos más tarde</p>
-    <button class="btn-brand" routerLink="/catalogo">
-      <span class="material-symbols-outlined">store</span>
-      Explorar catálogo
-    </button>
-  </div>
-
-  <!-- ── Contenido principal ───────────────────────────────────────────── -->
-  <div class="wishlist-content" *ngIf="!loading && !error && items.length > 0">
-
-    <!-- Barra de acciones -->
-    <div class="actions-bar">
-      <div class="sort-control">
-        <label for="sortSelect">Ordenar por:</label>
-        <select id="sortSelect" (change)="onSortChange($any($event.target).value)" [value]="sortBy">
-          <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
-        </select>
-      </div>
-
-      <button
-        class="btn-move-all"
-        (click)="moveAllToCart()"
-        *ngIf="inStockCount > 0"
-        title="Mover todos los productos en stock al carrito"
-      >
-        <span class="material-symbols-outlined">shopping_cart</span>
-        Mover todo al carrito
-        <span class="count-badge">{{ inStockCount }}</span>
+  @if (!loading && !error && items.length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">favorite_border</span>
+      <h2>Tu lista de deseos está vacía</h2>
+      <p>Guarda los productos que te gustan para comprarlos más tarde</p>
+      <button class="btn-brand" routerLink="/catalogo">
+        <span class="material-symbols-outlined">store</span>
+        Explorar catálogo
       </button>
     </div>
+  }
 
-    <!-- Cuadrícula de productos -->
-    <div class="wishlist-grid">
-      <div
-        class="wishlist-card"
-        *ngFor="let item of sortedItems"
-        [class.out-of-stock]="!item.inStock"
-        [class.removing]="isRemoving(item.wishlistId)"
-      >
-        <!-- Badge de bajada de precio -->
-        <div class="badge price-drop-badge" *ngIf="item.priceDropped">
-          <span class="material-symbols-outlined">trending_down</span>
-          -{{ item.discountPercentage | number:'1.0-0' }}%
+  <!-- ── Contenido principal ───────────────────────────────────────────── -->
+  @if (!loading && !error && items.length > 0) {
+    <div class="wishlist-content">
+      <!-- Barra de acciones -->
+      <div class="actions-bar">
+        <div class="sort-control">
+          <label for="sortSelect">Ordenar por:</label>
+          <select id="sortSelect" (change)="onSortChange($any($event.target).value)" [value]="sortBy">
+            @for (opt of sortOptions; track opt) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
         </div>
-
-        <!-- Badge sin stock -->
-        <div class="badge out-of-stock-badge" *ngIf="!item.inStock">
-          Agotado
-        </div>
-
-        <!-- Imagen -->
-        <div class="card-image" (click)="goToProduct(item)">
-          <img
-            [src]="getImageUrl(item)"
-            [alt]="item.productName"
-            (error)="onImageError($event)"
-            loading="lazy"
-          />
-          <div class="image-overlay">
-            <span class="material-symbols-outlined">open_in_new</span>
-            Ver detalle
-          </div>
-        </div>
-
-        <!-- Info del producto -->
-        <div class="card-body">
-          <div class="product-sku">{{ item.productSku }}</div>
-          <h3 class="product-name" (click)="goToProduct(item)" title="{{ item.productName }}">
-            {{ item.productName }}
-          </h3>
-
-          <!-- Precio -->
-          <div class="price-section">
-            <span class="current-price">
-              {{ item.currentPrice | currency:'MXN':'symbol-narrow':'1.2-2' }}
-            </span>
-            <span class="original-price" *ngIf="item.priceDropped && item.priceWhenAdded">
-              {{ item.priceWhenAdded | currency:'MXN':'symbol-narrow':'1.2-2' }}
-            </span>
-            <span class="savings-label" *ngIf="item.priceDropped && item.priceDifference > 0">
-              Ahorras {{ item.priceDifference | currency:'MXN':'symbol-narrow':'1.2-2' }}
-            </span>
-          </div>
-
-          <!-- Stock y prioridad -->
-          <div class="meta-row">
-            <span class="stock-indicator" [class.in-stock]="item.inStock" [class.no-stock]="!item.inStock">
-              <span class="material-symbols-outlined">
-                {{ item.inStock ? 'check_circle' : 'cancel' }}
-              </span>
-              {{ item.inStock ? 'En stock (' + item.availableStock + ')' : 'Sin stock' }}
-            </span>
-            <span class="priority-chip" [class]="'priority-' + getPriorityClass(item.priority)">
-              {{ getPriorityLabel(item.priority) }}
-            </span>
-          </div>
-
-          <!-- Fecha de adición -->
-          <div class="added-date">
-            Agregado el {{ item.addedAt | date:'dd MMM yyyy' }}
-          </div>
-        </div>
-
-        <!-- Acciones de la tarjeta -->
-        <div class="card-actions">
-          <!-- Botón agregar al carrito -->
+        @if (inStockCount > 0) {
           <button
-            class="btn-add-cart"
-            [class.in-stock]="item.inStock"
-            [disabled]="!item.inStock || isMovingToCart(item.wishlistId)"
-            (click)="moveToCart(item)"
-            [title]="item.inStock ? 'Agregar al carrito' : 'Sin stock'"
-          >
-            <span class="material-symbols-outlined" *ngIf="!isMovingToCart(item.wishlistId)">
-              {{ item.inStock ? 'add_shopping_cart' : 'remove_shopping_cart' }}
-            </span>
-            <span class="btn-spinner" *ngIf="isMovingToCart(item.wishlistId)"></span>
-            {{ isMovingToCart(item.wishlistId) ? 'Agregando...' : (item.inStock ? 'Agregar al carrito' : 'Sin stock') }}
+            class="btn-move-all"
+            (click)="moveAllToCart()"
+            title="Mover todos los productos en stock al carrito"
+            >
+            <span class="material-symbols-outlined">shopping_cart</span>
+            Mover todo al carrito
+            <span class="count-badge">{{ inStockCount }}</span>
           </button>
+        }
+      </div>
+      <!-- Cuadrícula de productos -->
+      <div class="wishlist-grid">
+        @for (item of sortedItems; track item) {
+          <div
+            class="wishlist-card"
+            [class.out-of-stock]="!item.inStock"
+            [class.removing]="isRemoving(item.wishlistId)"
+            >
+            <!-- Badge de bajada de precio -->
+            @if (item.priceDropped) {
+              <div class="badge price-drop-badge">
+                <span class="material-symbols-outlined">trending_down</span>
+                -{{ item.discountPercentage | number:'1.0-0' }}%
+              </div>
+            }
+            <!-- Badge sin stock -->
+            @if (!item.inStock) {
+              <div class="badge out-of-stock-badge">
+                Agotado
+              </div>
+            }
+            <!-- Imagen -->
+            <div class="card-image" (click)="goToProduct(item)">
+              <img
+                [src]="getImageUrl(item)"
+                [alt]="item.productName"
+                (error)="onImageError($event)"
+                loading="lazy"
+                />
+              <div class="image-overlay">
+                <span class="material-symbols-outlined">open_in_new</span>
+                Ver detalle
+              </div>
+            </div>
+            <!-- Info del producto -->
+            <div class="card-body">
+              <div class="product-sku">{{ item.productSku }}</div>
+              <h3 class="product-name" (click)="goToProduct(item)" title="{{ item.productName }}">
+                {{ item.productName }}
+              </h3>
+              <!-- Precio -->
+              <div class="price-section">
+                <span class="current-price">
+                  {{ item.currentPrice | currency:'MXN':'symbol-narrow':'1.2-2' }}
+                </span>
+                @if (item.priceDropped && item.priceWhenAdded) {
+                  <span class="original-price">
+                    {{ item.priceWhenAdded | currency:'MXN':'symbol-narrow':'1.2-2' }}
+                  </span>
+                }
+                @if (item.priceDropped && item.priceDifference > 0) {
+                  <span class="savings-label">
+                    Ahorras {{ item.priceDifference | currency:'MXN':'symbol-narrow':'1.2-2' }}
+                  </span>
+                }
+              </div>
+              <!-- Stock y prioridad -->
+              <div class="meta-row">
+                <span class="stock-indicator" [class.in-stock]="item.inStock" [class.no-stock]="!item.inStock">
+                  <span class="material-symbols-outlined">
+                    {{ item.inStock ? 'check_circle' : 'cancel' }}
+                  </span>
+                  {{ item.inStock ? 'En stock (' + item.availableStock + ')' : 'Sin stock' }}
+                </span>
+                <span class="priority-chip" [class]="'priority-' + getPriorityClass(item.priority)">
+                  {{ getPriorityLabel(item.priority) }}
+                </span>
+              </div>
+              <!-- Fecha de adición -->
+              <div class="added-date">
+                Agregado el {{ item.addedAt | date:'dd MMM yyyy' }}
+              </div>
+            </div>
+            <!-- Acciones de la tarjeta -->
+            <div class="card-actions">
+              <!-- Botón agregar al carrito -->
+              <button
+                class="btn-add-cart"
+                [class.in-stock]="item.inStock"
+                [disabled]="!item.inStock || isMovingToCart(item.wishlistId)"
+                (click)="moveToCart(item)"
+                [title]="item.inStock ? 'Agregar al carrito' : 'Sin stock'"
+                >
+                @if (!isMovingToCart(item.wishlistId)) {
+                  <span class="material-symbols-outlined">
+                    {{ item.inStock ? 'add_shopping_cart' : 'remove_shopping_cart' }}
+                  </span>
+                }
+                @if (isMovingToCart(item.wishlistId)) {
+                  <span class="btn-spinner"></span>
+                }
+                {{ isMovingToCart(item.wishlistId) ? 'Agregando...' : (item.inStock ? 'Agregar al carrito' : 'Sin stock') }}
+              </button>
+              <!-- Botón quitar de favoritos -->
+              <button
+                class="btn-remove"
+                [disabled]="isRemoving(item.wishlistId)"
+                (click)="removeItem(item)"
+                title="Quitar de favoritos"
+                >
+                @if (!isRemoving(item.wishlistId)) {
+                  <span class="material-symbols-outlined">
+                    heart_minus
+                  </span>
+                }
+                @if (isRemoving(item.wishlistId)) {
+                  <span class="btn-spinner small"></span>
+                }
+              </button>
+            </div>
+          </div>
+          }<!-- /wishlist-card -->
+        </div><!-- /wishlist-grid -->
+      </div>
+      }<!-- /wishlist-content -->
 
-          <!-- Botón quitar de favoritos -->
-          <button
-            class="btn-remove"
-            [disabled]="isRemoving(item.wishlistId)"
-            (click)="removeItem(item)"
-            title="Quitar de favoritos"
-          >
-            <span class="material-symbols-outlined" *ngIf="!isRemoving(item.wishlistId)">
-              heart_minus
-            </span>
-            <span class="btn-spinner small" *ngIf="isRemoving(item.wishlistId)"></span>
-          </button>
-        </div>
-
-      </div><!-- /wishlist-card -->
-    </div><!-- /wishlist-grid -->
-
-  </div><!-- /wishlist-content -->
-
-</div><!-- /wishlist-page -->
+    </div><!-- /wishlist-page -->

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -25,6 +25,7 @@ declare const Swal: any;
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, OrderDetailModalComponent],
   templateUrl: './admin-orders.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-orders.component.css']
 })
 export class AdminOrdersComponent implements OnInit, OnDestroy {

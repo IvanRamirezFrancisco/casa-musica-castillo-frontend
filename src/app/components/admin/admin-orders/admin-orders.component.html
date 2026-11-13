@@ -2,84 +2,84 @@
 <div class="min-h-screen bg-gray-50 p-5">
 
   <!-- ==================== ALERTAS Y ACCIONES DE PAGO ==================== -->
-  <div *ngIf="!hasBankSettings" class="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-    <div class="flex items-start gap-3">
-      <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i>
-      <div>
-        <h3 class="text-sm font-semibold text-amber-800">Datos bancarios no configurados</h3>
-        <p class="text-sm text-amber-700 mt-0.5">Tus clientes no podrán realizar pagos por transferencia hasta que configures los datos bancarios.</p>
+  @if (!hasBankSettings) {
+    <div class="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i>
+        <div>
+          <h3 class="text-sm font-semibold text-amber-800">Datos bancarios no configurados</h3>
+          <p class="text-sm text-amber-700 mt-0.5">Tus clientes no podrán realizar pagos por transferencia hasta que configures los datos bancarios.</p>
+        </div>
       </div>
+      <button [routerLink]="['/admin/payment-settings']" class="whitespace-nowrap px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-lg transition-colors">
+        Configurar datos bancarios
+      </button>
     </div>
-    <button [routerLink]="['/admin/payment-settings']" class="whitespace-nowrap px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-lg transition-colors">
-      Configurar datos bancarios
-    </button>
-  </div>
+  }
 
-  <div *ngIf="hasBankSettings" class="mb-5 flex justify-end">
-    <button [routerLink]="['/admin/payment-settings']" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg shadow-sm transition-colors">
-      <i class="fa-solid fa-building-columns text-gray-500"></i> Configurar transferencia
-    </button>
-  </div>
+  @if (hasBankSettings) {
+    <div class="mb-5 flex justify-end">
+      <button [routerLink]="['/admin/payment-settings']" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-building-columns text-gray-500"></i> Configurar transferencia
+      </button>
+    </div>
+  }
 
   <!-- ==================== TARJETAS DE ESTADISTICAS ==================== -->
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5" *ngIf="stats">
-
-    <!-- Total -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</span>
-        <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-          <i class="fa-solid fa-layer-group text-gray-500 text-xs"></i>
+  @if (stats) {
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+      <!-- Total -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</span>
+          <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+            <i class="fa-solid fa-layer-group text-gray-500 text-xs"></i>
+          </div>
         </div>
+        <p class="text-3xl font-bold text-gray-800">{{ stats.totalOrders }}</p>
       </div>
-      <p class="text-3xl font-bold text-gray-800">{{ stats.totalOrders }}</p>
-    </div>
-
-    <!-- Pendientes -->
-    <div class="bg-white rounded-xl border border-amber-200 shadow-sm p-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-amber-600 uppercase tracking-wide">Pendientes</span>
-        <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-          <i class="fa-regular fa-clock text-amber-500 text-xs"></i>
+      <!-- Pendientes -->
+      <div class="bg-white rounded-xl border border-amber-200 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-amber-600 uppercase tracking-wide">Pendientes</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+            <i class="fa-regular fa-clock text-amber-500 text-xs"></i>
+          </div>
         </div>
+        <p class="text-3xl font-bold text-gray-800">{{ stats.pendingOrders }}</p>
       </div>
-      <p class="text-3xl font-bold text-gray-800">{{ stats.pendingOrders }}</p>
-    </div>
-
-    <!-- En Proceso -->
-    <div class="bg-white rounded-xl border border-blue-200 shadow-sm p-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">En Proceso</span>
-        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-          <i class="fa-solid fa-arrows-rotate text-blue-500 text-xs"></i>
+      <!-- En Proceso -->
+      <div class="bg-white rounded-xl border border-blue-200 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">En Proceso</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+            <i class="fa-solid fa-arrows-rotate text-blue-500 text-xs"></i>
+          </div>
         </div>
+        <p class="text-3xl font-bold text-gray-800">{{ stats.processingOrders }}</p>
       </div>
-      <p class="text-3xl font-bold text-gray-800">{{ stats.processingOrders }}</p>
-    </div>
-
-    <!-- Completadas -->
-    <div class="bg-white rounded-xl border border-green-200 shadow-sm p-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-green-600 uppercase tracking-wide">Completadas</span>
-        <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
-          <i class="fa-regular fa-circle-check text-green-500 text-xs"></i>
+      <!-- Completadas -->
+      <div class="bg-white rounded-xl border border-green-200 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-green-600 uppercase tracking-wide">Completadas</span>
+          <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+            <i class="fa-regular fa-circle-check text-green-500 text-xs"></i>
+          </div>
         </div>
+        <p class="text-3xl font-bold text-gray-800">{{ stats.completedOrders }}</p>
       </div>
-      <p class="text-3xl font-bold text-gray-800">{{ stats.completedOrders }}</p>
-    </div>
-
-    <!-- Canceladas -->
-    <div class="bg-white rounded-xl border border-red-200 shadow-sm p-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-[#800020] uppercase tracking-wide">Canceladas</span>
-        <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-          <i class="fa-regular fa-circle-xmark text-[#800020] text-xs"></i>
+      <!-- Canceladas -->
+      <div class="bg-white rounded-xl border border-red-200 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-[#800020] uppercase tracking-wide">Canceladas</span>
+          <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+            <i class="fa-regular fa-circle-xmark text-[#800020] text-xs"></i>
+          </div>
         </div>
+        <p class="text-3xl font-bold text-gray-800">{{ stats.cancelledOrders }}</p>
       </div>
-      <p class="text-3xl font-bold text-gray-800">{{ stats.cancelledOrders }}</p>
     </div>
-
-  </div>
+  }
 
   <!-- ==================== PANEL DE FILTROS ==================== -->
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-5">
@@ -97,91 +97,93 @@
       </button>
     </div>
 
-    <div *ngIf="filtersVisible" class="px-5 py-4 space-y-3">
-
-      <div class="max-w-lg">
-        <div class="relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-          <input
-            type="text"
-            class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent placeholder-gray-400"
-            placeholder="N. orden, nombre, email del cliente..."
-            [(ngModel)]="searchTerm"
-            (input)="onSearch()"
-          />
+    @if (filtersVisible) {
+      <div class="px-5 py-4 space-y-3">
+        <div class="max-w-lg">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input
+              type="text"
+              class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent placeholder-gray-400"
+              placeholder="N. orden, nombre, email del cliente..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+              />
+          </div>
+        </div>
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">Estado Orden</label>
+            <select
+              class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent bg-white min-w-[150px]"
+              [(ngModel)]="selectedOrderStatus"
+              (change)="onFilterChange()">
+              <option [ngValue]="null">Todos los estados</option>
+              @for (s of orderStatusOptions; track s) {
+                <option [ngValue]="s">{{ translateOrderStatus(s) }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">Pago</label>
+            <select
+              class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent bg-white min-w-[140px]"
+              [(ngModel)]="selectedPaymentStatus"
+              (change)="onFilterChange()">
+              <option [ngValue]="null">Todos los pagos</option>
+              @for (s of paymentStatusOptions; track s) {
+                <option [ngValue]="s">{{ translatePaymentStatus(s) }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">Envio</label>
+            <select
+              class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent bg-white min-w-[140px]"
+              [(ngModel)]="selectedShippingStatus"
+              (change)="onFilterChange()">
+              <option [ngValue]="null">Todos los envios</option>
+              @for (s of shippingStatusOptions; track s) {
+                <option [ngValue]="s">{{ translateShippingStatus(s) }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">Desde</label>
+            <input
+              type="date"
+              class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent"
+              [(ngModel)]="startDate"
+              (change)="onFilterChange()" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">Hasta</label>
+            <input
+              type="date"
+              class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent"
+              [(ngModel)]="endDate"
+              (change)="onFilterChange()" />
+          </div>
+          <button
+            (click)="clearFilters()"
+            class="flex items-center gap-1.5 px-4 py-2 text-sm text-gray-600 hover:text-[#800020] border border-gray-300 hover:border-[#800020] rounded-lg transition-colors font-medium">
+            <i class="fa-solid fa-xmark text-xs"></i>
+            Limpiar
+          </button>
         </div>
       </div>
-
-      <div class="flex flex-wrap items-end gap-3">
-
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-600">Estado Orden</label>
-          <select
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent bg-white min-w-[150px]"
-            [(ngModel)]="selectedOrderStatus"
-            (change)="onFilterChange()">
-            <option [ngValue]="null">Todos los estados</option>
-            <option *ngFor="let s of orderStatusOptions" [ngValue]="s">{{ translateOrderStatus(s) }}</option>
-          </select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-600">Pago</label>
-          <select
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent bg-white min-w-[140px]"
-            [(ngModel)]="selectedPaymentStatus"
-            (change)="onFilterChange()">
-            <option [ngValue]="null">Todos los pagos</option>
-            <option *ngFor="let s of paymentStatusOptions" [ngValue]="s">{{ translatePaymentStatus(s) }}</option>
-          </select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-600">Envio</label>
-          <select
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent bg-white min-w-[140px]"
-            [(ngModel)]="selectedShippingStatus"
-            (change)="onFilterChange()">
-            <option [ngValue]="null">Todos los envios</option>
-            <option *ngFor="let s of shippingStatusOptions" [ngValue]="s">{{ translateShippingStatus(s) }}</option>
-          </select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-600">Desde</label>
-          <input
-            type="date"
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent"
-            [(ngModel)]="startDate"
-            (change)="onFilterChange()" />
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-600">Hasta</label>
-          <input
-            type="date"
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#800020] focus:border-transparent"
-            [(ngModel)]="endDate"
-            (change)="onFilterChange()" />
-        </div>
-
-        <button
-          (click)="clearFilters()"
-          class="flex items-center gap-1.5 px-4 py-2 text-sm text-gray-600 hover:text-[#800020] border border-gray-300 hover:border-[#800020] rounded-lg transition-colors font-medium">
-          <i class="fa-solid fa-xmark text-xs"></i>
-          Limpiar
-        </button>
-      </div>
-    </div>
+    }
   </div>
 
   <!-- ==================== TABLA PRINCIPAL ==================== -->
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
 
     <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-      <span class="text-sm text-gray-600" *ngIf="!loading">
-        <strong class="text-gray-800">{{ totalElements }}</strong> ordenes encontradas
-      </span>
+      @if (!loading) {
+        <span class="text-sm text-gray-600">
+          <strong class="text-gray-800">{{ totalElements }}</strong> ordenes encontradas
+        </span>
+      }
       <div class="flex items-center gap-2">
         <label class="text-xs text-gray-500 font-medium">Filas por pagina</label>
         <select
@@ -196,222 +198,235 @@
       </div>
     </div>
 
-    <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 text-gray-400">
-      <i class="fa-solid fa-spinner fa-spin text-3xl text-[#800020] mb-3"></i>
-      <p class="text-sm font-medium">Cargando ordenes...</p>
-    </div>
+    @if (loading) {
+      <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+        <i class="fa-solid fa-spinner fa-spin text-3xl text-[#800020] mb-3"></i>
+        <p class="text-sm font-medium">Cargando ordenes...</p>
+      </div>
+    }
 
-    <div *ngIf="error && !loading" class="flex flex-col items-center justify-center py-16 text-red-500">
-      <i class="fa-solid fa-circle-exclamation text-3xl mb-3"></i>
-      <p class="text-sm font-medium mb-3">{{ error }}</p>
-      <button
-        (click)="loadOrders()"
-        class="px-4 py-2 bg-[#800020] text-white text-sm font-semibold rounded-lg hover:bg-[#6a001a] transition-colors">
-        <i class="fa-solid fa-rotate-right mr-1"></i> Reintentar
-      </button>
-    </div>
+    @if (error && !loading) {
+      <div class="flex flex-col items-center justify-center py-16 text-red-500">
+        <i class="fa-solid fa-circle-exclamation text-3xl mb-3"></i>
+        <p class="text-sm font-medium mb-3">{{ error }}</p>
+        <button
+          (click)="loadOrders()"
+          class="px-4 py-2 bg-[#800020] text-white text-sm font-semibold rounded-lg hover:bg-[#6a001a] transition-colors">
+          <i class="fa-solid fa-rotate-right mr-1"></i> Reintentar
+        </button>
+      </div>
+    }
 
-    <div *ngIf="!loading && !error" class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-gray-50 border-b border-gray-200">
-            <th
-              class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer hover:text-[#800020] select-none whitespace-nowrap"
-              (click)="sortByColumn('orderNumber')">
-              <span class="flex items-center gap-1">
-                N. Orden
-                <i *ngIf="sortBy === 'orderNumber'"
-                   [class]="sortDir === 'ASC' ? 'fa-solid fa-sort-up text-[#800020]' : 'fa-solid fa-sort-down text-[#800020]'"></i>
-                <i *ngIf="sortBy !== 'orderNumber'" class="fa-solid fa-sort text-gray-300"></i>
-              </span>
-            </th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
-              Cliente
-            </th>
-            <th
-              class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer hover:text-[#800020] select-none whitespace-nowrap"
-              (click)="sortByColumn('createdAt')">
-              <span class="flex items-center gap-1">
-                Fecha
-                <i *ngIf="sortBy === 'createdAt'"
-                   [class]="sortDir === 'ASC' ? 'fa-solid fa-sort-up text-[#800020]' : 'fa-solid fa-sort-down text-[#800020]'"></i>
-                <i *ngIf="sortBy !== 'createdAt'" class="fa-solid fa-sort text-gray-300"></i>
-              </span>
-            </th>
-            <th
-              class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer hover:text-[#800020] select-none whitespace-nowrap"
-              (click)="sortByColumn('total')">
-              <span class="flex items-center justify-end gap-1">
-                Total
-                <i *ngIf="sortBy === 'total'"
-                   [class]="sortDir === 'ASC' ? 'fa-solid fa-sort-up text-[#800020]' : 'fa-solid fa-sort-down text-[#800020]'"></i>
-                <i *ngIf="sortBy !== 'total'" class="fa-solid fa-sort text-gray-300"></i>
-              </span>
-            </th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
-              Estado
-            </th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
-              Pago
-            </th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
-              Envio
-            </th>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-
-          <tr
-            *ngFor="let order of orders"
-            class="hover:bg-gray-50 transition-colors"
-            [class.bg-red-50]="order.status === OrderStatus.CANCELLED"
-            [class.opacity-70]="order.status === OrderStatus.CANCELLED">
-
-            <td class="px-4 py-3">
-              <span class="inline-block bg-gray-100 text-gray-700 text-xs font-mono font-semibold px-2.5 py-1 rounded-md">
-                {{ order.orderNumber }}
-              </span>
-            </td>
-
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-full bg-[#800020] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
-                  {{ getInitials(order.customerName) }}
-                </div>
-                <div class="min-w-0">
-                  <p class="text-sm font-semibold text-gray-800 truncate max-w-[160px]">{{ order.customerName }}</p>
-                  <p class="text-xs text-gray-500 truncate max-w-[160px]">{{ order.customerEmail }}</p>
-                </div>
-              </div>
-            </td>
-
-            <td class="px-4 py-3 whitespace-nowrap">
-              <p class="text-sm text-gray-700 font-medium">{{ formatDateShort(order.orderDate) }}</p>
-              <p class="text-xs text-gray-400">{{ formatTime(order.orderDate) }}</p>
-            </td>
-
-            <td class="px-4 py-3 text-right">
-              <span class="text-sm font-bold text-gray-800">
-                {{ orderService.formatCurrency(order.total) }}
-              </span>
-            </td>
-
-            <td class="px-4 py-3">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+    @if (!loading && !error) {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer hover:text-[#800020] select-none whitespace-nowrap"
+                (click)="sortByColumn('orderNumber')">
+                <span class="flex items-center gap-1">
+                  N. Orden
+                  @if (sortBy === 'orderNumber') {
+                    <i
+                    [class]="sortDir === 'ASC' ? 'fa-solid fa-sort-up text-[#800020]' : 'fa-solid fa-sort-down text-[#800020]'"></i>
+                  }
+                  @if (sortBy !== 'orderNumber') {
+                    <i class="fa-solid fa-sort text-gray-300"></i>
+                  }
+                </span>
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
+                Cliente
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer hover:text-[#800020] select-none whitespace-nowrap"
+                (click)="sortByColumn('createdAt')">
+                <span class="flex items-center gap-1">
+                  Fecha
+                  @if (sortBy === 'createdAt') {
+                    <i
+                    [class]="sortDir === 'ASC' ? 'fa-solid fa-sort-up text-[#800020]' : 'fa-solid fa-sort-down text-[#800020]'"></i>
+                  }
+                  @if (sortBy !== 'createdAt') {
+                    <i class="fa-solid fa-sort text-gray-300"></i>
+                  }
+                </span>
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer hover:text-[#800020] select-none whitespace-nowrap"
+                (click)="sortByColumn('total')">
+                <span class="flex items-center justify-end gap-1">
+                  Total
+                  @if (sortBy === 'total') {
+                    <i
+                    [class]="sortDir === 'ASC' ? 'fa-solid fa-sort-up text-[#800020]' : 'fa-solid fa-sort-down text-[#800020]'"></i>
+                  }
+                  @if (sortBy !== 'total') {
+                    <i class="fa-solid fa-sort text-gray-300"></i>
+                  }
+                </span>
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
+                Estado
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
+                Pago
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
+                Envio
+              </th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (order of orders; track order) {
+              <tr
+                class="hover:bg-gray-50 transition-colors"
+                [class.bg-red-50]="order.status === OrderStatus.CANCELLED"
+                [class.opacity-70]="order.status === OrderStatus.CANCELLED">
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-gray-100 text-gray-700 text-xs font-mono font-semibold px-2.5 py-1 rounded-md">
+                    {{ order.orderNumber }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-[#800020] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                      {{ getInitials(order.customerName) }}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-gray-800 truncate max-w-[160px]">{{ order.customerName }}</p>
+                      <p class="text-xs text-gray-500 truncate max-w-[160px]">{{ order.customerEmail }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700 font-medium">{{ formatDateShort(order.orderDate) }}</p>
+                  <p class="text-xs text-gray-400">{{ formatTime(order.orderDate) }}</p>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <span class="text-sm font-bold text-gray-800">
+                    {{ orderService.formatCurrency(order.total) }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
                     [ngClass]="getOrderStatusBadgeClass(order.status)">
-                {{ getOrderStatusText(order.status) }}
-              </span>
-            </td>
-
-            <td class="px-4 py-3">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                    {{ getOrderStatusText(order.status) }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
                     [ngClass]="getPaymentStatusBadgeClass(order.paymentStatus)">
-                {{ getPaymentStatusText(order.paymentStatus) }}
-              </span>
-            </td>
-
-            <td class="px-4 py-3">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                    {{ getPaymentStatusText(order.paymentStatus) }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
                     [ngClass]="getShippingStatusBadgeClass(order.shippingStatus)">
-                {{ getShippingStatusText(order.shippingStatus) }}
-              </span>
-            </td>
+                    {{ getShippingStatusText(order.shippingStatus) }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-center gap-1.5">
+                    @if (hasReportViewPermission) {
+                      <button
+                        (click)="onAnalyzePatternRow(order.id, $event)"
+                        title="Analizar patrón de compra"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:border-purple-400 hover:bg-purple-50 hover:text-purple-600 text-gray-500 transition-colors">
+                        <i class="fa-solid fa-chart-pie text-xs"></i>
+                      </button>
+                    }
+                    <button
+                      (click)="openDetailModal(order)"
+                      title="Ver detalle de la orden"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:border-[#800020] hover:bg-red-50 hover:text-[#800020] text-gray-500 transition-colors">
+                      <i class="fa-solid fa-eye text-xs"></i>
+                    </button>
+                    @if (order.status !== OrderStatus.CANCELLED && order.status !== OrderStatus.COMPLETED) {
+                      <button
+                        (click)="cancelOrder(order)"
+                        title="Cancelar orden"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 hover:text-red-600 text-gray-500 transition-colors">
+                        <i class="fa-solid fa-ban text-xs"></i>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (orders.length === 0 && !loading) {
+              <tr>
+                <td colspan="8">
+                  <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <i class="fa-solid fa-box-open text-5xl mb-4 text-gray-300"></i>
+                    <p class="text-base font-semibold text-gray-600">No se encontraron ordenes</p>
+                    <p class="text-sm text-gray-400 mt-1">Ajusta los filtros o intenta con otros criterios de busqueda</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
 
-            <td class="px-4 py-3">
-              <div class="flex items-center justify-center gap-1.5">
-                <button
-                  *ngIf="hasReportViewPermission"
-                  (click)="onAnalyzePatternRow(order.id, $event)"
-                  title="Analizar patrón de compra"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:border-purple-400 hover:bg-purple-50 hover:text-purple-600 text-gray-500 transition-colors">
-                  <i class="fa-solid fa-chart-pie text-xs"></i>
-                </button>
-                <button
-                  (click)="openDetailModal(order)"
-                  title="Ver detalle de la orden"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:border-[#800020] hover:bg-red-50 hover:text-[#800020] text-gray-500 transition-colors">
-                  <i class="fa-solid fa-eye text-xs"></i>
-                </button>
-                <button
-                  *ngIf="order.status !== OrderStatus.CANCELLED && order.status !== OrderStatus.COMPLETED"
-                  (click)="cancelOrder(order)"
-                  title="Cancelar orden"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 hover:text-red-600 text-gray-500 transition-colors">
-                  <i class="fa-solid fa-ban text-xs"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <tr *ngIf="orders.length === 0 && !loading">
-            <td colspan="8">
-              <div class="flex flex-col items-center justify-center py-16 text-gray-400">
-                <i class="fa-solid fa-box-open text-5xl mb-4 text-gray-300"></i>
-                <p class="text-base font-semibold text-gray-600">No se encontraron ordenes</p>
-                <p class="text-sm text-gray-400 mt-1">Ajusta los filtros o intenta con otros criterios de busqueda</p>
-              </div>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
-    </div>
-
-    <div *ngIf="totalPages > 1 && !loading" class="flex items-center justify-between px-5 py-3 border-t border-gray-100">
-      <span class="text-xs text-gray-500">
-        Pagina <strong>{{ currentPage + 1 }}</strong> de <strong>{{ totalPages }}</strong>
-        &nbsp;·&nbsp; {{ totalElements }} ordenes en total
-      </span>
-
-      <div class="flex items-center gap-1">
-        <button
-          (click)="goToPage(0)"
-          [disabled]="currentPage === 0"
-          class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#800020] hover:text-[#800020] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">
-          <i class="fa-solid fa-angles-left"></i>
-        </button>
-        <button
-          (click)="previousPage()"
-          [disabled]="currentPage === 0"
-          class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#800020] hover:text-[#800020] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">
-          <i class="fa-solid fa-angle-left"></i>
-        </button>
-
-        <button
-          *ngFor="let page of getVisiblePages()"
-          (click)="goToPage(page)"
+    @if (totalPages > 1 && !loading) {
+      <div class="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+        <span class="text-xs text-gray-500">
+          Pagina <strong>{{ currentPage + 1 }}</strong> de <strong>{{ totalPages }}</strong>
+          &nbsp;·&nbsp; {{ totalElements }} ordenes en total
+        </span>
+        <div class="flex items-center gap-1">
+          <button
+            (click)="goToPage(0)"
+            [disabled]="currentPage === 0"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#800020] hover:text-[#800020] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">
+            <i class="fa-solid fa-angles-left"></i>
+          </button>
+          <button
+            (click)="previousPage()"
+            [disabled]="currentPage === 0"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#800020] hover:text-[#800020] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">
+            <i class="fa-solid fa-angle-left"></i>
+          </button>
+          @for (page of getVisiblePages(); track page) {
+            <button
+              (click)="goToPage(page)"
           [class]="page === currentPage
             ? 'w-8 h-8 flex items-center justify-center rounded-lg bg-[#800020] text-white font-bold text-xs'
             : 'w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:border-[#800020] hover:text-[#800020] transition-colors text-xs'">
-          {{ page + 1 }}
-        </button>
-
-        <button
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages - 1"
-          class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#800020] hover:text-[#800020] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">
-          <i class="fa-solid fa-angle-right"></i>
-        </button>
-        <button
-          (click)="goToPage(totalPages - 1)"
-          [disabled]="currentPage === totalPages - 1"
-          class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#800020] hover:text-[#800020] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">
-          <i class="fa-solid fa-angles-right"></i>
-        </button>
+              {{ page + 1 }}
+            </button>
+          }
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage === totalPages - 1"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#800020] hover:text-[#800020] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">
+            <i class="fa-solid fa-angle-right"></i>
+          </button>
+          <button
+            (click)="goToPage(totalPages - 1)"
+            [disabled]="currentPage === totalPages - 1"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#800020] hover:text-[#800020] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">
+            <i class="fa-solid fa-angles-right"></i>
+          </button>
+        </div>
       </div>
-    </div>
+    }
 
   </div>
 </div>
 
 <!-- ==================== MODAL DE DETALLE ==================== -->
-<app-order-detail-modal
-  *ngIf="showDetailModal && selectedOrder"
-  [order]="selectedOrder"
-  (close)="closeDetailModal()"
-  (orderUpdated)="onOrderUpdated($event)"
-  (analyzePatternEvent)="analyzePattern($event)"
-></app-order-detail-modal>
+@if (showDetailModal && selectedOrder) {
+  <app-order-detail-modal
+    [order]="selectedOrder"
+    (close)="closeDetailModal()"
+    (orderUpdated)="onOrderUpdated($event)"
+    (analyzePatternEvent)="analyzePattern($event)"
+  ></app-order-detail-modal>
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -10,6 +10,7 @@ import { PublicProduct } from '../../models/product.model';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './search-results.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./search-results.component.css']
 })
 export class SearchResultsComponent implements OnInit, OnDestroy {

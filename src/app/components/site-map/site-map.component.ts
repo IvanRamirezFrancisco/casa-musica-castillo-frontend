@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
@@ -18,8 +18,9 @@ interface SiteMapLink {
 @Component({
   selector: 'app-site-map',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './site-map.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './site-map.component.css'
 })
 export class SiteMapComponent {

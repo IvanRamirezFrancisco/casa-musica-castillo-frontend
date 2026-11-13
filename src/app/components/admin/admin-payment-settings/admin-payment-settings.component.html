@@ -1,5 +1,5 @@
 <div class="admin-container-inner max-w-5xl mx-auto p-4 md:p-8 space-y-6">
-  
+
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
@@ -12,153 +12,165 @@
     </div>
   </div>
 
-  <div *ngIf="isLoading" class="flex justify-center p-12">
-    <div class="spinner-large" style="width: 40px; height: 40px; border-width: 4px; border-top-color: #722f37;"></div>
-  </div>
+  @if (isLoading) {
+    <div class="flex justify-center p-12">
+      <div class="spinner-large" style="width: 40px; height: 40px; border-width: 4px; border-top-color: #722f37;"></div>
+    </div>
+  }
 
-  <div *ngIf="!isLoading" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    
-    <!-- FORMULARIO -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Información de la Cuenta</h2>
-      
-      <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="space-y-4">
-        
-        <div class="space-y-1">
-          <label class="block text-sm font-medium text-gray-700">
-            Nombre del Banco <span class="text-red-500">*</span>
-            <span *ngIf="detectedBank" class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-              <i class="fa-solid fa-check-circle mr-1"></i> Detectado por CLABE
-            </span>
-          </label>
-          <div class="flex items-center gap-2">
-            <input type="text" formControlName="bankName" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all" placeholder="Ej. BBVA">
-            <button type="button" *ngIf="detectedBank && bankMismatchWarning" (click)="useDetectedBank()" class="px-3 py-2 text-sm text-[#722f37] hover:bg-red-50 border border-[#722f37] rounded-lg transition-colors whitespace-nowrap">
-              Usar {{ detectedBank.shortName || detectedBank.displayName }}
+  @if (!isLoading) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- FORMULARIO -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Información de la Cuenta</h2>
+        <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="space-y-4">
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">
+              Nombre del Banco <span class="text-red-500">*</span>
+              @if (detectedBank) {
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                  <i class="fa-solid fa-check-circle mr-1"></i> Detectado por CLABE
+                </span>
+              }
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="text" formControlName="bankName" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all" placeholder="Ej. BBVA">
+              @if (detectedBank && bankMismatchWarning) {
+                <button type="button" (click)="useDetectedBank()" class="px-3 py-2 text-sm text-[#722f37] hover:bg-red-50 border border-[#722f37] rounded-lg transition-colors whitespace-nowrap">
+                  Usar {{ detectedBank.shortName || detectedBank.displayName }}
+                </button>
+              }
+            </div>
+            @if (isInvalid('bankName')) {
+              <p class="text-red-500 text-xs mt-1">
+                El banco es requerido y no debe contener caracteres no permitidos.
+              </p>
+            }
+            @if (bankMismatchWarning) {
+              <div class="mt-2 flex items-start p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <i class="fa-solid fa-triangle-exclamation text-yellow-600 mt-0.5 mr-2"></i>
+                <p class="text-xs text-yellow-800">
+                  El banco ingresado no parece coincidir con el banco de la CLABE (<strong>{{ detectedBank?.displayName }}</strong>).
+                </p>
+              </div>
+            }
+          </div>
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">Titular de la Cuenta <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="accountHolder" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all" placeholder="Ej. Casa de Música Castillo SA de CV">
+            @if (isInvalid('accountHolder')) {
+              <p class="text-red-500 text-xs mt-1">El titular es requerido y no debe contener caracteres no permitidos.</p>
+            }
+          </div>
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">CLABE Interbancaria (18 dígitos) <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="clabe" maxlength="18" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all font-mono tracking-wider" placeholder="012345678901234567">
+            @if (isInvalid('clabe')) {
+              <p class="text-red-500 text-xs mt-1">
+                @if (settingsForm.get('clabe')?.errors?.['required']) {
+                  <span>La CLABE es requerida.</span>
+                }
+                @if (settingsForm.get('clabe')?.errors?.['invalidClabe'] && !settingsForm.get('clabe')?.errors?.['required']) {
+                  <span>La CLABE no es válida. Verifica los 18 dígitos y el dígito verificador.</span>
+                }
+              </p>
+            }
+            @if (unidentifiedBankWarning) {
+              <div class="mt-2 flex items-start p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 mr-2"></i>
+                <p class="text-xs text-blue-800">
+                  No se pudo identificar el banco automáticamente en el catálogo local. Verifica la CLABE. Si es correcta, ingresa el banco manualmente.
+                </p>
+              </div>
+            }
+            <p class="text-xs text-gray-500 mt-1">
+              <i class="fa-solid fa-circle-info mr-1"></i> La detección automática del banco se realiza exclusivamente a partir de los 3 primeros dígitos de la CLABE.
+            </p>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">Número de Cuenta (Opcional)</label>
+            <input type="text" inputmode="numeric" maxlength="30" (input)="onAccountInput($event)" formControlName="accountNumber" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all font-mono tracking-wider" placeholder="Ej. 1234567890">
+            @if (isInvalid('accountNumber')) {
+              <p class="text-red-500 text-xs mt-1">El número de cuenta debe tener entre 6 y 30 dígitos (solo números).</p>
+            }
+          </div>
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">Instrucciones de Referencia</label>
+            <input type="text" formControlName="referenceInstructions" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all" placeholder="Ej. Usa el número de pedido como referencia">
+          </div>
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">Instrucciones Adicionales</label>
+            <textarea formControlName="additionalInstructions" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all" placeholder="Ej. Enviar comprobante al correo pagos@..."></textarea>
+          </div>
+          <div class="pt-4 border-t border-gray-100 flex justify-end">
+            <button type="submit" [disabled]="settingsForm.invalid || isSaving" class="bg-[#722f37] hover:bg-[#5c252c] text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (!isSaving) {
+                <span class="material-icons text-sm">save</span>
+              }
+              @if (isSaving) {
+                <span class="spinner-sm" style="border-top-color: white;"></span>
+              }
+              {{ isSaving ? 'Guardando...' : 'Guardar Configuración' }}
             </button>
           </div>
-          <p *ngIf="isInvalid('bankName')" class="text-red-500 text-xs mt-1">
-            El banco es requerido y no debe contener caracteres no permitidos.
-          </p>
-          
-          <div *ngIf="bankMismatchWarning" class="mt-2 flex items-start p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <i class="fa-solid fa-triangle-exclamation text-yellow-600 mt-0.5 mr-2"></i>
-            <p class="text-xs text-yellow-800">
-              El banco ingresado no parece coincidir con el banco de la CLABE (<strong>{{ detectedBank?.displayName }}</strong>).
-            </p>
+        </form>
+      </div>
+      <!-- VISTA PREVIA CLIENTE -->
+      <div class="bg-gray-50 rounded-xl border border-gray-200 p-6 flex flex-col">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+          <span class="material-icons text-gray-500">visibility</span>
+          Vista Previa del Cliente
+        </h2>
+        <p class="text-sm text-gray-500 mb-6">Así es como verán los clientes las instrucciones al confirmar su pedido.</p>
+        <div class="bg-white rounded border border-gray-200 shadow-sm overflow-hidden flex-grow">
+          <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center gap-2">
+            <span class="material-icons text-gray-600">account_balance</span>
+            <span class="font-medium text-gray-800">Datos y Comprobante de Pago</span>
           </div>
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-sm font-medium text-gray-700">Titular de la Cuenta <span class="text-red-500">*</span></label>
-          <input type="text" formControlName="accountHolder" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all" placeholder="Ej. Casa de Música Castillo SA de CV">
-          <p *ngIf="isInvalid('accountHolder')" class="text-red-500 text-xs mt-1">El titular es requerido y no debe contener caracteres no permitidos.</p>
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-sm font-medium text-gray-700">CLABE Interbancaria (18 dígitos) <span class="text-red-500">*</span></label>
-          <input type="text" formControlName="clabe" maxlength="18" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all font-mono tracking-wider" placeholder="012345678901234567">
-          <p *ngIf="isInvalid('clabe')" class="text-red-500 text-xs mt-1">
-            <span *ngIf="settingsForm.get('clabe')?.errors?.['required']">La CLABE es requerida.</span>
-            <span *ngIf="settingsForm.get('clabe')?.errors?.['invalidClabe'] && !settingsForm.get('clabe')?.errors?.['required']">La CLABE no es válida. Verifica los 18 dígitos y el dígito verificador.</span>
-          </p>
-          
-          <div *ngIf="unidentifiedBankWarning" class="mt-2 flex items-start p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
-            <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 mr-2"></i>
-            <p class="text-xs text-blue-800">
-              No se pudo identificar el banco automáticamente en el catálogo local. Verifica la CLABE. Si es correcta, ingresa el banco manualmente.
-            </p>
+          <div class="p-4 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center py-1">
+              <span class="text-gray-500 font-medium w-32">Banco:</span>
+              <span class="text-gray-800">{{ settingsForm.value.bankName || '—' }}</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center py-1">
+              <span class="text-gray-500 font-medium w-32">Titular:</span>
+              <span class="text-gray-800">{{ settingsForm.value.accountHolder || '—' }}</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center py-1">
+              <span class="text-gray-500 font-medium w-32">CLABE:</span>
+              <span class="text-[#722f37] font-semibold bg-red-50 px-2 py-0.5 rounded border border-red-100 font-mono tracking-wider">
+                {{ formatClabeVisually(settingsForm.value.clabe) || '—' }}
+              </span>
+            </div>
+            @if (settingsForm.value.accountNumber) {
+              <div class="flex flex-col sm:flex-row sm:items-center py-1">
+                <span class="text-gray-500 font-medium w-32">Cuenta:</span>
+                <span class="text-gray-800 font-mono tracking-wider">{{ settingsForm.value.accountNumber }}</span>
+              </div>
+            }
+            <div class="flex flex-col sm:flex-row sm:items-center py-1">
+              <span class="text-gray-500 font-medium w-32">Motivo de pago:</span>
+              <span class="text-[#722f37] font-semibold bg-red-50 px-2 py-0.5 rounded border border-red-100">ORD-12345</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center py-1">
+              <span class="text-gray-500 font-medium w-32">Total:</span>
+              <span class="text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100 text-lg">$1,500.00</span>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+              @if (settingsForm.value.referenceInstructions) {
+                <p class="text-sm text-gray-700">
+                  <strong>Instrucciones de referencia:</strong> {{ settingsForm.value.referenceInstructions }}
+                </p>
+              }
+              @if (settingsForm.value.additionalInstructions) {
+                <p class="text-sm text-gray-500 italic mt-1">
+                  {{ settingsForm.value.additionalInstructions }}
+                </p>
+              }
+            </div>
           </div>
-          <p class="text-xs text-gray-500 mt-1">
-            <i class="fa-solid fa-circle-info mr-1"></i> La detección automática del banco se realiza exclusivamente a partir de los 3 primeros dígitos de la CLABE.
-          </p>
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-sm font-medium text-gray-700">Número de Cuenta (Opcional)</label>
-          <input type="text" inputmode="numeric" maxlength="30" (input)="onAccountInput($event)" formControlName="accountNumber" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all font-mono tracking-wider" placeholder="Ej. 1234567890">
-          <p *ngIf="isInvalid('accountNumber')" class="text-red-500 text-xs mt-1">El número de cuenta debe tener entre 6 y 30 dígitos (solo números).</p>
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-sm font-medium text-gray-700">Instrucciones de Referencia</label>
-          <input type="text" formControlName="referenceInstructions" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all" placeholder="Ej. Usa el número de pedido como referencia">
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-sm font-medium text-gray-700">Instrucciones Adicionales</label>
-          <textarea formControlName="additionalInstructions" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#722f37] focus:border-[#722f37] outline-none transition-all" placeholder="Ej. Enviar comprobante al correo pagos@..."></textarea>
-        </div>
-
-        <div class="pt-4 border-t border-gray-100 flex justify-end">
-          <button type="submit" [disabled]="settingsForm.invalid || isSaving" class="bg-[#722f37] hover:bg-[#5c252c] text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <span class="material-icons text-sm" *ngIf="!isSaving">save</span>
-            <span class="spinner-sm" *ngIf="isSaving" style="border-top-color: white;"></span>
-            {{ isSaving ? 'Guardando...' : 'Guardar Configuración' }}
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- VISTA PREVIA CLIENTE -->
-    <div class="bg-gray-50 rounded-xl border border-gray-200 p-6 flex flex-col">
-      <h2 class="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
-        <span class="material-icons text-gray-500">visibility</span>
-        Vista Previa del Cliente
-      </h2>
-      <p class="text-sm text-gray-500 mb-6">Así es como verán los clientes las instrucciones al confirmar su pedido.</p>
-      
-      <div class="bg-white rounded border border-gray-200 shadow-sm overflow-hidden flex-grow">
-        <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center gap-2">
-          <span class="material-icons text-gray-600">account_balance</span>
-          <span class="font-medium text-gray-800">Datos y Comprobante de Pago</span>
-        </div>
-        <div class="p-4 space-y-3">
-          
-          <div class="flex flex-col sm:flex-row sm:items-center py-1">
-            <span class="text-gray-500 font-medium w-32">Banco:</span>
-            <span class="text-gray-800">{{ settingsForm.value.bankName || '—' }}</span>
-          </div>
-          
-          <div class="flex flex-col sm:flex-row sm:items-center py-1">
-            <span class="text-gray-500 font-medium w-32">Titular:</span>
-            <span class="text-gray-800">{{ settingsForm.value.accountHolder || '—' }}</span>
-          </div>
-          
-          <div class="flex flex-col sm:flex-row sm:items-center py-1">
-            <span class="text-gray-500 font-medium w-32">CLABE:</span>
-            <span class="text-[#722f37] font-semibold bg-red-50 px-2 py-0.5 rounded border border-red-100 font-mono tracking-wider">
-              {{ formatClabeVisually(settingsForm.value.clabe) || '—' }}
-            </span>
-          </div>
-          
-          <div class="flex flex-col sm:flex-row sm:items-center py-1" *ngIf="settingsForm.value.accountNumber">
-            <span class="text-gray-500 font-medium w-32">Cuenta:</span>
-            <span class="text-gray-800 font-mono tracking-wider">{{ settingsForm.value.accountNumber }}</span>
-          </div>
-          
-          <div class="flex flex-col sm:flex-row sm:items-center py-1">
-            <span class="text-gray-500 font-medium w-32">Motivo de pago:</span>
-            <span class="text-[#722f37] font-semibold bg-red-50 px-2 py-0.5 rounded border border-red-100">ORD-12345</span>
-          </div>
-          
-          <div class="flex flex-col sm:flex-row sm:items-center py-1">
-            <span class="text-gray-500 font-medium w-32">Total:</span>
-            <span class="text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100 text-lg">$1,500.00</span>
-          </div>
-
-          <div class="mt-4 pt-4 border-t border-gray-100">
-            <p class="text-sm text-gray-700" *ngIf="settingsForm.value.referenceInstructions">
-              <strong>Instrucciones de referencia:</strong> {{ settingsForm.value.referenceInstructions }}
-            </p>
-            <p class="text-sm text-gray-500 italic mt-1" *ngIf="settingsForm.value.additionalInstructions">
-              {{ settingsForm.value.additionalInstructions }}
-            </p>
-          </div>
-
         </div>
       </div>
     </div>
-
-  </div>
+  }
 </div>

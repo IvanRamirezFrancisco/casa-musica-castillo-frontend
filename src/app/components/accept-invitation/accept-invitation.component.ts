@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { StaffService } from '../../services/staff.service';
@@ -8,8 +8,9 @@ import { InvitationInfoDto } from '../../models/staff.model';
 @Component({
   selector: 'app-accept-invitation',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule],
   templateUrl: './accept-invitation.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./accept-invitation.component.css']
 })
 export class AcceptInvitationComponent implements OnInit {

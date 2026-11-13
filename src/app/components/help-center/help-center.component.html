@@ -26,221 +26,259 @@
           placeholder="Busca por tema, palabra clave o pregunta..."
           class="search-input"
           [attr.aria-label]="'Buscar ayuda'"
-        >
-        <div *ngIf="isSearching && isLoadingFaqs" class="search-loader"></div>
-        <button *ngIf="searchQuery" type="button" class="clear-btn" (click)="searchQuery = ''; onSearchChange()" aria-label="Limpiar búsqueda">
-          <i class="material-icons" aria-hidden="true">close</i> Limpiar
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <div class="help-container">
-    <!-- Accesos directos a Guías Informativas y Legales (100% disponibles online y offline) -->
-    <section aria-label="Guías rápidas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <a routerLink="/informacion/envios"
-         class="group bg-white rounded-xl border border-[#E5E0D8] hover:border-[#C5A059] p-4 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 no-underline">
-        <span class="w-10 h-10 rounded-lg bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 group-hover:bg-[#722F37] group-hover:text-white transition-colors">
-          <i class="material-icons text-xl" aria-hidden="true">local_shipping</i>
-        </span>
-        <div>
-          <h2 class="text-sm font-bold text-[#1A1A1A] group-hover:text-[#722F37] transition-colors">Envíos y entregas</h2>
-          <p class="text-xs text-[#555555] mt-0.5 leading-snug">Domicilio, recolección sin costo y cotización foránea.</p>
-        </div>
-      </a>
-
-      <a routerLink="/informacion/pagos"
-         class="group bg-white rounded-xl border border-[#E5E0D8] hover:border-[#C5A059] p-4 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 no-underline">
-        <span class="w-10 h-10 rounded-lg bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 group-hover:bg-[#722F37] group-hover:text-white transition-colors">
-          <i class="material-icons text-xl" aria-hidden="true">payments</i>
-        </span>
-        <div>
-          <h2 class="text-sm font-bold text-[#1A1A1A] group-hover:text-[#722F37] transition-colors">Formas de pago</h2>
-          <p class="text-xs text-[#555555] mt-0.5 leading-snug">Mercado Pago y validación de transferencia bancaria.</p>
-        </div>
-      </a>
-
-      <a routerLink="/informacion/cancelaciones"
-         class="group bg-white rounded-xl border border-[#E5E0D8] hover:border-[#C5A059] p-4 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 no-underline">
-        <span class="w-10 h-10 rounded-lg bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 group-hover:bg-[#722F37] group-hover:text-white transition-colors">
-          <i class="material-icons text-xl" aria-hidden="true">event_busy</i>
-        </span>
-        <div>
-          <h2 class="text-sm font-bold text-[#1A1A1A] group-hover:text-[#722F37] transition-colors">Cancelaciones</h2>
-          <p class="text-xs text-[#555555] mt-0.5 leading-snug">Condiciones antes del envío y seguimiento de pedidos.</p>
-        </div>
-      </a>
-
-      <a routerLink="/terminos"
-         class="group bg-white rounded-xl border border-[#E5E0D8] hover:border-[#C5A059] p-4 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 no-underline">
-        <span class="w-10 h-10 rounded-lg bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 group-hover:bg-[#722F37] group-hover:text-white transition-colors">
-          <i class="material-icons text-xl" aria-hidden="true">gavel</i>
-        </span>
-        <div>
-          <h2 class="text-sm font-bold text-[#1A1A1A] group-hover:text-[#722F37] transition-colors">Términos y Privacidad</h2>
-          <p class="text-xs text-[#555555] mt-0.5 leading-snug">Condiciones de uso y aviso de privacidad de datos.</p>
-        </div>
-      </a>
-    </section>
-
-    <!-- Aviso discreto cuando se consulta el Centro de Ayuda sin conexión -->
-    <div *ngIf="!isOnline && !isLoadingFaqs && allFaqs.length > 0"
-         class="mb-6 p-4 bg-[#FAF6F0] border border-[#C5A059]/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 text-xs sm:text-sm shadow-sm">
-      <div class="flex items-center gap-3">
-        <i class="material-icons text-[#722F37] text-xl shrink-0" aria-hidden="true">wifi_off</i>
-        <div>
-          <span class="font-bold text-[#722F37]">Modo sin conexión · Mostrando preguntas frecuentes guardadas.</span>
-          <span class="text-slate-600 sm:ml-1.5">Puedes buscar y filtrar sobre el contenido almacenado en tu dispositivo.</span>
+          >
+          @if (isSearching && isLoadingFaqs) {
+            <div class="search-loader"></div>
+          }
+          @if (searchQuery) {
+            <button type="button" class="clear-btn" (click)="searchQuery = ''; onSearchChange()" aria-label="Limpiar búsqueda">
+              <i class="material-icons" aria-hidden="true">close</i> Limpiar
+            </button>
+          }
         </div>
       </div>
-    </div>
+    </header>
 
-    <div class="layout-grid">
-      <!-- Sidebar - Categorías -->
-      <aside class="sidebar">
-        <h3>Categorías</h3>
-        <div class="category-scroll-wrapper">
-          <nav class="category-nav" aria-label="Categorías de preguntas frecuentes">
-            <!-- Esqueleto Cargando -->
-            <ng-container *ngIf="isLoadingCategories">
-               <div class="skeleton-category" *ngFor="let i of [1,2,3,4]"></div>
-            </ng-container>
-
-            <ng-container *ngIf="!isLoadingCategories">
-              <button type="button"
-                class="category-btn"
-                [class.active]="selectedCategory === 'all'"
-                (click)="selectCategory('all')">
-                <i class="material-icons" aria-hidden="true">apps</i>
-                <span class="cat-name">Todas las preguntas</span>
-              </button>
-
-              <button type="button"
-                *ngFor="let cat of categories"
-                class="category-btn"
-                [class.active]="selectedCategory === cat.id.toString() || selectedCategory === cat.name"
-                (click)="selectCategory(cat.id)">
-                <ng-container *ngIf="isLegacyIcon(cat.iconKey); else externalIcon">
-                  <i class="material-icons" aria-hidden="true">{{ getBaseName(cat.iconKey || 'label') }}</i>
-                </ng-container>
-                <ng-template #externalIcon>
-                  <img [src]="getPreviewUrl(cat.iconKey)" class="external-icon-img-cat" alt="">
-                </ng-template>
-                <span class="cat-name">{{ cat.name }}</span>
-                <span class="badge" *ngIf="cat.activeFaqCount">{{ cat.activeFaqCount }}</span>
-              </button>
-            </ng-container>
-          </nav>
-        </div>
-      </aside>
-
-      <!-- Contenido Principal - FAQs -->
-      <main class="content-area">
-        <div class="section-header">
-          <ng-container *ngIf="searchQuery">
-            <h2>Resultados para "{{ searchQuery }}"</h2>
-            <span class="section-subtitle">{{ filteredFAQs.length }} resultado{{ filteredFAQs.length === 1 ? '' : 's' }} encontrado{{ filteredFAQs.length === 1 ? '' : 's' }}</span>
-          </ng-container>
-
-          <ng-container *ngIf="!searchQuery">
-            <h2 *ngIf="selectedCategory === 'all'">Preguntas frecuentes</h2>
-            <h2 *ngIf="selectedCategory !== 'all'">{{ getCategoryNameSafe(selectedCategory) }}</h2>
-            <span class="section-subtitle" *ngIf="selectedCategory !== 'all'">{{ filteredFAQs.length }} preguntas</span>
-          </ng-container>
-        </div>
-
-        <div class="faq-list">
-          <!-- Cargando FAQs -->
-          <ng-container *ngIf="isLoadingFaqs">
-             <div class="skeleton-faq" *ngFor="let i of [1,2,3,4]"></div>
-          </ng-container>
-
-          <!-- Error / Sin caché cuando nunca se visitó online -->
-          <div *ngIf="!isLoadingFaqs && faqsError" class="empty-state">
-            <i class="material-icons" aria-hidden="true">{{ isOnline ? 'cloud_sync' : 'wifi_off' }}</i>
-            <h3>{{ isOnline ? 'El servidor está tardando en responder' : 'Sin preguntas frecuentes guardadas en este dispositivo' }}</h3>
-            <p>
-              {{ isOnline
-                ? 'Estamos conectando con el Centro de Ayuda. Intenta actualizar en unos momentos o consulta las guías superiores.'
-                : 'Conéctate a Internet para cargar el listado de preguntas frecuentes, o consulta nuestras guías de Envíos, Pagos, Cancelaciones y Términos arriba.' }}
-            </p>
-            <button type="button" class="btn-secondary" (click)="retryLoad()">
-              Reintentar
-            </button>
+    <div class="help-container">
+      <!-- Accesos directos a Guías Informativas y Legales (100% disponibles online y offline) -->
+      <section aria-label="Guías rápidas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <a routerLink="/informacion/envios"
+          class="group bg-white rounded-xl border border-[#E5E0D8] hover:border-[#C5A059] p-4 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 no-underline">
+          <span class="w-10 h-10 rounded-lg bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 group-hover:bg-[#722F37] group-hover:text-white transition-colors">
+            <i class="material-icons text-xl" aria-hidden="true">local_shipping</i>
+          </span>
+          <div>
+            <h2 class="text-sm font-bold text-[#1A1A1A] group-hover:text-[#722F37] transition-colors">Envíos y entregas</h2>
+            <p class="text-xs text-[#555555] mt-0.5 leading-snug">Domicilio, recolección sin costo y cotización foránea.</p>
           </div>
+        </a>
 
-          <!-- Empty State (búsqueda sin coincidencias) -->
-          <div *ngIf="!isLoadingFaqs && !faqsError && filteredFAQs.length === 0" class="empty-state">
-            <i class="material-icons" aria-hidden="true">search_off</i>
-            <h3 *ngIf="searchQuery">No encontramos una respuesta para "{{ searchQuery }}".</h3>
-            <h3 *ngIf="!searchQuery">No se encontraron resultados</h3>
-            <p *ngIf="searchQuery">Prueba con otras palabras clave o explora las categorías.</p>
-            <p *ngIf="!searchQuery">Intenta con otros términos o cambia de categoría.</p>
-            <button type="button" class="btn-secondary" (click)="searchQuery = ''; selectedCategory = 'all'; onSearchChange()">
-              Ver todas las preguntas
-            </button>
+        <a routerLink="/informacion/pagos"
+          class="group bg-white rounded-xl border border-[#E5E0D8] hover:border-[#C5A059] p-4 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 no-underline">
+          <span class="w-10 h-10 rounded-lg bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 group-hover:bg-[#722F37] group-hover:text-white transition-colors">
+            <i class="material-icons text-xl" aria-hidden="true">payments</i>
+          </span>
+          <div>
+            <h2 class="text-sm font-bold text-[#1A1A1A] group-hover:text-[#722F37] transition-colors">Formas de pago</h2>
+            <p class="text-xs text-[#555555] mt-0.5 leading-snug">Mercado Pago y validación de transferencia bancaria.</p>
           </div>
+        </a>
 
-          <!-- FAQs -->
-          <ng-container *ngIf="!isLoadingFaqs && !faqsError">
-            <div
-              *ngFor="let faq of filteredFAQs; let i = index"
-              class="faq-item"
-              [class.open]="faq.isOpen">
+        <a routerLink="/informacion/cancelaciones"
+          class="group bg-white rounded-xl border border-[#E5E0D8] hover:border-[#C5A059] p-4 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 no-underline">
+          <span class="w-10 h-10 rounded-lg bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 group-hover:bg-[#722F37] group-hover:text-white transition-colors">
+            <i class="material-icons text-xl" aria-hidden="true">event_busy</i>
+          </span>
+          <div>
+            <h2 class="text-sm font-bold text-[#1A1A1A] group-hover:text-[#722F37] transition-colors">Cancelaciones</h2>
+            <p class="text-xs text-[#555555] mt-0.5 leading-snug">Condiciones antes del envío y seguimiento de pedidos.</p>
+          </div>
+        </a>
 
-              <button type="button"
-                      class="faq-question w-full text-left border-0"
-                      (click)="toggleFAQ(faq)"
-                      [attr.aria-expanded]="!!faq.isOpen"
-                      [attr.aria-controls]="'faq-answer-' + (faq.id || i)">
-                <div class="faq-question-text">
-                  <span class="category-tag" *ngIf="selectedCategory === 'all'">{{ faq.categoryName }}</span>
-                  <h3>
-                    <!-- Renderizado seguro de coincidencia -->
-                    <ng-container *ngFor="let part of getHighlightedParts(faq.question, searchQuery)">
-                      <mark class="highlight" *ngIf="part.isMatch">{{ part.text }}</mark>
-                      <ng-container *ngIf="!part.isMatch">{{ part.text }}</ng-container>
-                    </ng-container>
-                  </h3>
-                </div>
-                <span class="toggle-btn" aria-hidden="true">
-                  <i class="material-icons">expand_more</i>
-                </span>
-              </button>
+        <a routerLink="/terminos"
+          class="group bg-white rounded-xl border border-[#E5E0D8] hover:border-[#C5A059] p-4 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 no-underline">
+          <span class="w-10 h-10 rounded-lg bg-[#722F37]/10 text-[#722F37] flex items-center justify-center shrink-0 group-hover:bg-[#722F37] group-hover:text-white transition-colors">
+            <i class="material-icons text-xl" aria-hidden="true">gavel</i>
+          </span>
+          <div>
+            <h2 class="text-sm font-bold text-[#1A1A1A] group-hover:text-[#722F37] transition-colors">Términos y Privacidad</h2>
+            <p class="text-xs text-[#555555] mt-0.5 leading-snug">Condiciones de uso y aviso de privacidad de datos.</p>
+          </div>
+        </a>
+      </section>
 
-              <div [id]="'faq-answer-' + (faq.id || i)"
-                   class="faq-answer"
-                   [style.max-height]="faq.isOpen ? '1500px' : '0'">
-                <div class="faq-answer-content" [style.white-space]="'pre-line'">
-                  <!-- Respuesta con coincidencia segura -->
-                  <ng-container *ngFor="let part of getHighlightedParts(faq.answer, searchQuery)">
-                    <mark class="highlight" *ngIf="part.isMatch">{{ part.text }}</mark>
-                    <ng-container *ngIf="!part.isMatch">{{ part.text }}</ng-container>
-                  </ng-container>
-                </div>
-              </div>
+      <!-- Aviso discreto cuando se consulta el Centro de Ayuda sin conexión -->
+      @if (!isOnline && !isLoadingFaqs && allFaqs.length > 0) {
+        <div
+          class="mb-6 p-4 bg-[#FAF6F0] border border-[#C5A059]/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 text-xs sm:text-sm shadow-sm">
+          <div class="flex items-center gap-3">
+            <i class="material-icons text-[#722F37] text-xl shrink-0" aria-hidden="true">wifi_off</i>
+            <div>
+              <span class="font-bold text-[#722F37]">Modo sin conexión · Mostrando preguntas frecuentes guardadas.</span>
+              <span class="text-slate-600 sm:ml-1.5">Puedes buscar y filtrar sobre el contenido almacenado en tu dispositivo.</span>
             </div>
-          </ng-container>
+          </div>
         </div>
+      }
 
-      </main>
-    </div>
+      <div class="layout-grid">
+        <!-- Sidebar - Categorías -->
+        <aside class="sidebar">
+          <h3>Categorías</h3>
+          <div class="category-scroll-wrapper">
+            <nav class="category-nav" aria-label="Categorías de preguntas frecuentes">
+              <!-- Esqueleto Cargando -->
+              @if (isLoadingCategories) {
+                @for (i of [1,2,3,4]; track i) {
+                  <div class="skeleton-category"></div>
+                }
+              }
 
-    <!-- Contact Section -->
-    <div class="help-contact">
-      <div class="contact-section">
-        <h4>¿No encontraste lo que buscabas?</h4>
-        <p>Visítanos en C. Morelos 18, Col. Centro, Huejutla de Reyes, Hgo., o consulta nuestras políticas operativas.</p>
-        <div class="flex flex-wrap items-center justify-center gap-3">
-          <button type="button" class="btn-outline-primary" (click)="contactSupport()">
-            <i class="material-icons" aria-hidden="true">storefront</i> Datos de contacto de la tienda
-          </button>
-          <a routerLink="/privacidad" class="btn-outline-primary">
-            <i class="material-icons" aria-hidden="true">shield</i> Aviso de Privacidad
-          </a>
+              @if (!isLoadingCategories) {
+                <button type="button"
+                  class="category-btn"
+                  [class.active]="selectedCategory === 'all'"
+                  (click)="selectCategory('all')">
+                  <i class="material-icons" aria-hidden="true">apps</i>
+                  <span class="cat-name">Todas las preguntas</span>
+                </button>
+                @for (cat of categories; track cat) {
+                  <button type="button"
+                    class="category-btn"
+                    [class.active]="selectedCategory === cat.id.toString() || selectedCategory === cat.name"
+                    (click)="selectCategory(cat.id)">
+                    @if (isLegacyIcon(cat.iconKey)) {
+                      <i class="material-icons" aria-hidden="true">{{ getBaseName(cat.iconKey || 'label') }}</i>
+                    } @else {
+                      <img [src]="getPreviewUrl(cat.iconKey)" class="external-icon-img-cat" alt="">
+                    }
+                    <span class="cat-name">{{ cat.name }}</span>
+                    @if (cat.activeFaqCount) {
+                      <span class="badge">{{ cat.activeFaqCount }}</span>
+                    }
+                  </button>
+                }
+              }
+            </nav>
+          </div>
+        </aside>
+
+        <!-- Contenido Principal - FAQs -->
+        <main class="content-area">
+          <div class="section-header">
+            @if (searchQuery) {
+              <h2>Resultados para "{{ searchQuery }}"</h2>
+              <span class="section-subtitle">{{ filteredFAQs.length }} resultado{{ filteredFAQs.length === 1 ? '' : 's' }} encontrado{{ filteredFAQs.length === 1 ? '' : 's' }}</span>
+            }
+
+            @if (!searchQuery) {
+              @if (selectedCategory === 'all') {
+                <h2>Preguntas frecuentes</h2>
+              }
+              @if (selectedCategory !== 'all') {
+                <h2>{{ getCategoryNameSafe(selectedCategory) }}</h2>
+              }
+              @if (selectedCategory !== 'all') {
+                <span class="section-subtitle">{{ filteredFAQs.length }} preguntas</span>
+              }
+            }
+          </div>
+
+          <div class="faq-list">
+            <!-- Cargando FAQs -->
+            @if (isLoadingFaqs) {
+              @for (i of [1,2,3,4]; track i) {
+                <div class="skeleton-faq"></div>
+              }
+            }
+
+            <!-- Error / Sin caché cuando nunca se visitó online -->
+            @if (!isLoadingFaqs && faqsError) {
+              <div class="empty-state">
+                <i class="material-icons" aria-hidden="true">{{ isOnline ? 'cloud_sync' : 'wifi_off' }}</i>
+                <h3>{{ isOnline ? 'El servidor está tardando en responder' : 'Sin preguntas frecuentes guardadas en este dispositivo' }}</h3>
+                <p>
+                  {{ isOnline
+                  ? 'Estamos conectando con el Centro de Ayuda. Intenta actualizar en unos momentos o consulta las guías superiores.'
+                  : 'Conéctate a Internet para cargar el listado de preguntas frecuentes, o consulta nuestras guías de Envíos, Pagos, Cancelaciones y Términos arriba.' }}
+                </p>
+                <button type="button" class="btn-secondary" (click)="retryLoad()">
+                  Reintentar
+                </button>
+              </div>
+            }
+
+            <!-- Empty State (búsqueda sin coincidencias) -->
+            @if (!isLoadingFaqs && !faqsError && filteredFAQs.length === 0) {
+              <div class="empty-state">
+                <i class="material-icons" aria-hidden="true">search_off</i>
+                @if (searchQuery) {
+                  <h3>No encontramos una respuesta para "{{ searchQuery }}".</h3>
+                }
+                @if (!searchQuery) {
+                  <h3>No se encontraron resultados</h3>
+                }
+                @if (searchQuery) {
+                  <p>Prueba con otras palabras clave o explora las categorías.</p>
+                }
+                @if (!searchQuery) {
+                  <p>Intenta con otros términos o cambia de categoría.</p>
+                }
+                <button type="button" class="btn-secondary" (click)="searchQuery = ''; selectedCategory = 'all'; onSearchChange()">
+                  Ver todas las preguntas
+                </button>
+              </div>
+            }
+
+            <!-- FAQs -->
+            @if (!isLoadingFaqs && !faqsError) {
+              @for (faq of filteredFAQs; track faq; let i = $index) {
+                <div
+                  class="faq-item"
+                  [class.open]="faq.isOpen">
+                  <button type="button"
+                    class="faq-question w-full text-left border-0"
+                    (click)="toggleFAQ(faq)"
+                    [attr.aria-expanded]="!!faq.isOpen"
+                    [attr.aria-controls]="'faq-answer-' + (faq.id || i)">
+                    <div class="faq-question-text">
+                      @if (selectedCategory === 'all') {
+                        <span class="category-tag">{{ faq.categoryName }}</span>
+                      }
+                      <h3>
+                        <!-- Renderizado seguro de coincidencia -->
+                        @for (part of getHighlightedParts(faq.question, searchQuery); track part) {
+                          @if (part.isMatch) {
+                            <mark class="highlight">{{ part.text }}</mark>
+                          }
+                          @if (!part.isMatch) {
+                            {{ part.text }}
+                          }
+                        }
+                      </h3>
+                    </div>
+                    <span class="toggle-btn" aria-hidden="true">
+                      <i class="material-icons">expand_more</i>
+                    </span>
+                  </button>
+                  <div [id]="'faq-answer-' + (faq.id || i)"
+                    class="faq-answer"
+                    [style.max-height]="faq.isOpen ? '1500px' : '0'">
+                    <div class="faq-answer-content" [style.white-space]="'pre-line'">
+                      <!-- Respuesta con coincidencia segura -->
+                      @for (part of getHighlightedParts(faq.answer, searchQuery); track part) {
+                        @if (part.isMatch) {
+                          <mark class="highlight">{{ part.text }}</mark>
+                        }
+                        @if (!part.isMatch) {
+                          {{ part.text }}
+                        }
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+
+        </main>
+      </div>
+
+      <!-- Contact Section -->
+      <div class="help-contact">
+        <div class="contact-section">
+          <h4>¿No encontraste lo que buscabas?</h4>
+          <p>Visítanos en C. Morelos 18, Col. Centro, Huejutla de Reyes, Hgo., o consulta nuestras políticas operativas.</p>
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <button type="button" class="btn-outline-primary" (click)="contactSupport()">
+              <i class="material-icons" aria-hidden="true">storefront</i> Datos de contacto de la tienda
+            </button>
+            <a routerLink="/privacidad" class="btn-outline-primary">
+              <i class="material-icons" aria-hidden="true">shield</i> Aviso de Privacidad
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 

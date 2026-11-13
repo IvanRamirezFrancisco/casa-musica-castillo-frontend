@@ -11,206 +11,217 @@
     </div>
 
     <!-- ── Loading ── -->
-    <div *ngIf="loading" class="inv-card">
-      <div class="inv-state-center">
-        <div class="inv-spinner"></div>
-        <p class="inv-state-text">Validando invitación...</p>
+    @if (loading) {
+      <div class="inv-card">
+        <div class="inv-state-center">
+          <div class="inv-spinner"></div>
+          <p class="inv-state-text">Validando invitación...</p>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- ── Error State ── -->
-    <div *ngIf="!loading && error && !invitationInfo" class="inv-card">
-      <div class="inv-state-center">
-        <span class="material-symbols-outlined inv-state-icon inv-state-icon--error">error</span>
-        <h2 class="inv-state-title">Invitación no válida</h2>
-        <p class="inv-state-desc">{{ error }}</p>
-        <a routerLink="/login" class="inv-btn-primary">
-          <span class="material-symbols-outlined">login</span>
-          Ir al inicio de sesión
-        </a>
+    @if (!loading && error && !invitationInfo) {
+      <div class="inv-card">
+        <div class="inv-state-center">
+          <span class="material-symbols-outlined inv-state-icon inv-state-icon--error">error</span>
+          <h2 class="inv-state-title">Invitación no válida</h2>
+          <p class="inv-state-desc">{{ error }}</p>
+          <a routerLink="/login" class="inv-btn-primary">
+            <span class="material-symbols-outlined">login</span>
+            Ir al inicio de sesión
+          </a>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- ── Success State ── -->
-    <div *ngIf="success" class="inv-card">
-      <div class="inv-state-center">
-        <span class="material-symbols-outlined inv-state-icon inv-state-icon--success">check_circle</span>
-        <h2 class="inv-state-title">¡Cuenta activada!</h2>
-        <p class="inv-state-desc">Tu cuenta ha sido creada exitosamente. Serás redirigido al inicio de sesión...</p>
-        <div class="inv-redirect-bar">
-          <div class="inv-redirect-fill"></div>
+    @if (success) {
+      <div class="inv-card">
+        <div class="inv-state-center">
+          <span class="material-symbols-outlined inv-state-icon inv-state-icon--success">check_circle</span>
+          <h2 class="inv-state-title">¡Cuenta activada!</h2>
+          <p class="inv-state-desc">Tu cuenta ha sido creada exitosamente. Serás redirigido al inicio de sesión...</p>
+          <div class="inv-redirect-bar">
+            <div class="inv-redirect-fill"></div>
+          </div>
+          <a routerLink="/login" class="inv-btn-primary">
+            <span class="material-symbols-outlined">login</span>
+            Ir al inicio de sesión
+          </a>
         </div>
-        <a routerLink="/login" class="inv-btn-primary">
-          <span class="material-symbols-outlined">login</span>
-          Ir al inicio de sesión
-        </a>
       </div>
-    </div>
+    }
 
     <!-- ── Form: Set Password ── -->
-    <div *ngIf="!loading && invitationInfo && !success" class="inv-card inv-card--wide">
-
-      <!-- Two-column layout -->
-      <div class="inv-two-col">
-
-        <!-- Left: Info panel -->
-        <div class="inv-info-panel">
-          <div class="inv-info-graphic">
-            <span class="material-symbols-outlined inv-info-icon">badge</span>
-          </div>
-          <h2 class="inv-info-title">¡Bienvenido/a,<br>{{ invitationInfo.firstName }}!</h2>
-          <p class="inv-info-desc">Has sido invitado a unirte al equipo de administración.</p>
-
-          <div class="inv-info-list">
-            <div class="inv-info-item">
-              <span class="material-symbols-outlined">person</span>
-              <div>
-                <span class="inv-info-label">Nombre</span>
-                <span class="inv-info-val">{{ invitationInfo.firstName }} {{ invitationInfo.lastName }}</span>
-              </div>
+    @if (!loading && invitationInfo && !success) {
+      <div class="inv-card inv-card--wide">
+        <!-- Two-column layout -->
+        <div class="inv-two-col">
+          <!-- Left: Info panel -->
+          <div class="inv-info-panel">
+            <div class="inv-info-graphic">
+              <span class="material-symbols-outlined inv-info-icon">badge</span>
             </div>
-            <div class="inv-info-item">
-              <span class="material-symbols-outlined">mail</span>
-              <div>
-                <span class="inv-info-label">Correo</span>
-                <span class="inv-info-val">{{ invitationInfo.email }}</span>
+            <h2 class="inv-info-title">¡Bienvenido/a,<br>{{ invitationInfo.firstName }}!</h2>
+            <p class="inv-info-desc">Has sido invitado a unirte al equipo de administración.</p>
+            <div class="inv-info-list">
+              <div class="inv-info-item">
+                <span class="material-symbols-outlined">person</span>
+                <div>
+                  <span class="inv-info-label">Nombre</span>
+                  <span class="inv-info-val">{{ invitationInfo.firstName }} {{ invitationInfo.lastName }}</span>
+                </div>
               </div>
-            </div>
-            <div class="inv-info-item">
-              <span class="material-symbols-outlined">shield_person</span>
-              <div>
-                <span class="inv-info-label">Roles asignados</span>
-                <div class="inv-role-tags">
-                  <span class="inv-role-tag" *ngFor="let role of invitationInfo.roleNames">
-                    {{ role.replace('ROLE_', '') }}
-                  </span>
+              <div class="inv-info-item">
+                <span class="material-symbols-outlined">mail</span>
+                <div>
+                  <span class="inv-info-label">Correo</span>
+                  <span class="inv-info-val">{{ invitationInfo.email }}</span>
+                </div>
+              </div>
+              <div class="inv-info-item">
+                <span class="material-symbols-outlined">shield_person</span>
+                <div>
+                  <span class="inv-info-label">Roles asignados</span>
+                  <div class="inv-role-tags">
+                    @for (role of invitationInfo.roleNames; track role) {
+                      <span class="inv-role-tag">
+                        {{ role.replace('ROLE_', '') }}
+                      </span>
+                    }
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Right: Form panel -->
-        <div class="inv-form-panel">
-          <h3 class="inv-form-title">Establece tu contraseña</h3>
-          <p class="inv-form-desc">Crea una contraseña segura para activar tu cuenta.</p>
-
-          <!-- Error alert -->
-          <div *ngIf="error" class="inv-alert-error">
-            <span class="material-symbols-outlined">error</span>
-            <span>{{ error }}</span>
-          </div>
-
-          <form (ngSubmit)="onSubmit()" class="inv-form" autocomplete="off">
-
-            <!-- Password — floating label -->
-            <div class="inv-field">
-              <div class="inv-input-wrap" [class.has-value]="password">
-                <input
-                  [type]="showPassword ? 'text' : 'password'"
-                  id="inv-password"
-                  class="inv-input"
-                  [(ngModel)]="password"
-                  name="password"
-                  required
-                  minlength="8"
-                  autocomplete="new-password">
-                <label for="inv-password" class="inv-floating-label">
-                  <span class="material-symbols-outlined">lock</span>
-                  Contraseña
-                </label>
-                <button type="button" class="inv-toggle-pw" (click)="togglePasswordVisibility()" tabindex="-1">
-                  <span class="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
-                </button>
+          <!-- Right: Form panel -->
+          <div class="inv-form-panel">
+            <h3 class="inv-form-title">Establece tu contraseña</h3>
+            <p class="inv-form-desc">Crea una contraseña segura para activar tu cuenta.</p>
+            <!-- Error alert -->
+            @if (error) {
+              <div class="inv-alert-error">
+                <span class="material-symbols-outlined">error</span>
+                <span>{{ error }}</span>
               </div>
-
-              <!-- Strength bar (progress) -->
-              <div class="inv-strength-wrap" *ngIf="password">
-                <div class="inv-strength-track">
-                  <div class="inv-strength-fill"
-                       [style.width.%]="passwordStrength.score * 20"
-                       [attr.data-score]="passwordStrength.score"></div>
+            }
+            <form (ngSubmit)="onSubmit()" class="inv-form" autocomplete="off">
+              <!-- Password — floating label -->
+              <div class="inv-field">
+                <div class="inv-input-wrap" [class.has-value]="password">
+                  <input
+                    [type]="showPassword ? 'text' : 'password'"
+                    id="inv-password"
+                    class="inv-input"
+                    [(ngModel)]="password"
+                    name="password"
+                    required
+                    minlength="8"
+                    autocomplete="new-password">
+                    <label for="inv-password" class="inv-floating-label">
+                      <span class="material-symbols-outlined">lock</span>
+                      Contraseña
+                    </label>
+                    <button type="button" class="inv-toggle-pw" (click)="togglePasswordVisibility()" tabindex="-1">
+                      <span class="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                  <!-- Strength bar (progress) -->
+                  @if (password) {
+                    <div class="inv-strength-wrap">
+                      <div class="inv-strength-track">
+                        <div class="inv-strength-fill"
+                          [style.width.%]="passwordStrength.score * 20"
+                        [attr.data-score]="passwordStrength.score"></div>
+                      </div>
+                      <span class="inv-strength-label" [style.color]="passwordStrength.color">
+                        {{ passwordStrength.label }}
+                      </span>
+                    </div>
+                  }
+                  <!-- Requirements checklist -->
+                  @if (password) {
+                    <ul class="inv-reqs">
+                      <li [class.met]="password.length >= 8">
+                        <span class="material-symbols-outlined">{{ password.length >= 8 ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                        Mínimo 8 caracteres
+                      </li>
+                      <li [class.met]="hasLowercase()">
+                        <span class="material-symbols-outlined">{{ hasLowercase() ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                        Una minúscula (a-z)
+                      </li>
+                      <li [class.met]="hasUppercase()">
+                        <span class="material-symbols-outlined">{{ hasUppercase() ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                        Una mayúscula (A-Z)
+                      </li>
+                      <li [class.met]="hasNumber()">
+                        <span class="material-symbols-outlined">{{ hasNumber() ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                        Un número (0-9)
+                      </li>
+                      <li [class.met]="hasSpecial()">
+                        <span class="material-symbols-outlined">{{ hasSpecial() ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                        Un carácter especial
+                      </li>
+                    </ul>
+                  }
                 </div>
-                <span class="inv-strength-label" [style.color]="passwordStrength.color">
-                  {{ passwordStrength.label }}
-                </span>
+                <!-- Confirm Password — floating label -->
+                <div class="inv-field">
+                  <div class="inv-input-wrap" [class.has-value]="confirmPassword"
+                    [class.is-match]="passwordsMatch"
+                    [class.is-mismatch]="passwordsDontMatch">
+                    <input
+                      [type]="showConfirmPassword ? 'text' : 'password'"
+                      id="inv-confirm"
+                      class="inv-input"
+                      [(ngModel)]="confirmPassword"
+                      name="confirmPassword"
+                      required
+                      autocomplete="new-password">
+                      <label for="inv-confirm" class="inv-floating-label">
+                        <span class="material-symbols-outlined">lock_reset</span>
+                        Confirmar contraseña
+                      </label>
+                      <button type="button" class="inv-toggle-pw" (click)="toggleConfirmPasswordVisibility()" tabindex="-1">
+                        <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
+                      </button>
+                    </div>
+                    @if (passwordsMatch) {
+                      <div class="inv-field-feedback inv-field-feedback--ok">
+                        <span class="material-symbols-outlined">check_circle</span> Las contraseñas coinciden
+                      </div>
+                    }
+                    @if (passwordsDontMatch) {
+                      <div class="inv-field-feedback inv-field-feedback--err">
+                        <span class="material-symbols-outlined">cancel</span> Las contraseñas no coinciden
+                      </div>
+                    }
+                  </div>
+                  <!-- Submit -->
+                  <button type="submit" class="inv-btn-submit" [disabled]="!isFormValid">
+                    @if (!submitting) {
+                      <span class="inv-btn-content">
+                        <span class="material-symbols-outlined">rocket_launch</span>
+                        Activar mi cuenta
+                      </span>
+                    }
+                    @if (submitting) {
+                      <span class="inv-btn-content">
+                        <span class="inv-spinner-sm"></span>
+                        Activando cuenta...
+                      </span>
+                    }
+                  </button>
+                </form>
               </div>
+            </div><!-- /two-col -->
+          </div>
+          }<!-- /form card -->
 
-              <!-- Requirements checklist -->
-              <ul class="inv-reqs" *ngIf="password">
-                <li [class.met]="password.length >= 8">
-                  <span class="material-symbols-outlined">{{ password.length >= 8 ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Mínimo 8 caracteres
-                </li>
-                <li [class.met]="hasLowercase()">
-                  <span class="material-symbols-outlined">{{ hasLowercase() ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Una minúscula (a-z)
-                </li>
-                <li [class.met]="hasUppercase()">
-                  <span class="material-symbols-outlined">{{ hasUppercase() ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Una mayúscula (A-Z)
-                </li>
-                <li [class.met]="hasNumber()">
-                  <span class="material-symbols-outlined">{{ hasNumber() ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Un número (0-9)
-                </li>
-                <li [class.met]="hasSpecial()">
-                  <span class="material-symbols-outlined">{{ hasSpecial() ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Un carácter especial
-                </li>
-              </ul>
-            </div>
+          <!-- Footer -->
+          <p class="inv-footer">© 2025 Casa de Música Castillo · Sistema de Administración</p>
 
-            <!-- Confirm Password — floating label -->
-            <div class="inv-field">
-              <div class="inv-input-wrap" [class.has-value]="confirmPassword"
-                   [class.is-match]="passwordsMatch"
-                   [class.is-mismatch]="passwordsDontMatch">
-                <input
-                  [type]="showConfirmPassword ? 'text' : 'password'"
-                  id="inv-confirm"
-                  class="inv-input"
-                  [(ngModel)]="confirmPassword"
-                  name="confirmPassword"
-                  required
-                  autocomplete="new-password">
-                <label for="inv-confirm" class="inv-floating-label">
-                  <span class="material-symbols-outlined">lock_reset</span>
-                  Confirmar contraseña
-                </label>
-                <button type="button" class="inv-toggle-pw" (click)="toggleConfirmPasswordVisibility()" tabindex="-1">
-                  <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
-                </button>
-              </div>
-              <div class="inv-field-feedback inv-field-feedback--ok" *ngIf="passwordsMatch">
-                <span class="material-symbols-outlined">check_circle</span> Las contraseñas coinciden
-              </div>
-              <div class="inv-field-feedback inv-field-feedback--err" *ngIf="passwordsDontMatch">
-                <span class="material-symbols-outlined">cancel</span> Las contraseñas no coinciden
-              </div>
-            </div>
-
-            <!-- Submit -->
-            <button type="submit" class="inv-btn-submit" [disabled]="!isFormValid">
-              <span *ngIf="!submitting" class="inv-btn-content">
-                <span class="material-symbols-outlined">rocket_launch</span>
-                Activar mi cuenta
-              </span>
-              <span *ngIf="submitting" class="inv-btn-content">
-                <span class="inv-spinner-sm"></span>
-                Activando cuenta...
-              </span>
-            </button>
-
-          </form>
         </div>
-
-      </div><!-- /two-col -->
-    </div><!-- /form card -->
-
-    <!-- Footer -->
-    <p class="inv-footer">© 2025 Casa de Música Castillo · Sistema de Administración</p>
-
-  </div>
-</div>
+      </div>
 

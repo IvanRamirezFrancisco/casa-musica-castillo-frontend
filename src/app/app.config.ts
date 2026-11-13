@@ -1,7 +1,7 @@
 import { ApplicationConfig, Injectable, importProvidersFrom, LOCALE_ID, isDevMode } from '@angular/core';
 import { PreloadingStrategy, Route, provideRouter, withInMemoryScrolling, withPreloading } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { registerLocaleData } from '@angular/common';
@@ -59,7 +59,7 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled'        // Soporte para fragmentos #id
       })
     ),
-    provideHttpClient(withInterceptors([
+    provideHttpClient(withXhr(), withInterceptors([
       offlineInterceptor,
       browserCompatibilityInterceptor,
       authInterceptor,

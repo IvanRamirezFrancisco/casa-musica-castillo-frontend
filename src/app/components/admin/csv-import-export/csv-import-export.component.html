@@ -6,377 +6,392 @@
 
 <!-- ══════ MODAL (portal via ng-template) ══════ -->
 <ng-template #modalTpl>
-<div class="modal-overlay" (click)="closeModal()">
-  <div class="modal-container" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
 
-    <!-- ── HEADER ── -->
-    <div class="modal-header">
-      <div class="modal-header-content">
-        <div class="modal-header-icon">
-          <span class="material-symbols-outlined">swap_vert</span>
+      <!-- ── HEADER ── -->
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-header-icon">
+            <span class="material-symbols-outlined">swap_vert</span>
+          </div>
+          <div class="modal-header-text">
+            <h2>CSV Import / Export</h2>
+            <p>Gestiona tus productos de forma masiva</p>
+          </div>
         </div>
-        <div class="modal-header-text">
-          <h2>CSV Import / Export</h2>
-          <p>Gestiona tus productos de forma masiva</p>
-        </div>
-      </div>
-      <button class="modal-close-btn" (click)="closeModal()">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-    </div>
-
-    <!-- ── BODY ── -->
-    <div class="modal-body">
-
-      <!-- ════════════════ HOME VIEW ════════════════ -->
-      <div class="view-section" *ngIf="currentView === 'home'">
-        <div class="home-grid">
-
-          <!-- Export Card -->
-          <button class="action-card" (click)="goTo('export')">
-            <div class="card-icon export">
-              <span class="material-symbols-outlined">download</span>
-            </div>
-            <h3>Exportar Productos</h3>
-            <p>Selecciona columnas, ordena y descarga un CSV personalizado.</p>
-            <div class="card-arrow">
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </div>
-          </button>
-
-          <!-- Import Card -->
-          <button class="action-card" (click)="goTo('import-upload')">
-            <div class="card-icon import">
-              <span class="material-symbols-outlined">upload</span>
-            </div>
-            <h3>Importar Productos</h3>
-            <p>Sube un CSV, previsualiza y selecciona las filas a importar.</p>
-            <div class="card-arrow">
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </div>
-          </button>
-
-        </div>
-      </div>
-
-      <!-- ════════════════ EXPORT VIEW ════════════════ -->
-      <div class="view-section" *ngIf="currentView === 'export'">
-        <button class="btn-back" (click)="goHome()">
-          <span class="material-symbols-outlined">arrow_back</span> Volver
+        <button class="modal-close-btn" (click)="closeModal()">
+          <span class="material-symbols-outlined">close</span>
         </button>
-
-        <h3 class="section-title">Selecciona columnas a exportar</h3>
-
-        <!-- Bulk actions -->
-        <div class="bulk-actions">
-          <button class="btn-bulk" (click)="selectAllColumns()">Seleccionar todas</button>
-          <button class="btn-bulk secondary" (click)="deselectOptionalColumns()">Solo requeridas</button>
-        </div>
-
-        <!-- Column grid -->
-        <div class="columns-grid">
-          <label *ngFor="let col of availableColumns"
-                 class="column-item"
-                 [class.required]="col.required">
-            <input type="checkbox"
-                   [checked]="selectedColumnKeys.has(col.key)"
-                   [disabled]="col.required"
-                   (change)="toggleColumn(col)" />
-            <div class="checkbox-custom"></div>
-            <span class="column-label">{{ col.label }}</span>
-            <span *ngIf="col.required" class="badge-required">REQUERIDA</span>
-          </label>
-        </div>
-
-        <!-- Sort + Limit -->
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Ordenar por</label>
-            <select class="form-select" [(ngModel)]="selectedSort">
-              <option *ngFor="let s of sortOptions" [value]="s.value">{{ s.label }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Limite de filas</label>
-            <select class="form-select" [(ngModel)]="selectedLimit">
-              <option *ngFor="let l of limitOptions" [value]="l.value">{{ l.label }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Export button -->
-        <div class="action-footer">
-          <button class="btn-primary success"
-                  [disabled]="isExporting"
-                  (click)="onExport()">
-            <span class="material-symbols-outlined">download</span>
-            {{ isExporting ? 'Exportando...' : 'Descargar CSV' }}
-          </button>
-        </div>
       </div>
 
-      <!-- ════════════════ IMPORT UPLOAD VIEW ════════════════ -->
-      <div class="view-section" *ngIf="currentView === 'import-upload'">
-        <button class="btn-back" (click)="goHome()">
-          <span class="material-symbols-outlined">arrow_back</span> Volver
-        </button>
+      <!-- ── BODY ── -->
+      <div class="modal-body">
 
-        <h3 class="section-title">Subir archivo CSV</h3>
-
-        <div class="upload-section">
-          <!-- Info box -->
-          <div class="upload-info-box">
-            <span class="material-symbols-outlined">info</span>
-            <div>
-              <h4>Informacion sobre el archivo</h4>
-              <ul>
-                <li>
-                  <span class="material-symbols-outlined">check_circle</span>
-                  Formato: CSV unicamente
-                </li>
-                <li>
-                  <span class="material-symbols-outlined">check_circle</span>
-                  Tamano maximo: 10 MB
-                </li>
-                <li>
-                  <span class="material-symbols-outlined">check_circle</span>
-                  Maximo: 10,000 filas
-                </li>
-              </ul>
+        <!-- ════════════════ HOME VIEW ════════════════ -->
+        @if (currentView === 'home') {
+          <div class="view-section">
+            <div class="home-grid">
+              <!-- Export Card -->
+              <button class="action-card" (click)="goTo('export')">
+                <div class="card-icon export">
+                  <span class="material-symbols-outlined">download</span>
+                </div>
+                <h3>Exportar Productos</h3>
+                <p>Selecciona columnas, ordena y descarga un CSV personalizado.</p>
+                <div class="card-arrow">
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </div>
+              </button>
+              <!-- Import Card -->
+              <button class="action-card" (click)="goTo('import-upload')">
+                <div class="card-icon import">
+                  <span class="material-symbols-outlined">upload</span>
+                </div>
+                <h3>Importar Productos</h3>
+                <p>Sube un CSV, previsualiza y selecciona las filas a importar.</p>
+                <div class="card-arrow">
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </div>
+              </button>
             </div>
           </div>
+        }
 
-          <!-- Drop zone -->
-          <label class="upload-drop-zone"
-                 [class.drag-over]="isDragOver"
-                 (dragover)="onDragOver($event)"
-                 (dragleave)="isDragOver = false"
-                 (drop)="onFileDrop($event)">
-            <div class="upload-icon">
-              <span class="material-symbols-outlined">cloud_upload</span>
-            </div>
-            <p class="upload-text">
-              <span class="drag-text">Arrastra tu archivo CSV aqui</span>
-              <span class="or-text">o</span>
-              <span class="click-text">haz clic para seleccionar</span>
-            </p>
-            <input type="file" accept=".csv" (change)="onFileSelected($event)" />
-          </label>
-
-          <!-- Template download -->
-          <div class="template-download">
-            <button class="btn-template" (click)="onDownloadTemplate()">
-              <span class="material-symbols-outlined">download</span>
-              Descargar plantilla
+        <!-- ════════════════ EXPORT VIEW ════════════════ -->
+        @if (currentView === 'export') {
+          <div class="view-section">
+            <button class="btn-back" (click)="goHome()">
+              <span class="material-symbols-outlined">arrow_back</span> Volver
             </button>
-          </div>
-
-          <!-- Collision rule -->
-          <div class="collision-rule">
-            <label>
-              <span class="rule-label">Regla de colision (SKU duplicado)</span>
-              <select class="select-collision" [(ngModel)]="selectedRule">
-                <option value="UPDATE">Actualizar producto existente</option>
-                <option value="SKIP">Omitir fila duplicada</option>
-              </select>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- ════════════════ IMPORT PREVIEW VIEW ════════════════ -->
-      <div class="view-section" *ngIf="currentView === 'import-preview'">
-        <button class="btn-back" (click)="goTo('import-upload')">
-          <span class="material-symbols-outlined">arrow_back</span> Volver
-        </button>
-
-        <h3 class="section-title">Vista previa de importacion</h3>
-
-        <div class="preview-section">
-          <!-- Error banner -->
-          <div *ngIf="previewError" class="error-banner">
-            <span class="material-symbols-outlined">error</span>
-            {{ previewError }}
-          </div>
-
-          <ng-container *ngIf="importPreview">
-            <!-- File info -->
-            <div class="preview-header-info">
-              <div class="file-info">
-                <span class="material-symbols-outlined">description</span>
-                <div>
-                  <h4>{{ importPreview.fileName }}</h4>
-                  <p>{{ importPreview.fileSizeKb }} KB &bull; {{ importPreview.totalRows }} filas</p>
+            <h3 class="section-title">Selecciona columnas a exportar</h3>
+            <!-- Bulk actions -->
+            <div class="bulk-actions">
+              <button class="btn-bulk" (click)="selectAllColumns()">Seleccionar todas</button>
+              <button class="btn-bulk secondary" (click)="deselectOptionalColumns()">Solo requeridas</button>
+            </div>
+            <!-- Column grid -->
+            <div class="columns-grid">
+              @for (col of availableColumns; track col) {
+                <label
+                  class="column-item"
+                  [class.required]="col.required">
+                  <input type="checkbox"
+                    [checked]="selectedColumnKeys.has(col.key)"
+                    [disabled]="col.required"
+                    (change)="toggleColumn(col)" />
+                    <div class="checkbox-custom"></div>
+                    <span class="column-label">{{ col.label }}</span>
+                    @if (col.required) {
+                      <span class="badge-required">REQUERIDA</span>
+                    }
+                  </label>
+                }
+              </div>
+              <!-- Sort + Limit -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Ordenar por</label>
+                  <select class="form-select" [(ngModel)]="selectedSort">
+                    @for (s of sortOptions; track s) {
+                      <option [value]="s.value">{{ s.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Limite de filas</label>
+                  <select class="form-select" [(ngModel)]="selectedLimit">
+                    @for (l of limitOptions; track l) {
+                      <option [value]="l.value">{{ l.label }}</option>
+                    }
+                  </select>
                 </div>
               </div>
-              <div class="status-badges">
-                <span class="badge success" *ngIf="importPreview.validCount > 0">
-                  <span class="material-symbols-outlined">check_circle</span>
-                  {{ importPreview.validCount }} validas
-                </span>
-                <span class="badge error" *ngIf="importPreview.errorCount > 0">
-                  <span class="material-symbols-outlined">error</span>
-                  {{ importPreview.errorCount }} con errores
-                </span>
+              <!-- Export button -->
+              <div class="action-footer">
+                <button class="btn-primary success"
+                  [disabled]="isExporting"
+                  (click)="onExport()">
+                  <span class="material-symbols-outlined">download</span>
+                  {{ isExporting ? 'Exportando...' : 'Descargar CSV' }}
+                </button>
               </div>
             </div>
+          }
 
-            <!-- Select all -->
-            <div class="select-all-row">
-              <input type="checkbox"
-                     [checked]="allRowsSelected"
-                     (change)="toggleAllValidRows()" />
-              <span>Seleccionar todas las filas validas ({{ selectedRowCount }} de {{ previewValidRows.length }})</span>
-            </div>
-
-            <!-- Preview table (first 5 rows) -->
-            <div class="preview-table-container">
-              <table class="preview-table">
-                <thead>
-                  <tr>
-                    <th class="col-select">
-                      <input type="checkbox"
-                             [checked]="allRowsSelected"
-                             (change)="toggleAllValidRows()" />
-                    </th>
-                    <th class="col-row-num">#</th>
-                    <th *ngFor="let header of getPreviewHeaders()" class="col-data">{{ header }}</th>
-                    <th class="col-status">Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let row of (showAllPreviewRows ? importPreview.rows : importPreview.rows.slice(0, 5)); trackBy: trackByRowNumber"
-                      [class.row-error]="!row.valid"
-                      [class.row-valid]="row.valid">
-                    <td class="col-select">
-                      <input type="checkbox"
-                             [checked]="isRowSelected(row.rowNumber)"
-                             [disabled]="!row.valid"
-                             (change)="toggleRow(row.rowNumber)" />
-                    </td>
-                    <td class="col-row-num">{{ row.rowNumber }}</td>
-                    <td *ngFor="let h of getPreviewHeaders()" class="col-data">{{ getCellValue(row, h) }}</td>
-                    <td class="col-status">
-                      <span class="status-badge" [class.success]="row.valid" [class.error]="!row.valid">
-                        <span class="material-symbols-outlined">{{ row.valid ? 'check_circle' : 'error' }}</span>
-                        {{ row.valid ? 'OK' : row.errors[0] }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Show all button -->
-            <div *ngIf="importPreview.rows.length > 5" class="show-all-button">
-              <button class="btn-show-all" (click)="showAllPreviewRows = !showAllPreviewRows">
-                <span class="material-symbols-outlined">
-                  {{ showAllPreviewRows ? 'expand_less' : 'expand_more' }}
-                </span>
-                {{ showAllPreviewRows ? 'Mostrar solo primeras 5 filas' : 'Ver todo el contenido (' + importPreview.rows.length + ' filas)' }}
+          <!-- ════════════════ IMPORT UPLOAD VIEW ════════════════ -->
+          @if (currentView === 'import-upload') {
+            <div class="view-section">
+              <button class="btn-back" (click)="goHome()">
+                <span class="material-symbols-outlined">arrow_back</span> Volver
               </button>
+              <h3 class="section-title">Subir archivo CSV</h3>
+              <div class="upload-section">
+                <!-- Info box -->
+                <div class="upload-info-box">
+                  <span class="material-symbols-outlined">info</span>
+                  <div>
+                    <h4>Informacion sobre el archivo</h4>
+                    <ul>
+                      <li>
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Formato: CSV unicamente
+                      </li>
+                      <li>
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Tamano maximo: 10 MB
+                      </li>
+                      <li>
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Maximo: 10,000 filas
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <!-- Drop zone -->
+                <label class="upload-drop-zone"
+                  [class.drag-over]="isDragOver"
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="isDragOver = false"
+                  (drop)="onFileDrop($event)">
+                  <div class="upload-icon">
+                    <span class="material-symbols-outlined">cloud_upload</span>
+                  </div>
+                  <p class="upload-text">
+                    <span class="drag-text">Arrastra tu archivo CSV aqui</span>
+                    <span class="or-text">o</span>
+                    <span class="click-text">haz clic para seleccionar</span>
+                  </p>
+                  <input type="file" accept=".csv" (change)="onFileSelected($event)" />
+                </label>
+                <!-- Template download -->
+                <div class="template-download">
+                  <button class="btn-template" (click)="onDownloadTemplate()">
+                    <span class="material-symbols-outlined">download</span>
+                    Descargar plantilla
+                  </button>
+                </div>
+                <!-- Collision rule -->
+                <div class="collision-rule">
+                  <label>
+                    <span class="rule-label">Regla de colision (SKU duplicado)</span>
+                    <select class="select-collision" [(ngModel)]="selectedRule">
+                      <option value="UPDATE">Actualizar producto existente</option>
+                      <option value="SKIP">Omitir fila duplicada</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
             </div>
+          }
 
-            <!-- Confirm footer -->
-            <div class="preview-footer">
-              <span class="select-count">{{ selectedRowCount }} fila(s) seleccionada(s)</span>
-              <button class="btn-primary"
-                      [disabled]="selectedRowCount === 0"
-                      (click)="onConfirmImport()">
-                <span class="material-symbols-outlined">cloud_upload</span>
-                Confirmar importacion
+          <!-- ════════════════ IMPORT PREVIEW VIEW ════════════════ -->
+          @if (currentView === 'import-preview') {
+            <div class="view-section">
+              <button class="btn-back" (click)="goTo('import-upload')">
+                <span class="material-symbols-outlined">arrow_back</span> Volver
               </button>
-            </div>
-          </ng-container>
-        </div>
-      </div>
+              <h3 class="section-title">Vista previa de importacion</h3>
+              <div class="preview-section">
+                <!-- Error banner -->
+                @if (previewError) {
+                  <div class="error-banner">
+                    <span class="material-symbols-outlined">error</span>
+                    {{ previewError }}
+                  </div>
+                }
+                @if (importPreview) {
+                  <!-- File info -->
+                  <div class="preview-header-info">
+                    <div class="file-info">
+                      <span class="material-symbols-outlined">description</span>
+                      <div>
+                        <h4>{{ importPreview.fileName }}</h4>
+                        <p>{{ importPreview.fileSizeKb }} KB &bull; {{ importPreview.totalRows }} filas</p>
+                      </div>
+                    </div>
+                    <div class="status-badges">
+                      @if (importPreview.validCount > 0) {
+                        <span class="badge success">
+                          <span class="material-symbols-outlined">check_circle</span>
+                          {{ importPreview.validCount }} validas
+                        </span>
+                      }
+                      @if (importPreview.errorCount > 0) {
+                        <span class="badge error">
+                          <span class="material-symbols-outlined">error</span>
+                          {{ importPreview.errorCount }} con errores
+                        </span>
+                      }
+                    </div>
+                  </div>
+                  <!-- Select all -->
+                  <div class="select-all-row">
+                    <input type="checkbox"
+                      [checked]="allRowsSelected"
+                      (change)="toggleAllValidRows()" />
+                      <span>Seleccionar todas las filas validas ({{ selectedRowCount }} de {{ previewValidRows.length }})</span>
+                    </div>
+                    <!-- Preview table (first 5 rows) -->
+                    <div class="preview-table-container">
+                      <table class="preview-table">
+                        <thead>
+                          <tr>
+                            <th class="col-select">
+                              <input type="checkbox"
+                                [checked]="allRowsSelected"
+                                (change)="toggleAllValidRows()" />
+                              </th>
+                              <th class="col-row-num">#</th>
+                              @for (header of getPreviewHeaders(); track header) {
+                                <th class="col-data">{{ header }}</th>
+                              }
+                              <th class="col-status">Estado</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (row of (showAllPreviewRows ? importPreview.rows : importPreview.rows.slice(0, 5)); track trackByRowNumber($index, row)) {
+                              <tr
+                                [class.row-error]="!row.valid"
+                                [class.row-valid]="row.valid">
+                                <td class="col-select">
+                                  <input type="checkbox"
+                                    [checked]="isRowSelected(row.rowNumber)"
+                                    [disabled]="!row.valid"
+                                    (change)="toggleRow(row.rowNumber)" />
+                                  </td>
+                                  <td class="col-row-num">{{ row.rowNumber }}</td>
+                                  @for (h of getPreviewHeaders(); track h) {
+                                    <td class="col-data">{{ getCellValue(row, h) }}</td>
+                                  }
+                                  <td class="col-status">
+                                    <span class="status-badge" [class.success]="row.valid" [class.error]="!row.valid">
+                                      <span class="material-symbols-outlined">{{ row.valid ? 'check_circle' : 'error' }}</span>
+                                      {{ row.valid ? 'OK' : row.errors[0] }}
+                                    </span>
+                                  </td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </div>
+                        <!-- Show all button -->
+                        @if (importPreview.rows.length > 5) {
+                          <div class="show-all-button">
+                            <button class="btn-show-all" (click)="showAllPreviewRows = !showAllPreviewRows">
+                              <span class="material-symbols-outlined">
+                                {{ showAllPreviewRows ? 'expand_less' : 'expand_more' }}
+                              </span>
+                              {{ showAllPreviewRows ? 'Mostrar solo primeras 5 filas' : 'Ver todo el contenido (' + importPreview.rows.length + ' filas)' }}
+                            </button>
+                          </div>
+                        }
+                        <!-- Confirm footer -->
+                        <div class="preview-footer">
+                          <span class="select-count">{{ selectedRowCount }} fila(s) seleccionada(s)</span>
+                          <button class="btn-primary"
+                            [disabled]="selectedRowCount === 0"
+                            (click)="onConfirmImport()">
+                            <span class="material-symbols-outlined">cloud_upload</span>
+                            Confirmar importacion
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
 
-      <!-- ════════════════ IMPORT PROCESSING VIEW ════════════════ -->
-      <div class="view-section" *ngIf="currentView === 'import-processing'">
-        <div class="processing-section">
-          <div class="processing-spinner"></div>
-          <p>Importando {{ selectedRowCount }} fila(s)...</p>
-          <p>Esto puede tomar unos segundos</p>
-        </div>
-      </div>
+                <!-- ════════════════ IMPORT PROCESSING VIEW ════════════════ -->
+                @if (currentView === 'import-processing') {
+                  <div class="view-section">
+                    <div class="processing-section">
+                      <div class="processing-spinner"></div>
+                      <p>Importando {{ selectedRowCount }} fila(s)...</p>
+                      <p>Esto puede tomar unos segundos</p>
+                    </div>
+                  </div>
+                }
 
-      <!-- ════════════════ IMPORT RESULT VIEW ════════════════ -->
-      <div class="view-section" *ngIf="currentView === 'import-result'">
-        <div class="result-section">
+                <!-- ════════════════ IMPORT RESULT VIEW ════════════════ -->
+                @if (currentView === 'import-result') {
+                  <div class="view-section">
+                    <div class="result-section">
+                      <!-- Error only (no result) -->
+                      @if (importError && !importResult) {
+                        <div class="result-error-block">
+                          <p>
+                            <span class="material-symbols-outlined">error</span>
+                            {{ importError }}
+                          </p>
+                          <button class="btn-secondary" (click)="onReset()">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            Volver al inicio
+                          </button>
+                        </div>
+                      }
+                      <!-- Result with stats -->
+                      @if (importResult) {
+                        <h3 class="section-title">Resultado de la importacion</h3>
+                        <div class="stats-grid">
+                          <div class="stat-card created">
+                            <span class="stat-value">{{ importResult.insertedCount }}</span>
+                            <span class="stat-label">Creados</span>
+                          </div>
+                          <div class="stat-card updated">
+                            <span class="stat-value">{{ importResult.updatedCount }}</span>
+                            <span class="stat-label">Actualizados</span>
+                          </div>
+                          <div class="stat-card skipped">
+                            <span class="stat-value">{{ importResult.totalRows - importResult.successCount }}</span>
+                            <span class="stat-label">Omitidos</span>
+                          </div>
+                          <div class="stat-card errors">
+                            <span class="stat-value">{{ importResult.errorCount }}</span>
+                            <span class="stat-label">Errores</span>
+                          </div>
+                        </div>
+                        <!-- Error details accordion -->
+                        @if (importResult.errors.length > 0) {
+                          <details class="error-accordion">
+                            <summary>
+                              <span class="material-symbols-outlined">error</span>
+                              Ver {{ importResult.errors.length }} error(es)
+                            </summary>
+                            <div class="error-table-wrap">
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th>Fila</th>
+                                    <th>Valor</th>
+                                    <th>Razon</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  @for (e of importResult.errors; track e) {
+                                    <tr>
+                                      <td>{{ e.rowNumber }}</td>
+                                      <td class="mono">{{ e.rawValue }}</td>
+                                      <td>{{ e.reason }}</td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            </div>
+                          </details>
+                        }
+                        <!-- Done button -->
+                        <div class="action-footer">
+                          <button class="btn-primary" (click)="onCloseAndReload()">
+                            <span class="material-symbols-outlined">check</span>
+                            Cerrar y actualizar
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
 
-          <!-- Error only (no result) -->
-          <div *ngIf="importError && !importResult" class="result-error-block">
-            <p>
-              <span class="material-symbols-outlined">error</span>
-              {{ importError }}
-            </p>
-            <button class="btn-secondary" (click)="onReset()">
-              <span class="material-symbols-outlined">arrow_back</span>
-              Volver al inicio
-            </button>
-          </div>
-
-          <!-- Result with stats -->
-          <ng-container *ngIf="importResult">
-            <h3 class="section-title">Resultado de la importacion</h3>
-
-            <div class="stats-grid">
-              <div class="stat-card created">
-                <span class="stat-value">{{ importResult.insertedCount }}</span>
-                <span class="stat-label">Creados</span>
-              </div>
-              <div class="stat-card updated">
-                <span class="stat-value">{{ importResult.updatedCount }}</span>
-                <span class="stat-label">Actualizados</span>
-              </div>
-              <div class="stat-card skipped">
-                <span class="stat-value">{{ importResult.totalRows - importResult.successCount }}</span>
-                <span class="stat-label">Omitidos</span>
-              </div>
-              <div class="stat-card errors">
-                <span class="stat-value">{{ importResult.errorCount }}</span>
-                <span class="stat-label">Errores</span>
-              </div>
-            </div>
-
-            <!-- Error details accordion -->
-            <details *ngIf="importResult.errors.length > 0" class="error-accordion">
-              <summary>
-                <span class="material-symbols-outlined">error</span>
-                Ver {{ importResult.errors.length }} error(es)
-              </summary>
-              <div class="error-table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Fila</th>
-                      <th>Valor</th>
-                      <th>Razon</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let e of importResult.errors">
-                      <td>{{ e.rowNumber }}</td>
-                      <td class="mono">{{ e.rawValue }}</td>
-                      <td>{{ e.reason }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </details>
-
-            <!-- Done button -->
-            <div class="action-footer">
-              <button class="btn-primary" (click)="onCloseAndReload()">
-                <span class="material-symbols-outlined">check</span>
-                Cerrar y actualizar
-              </button>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-
-    </div><!-- end modal-body -->
-  </div><!-- end modal-container -->
-</div><!-- end modal-overlay -->
-</ng-template>
+              </div><!-- end modal-body -->
+            </div><!-- end modal-container -->
+          </div><!-- end modal-overlay -->
+        </ng-template>

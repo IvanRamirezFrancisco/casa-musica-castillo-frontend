@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { PaymentSettingsService, BankTransferSettingsRequest } from '../../../services/payment-settings.service';
 import { ClabeUtils } from '../../../shared/utils/clabe.utils';
@@ -11,8 +11,9 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-admin-payment-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './admin-payment-settings.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-payment-settings.component.css']
 })
 export class AdminPaymentSettingsComponent implements OnInit, OnDestroy {

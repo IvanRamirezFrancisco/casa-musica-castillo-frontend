@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { OrderService } from '../../services/order.service';
@@ -9,6 +9,7 @@ import { Order, OrderStatus, PaymentStatus, ShippingStatus } from '../../models/
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './order-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./order-list.component.css']
 })
 export class OrderListComponent implements OnInit {

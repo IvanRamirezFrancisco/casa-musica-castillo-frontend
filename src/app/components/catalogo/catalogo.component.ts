@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +21,7 @@ import { CatalogSearchNavService } from '../../services/catalog-search-nav.servi
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './catalogo.component.html',
   styleUrl: './catalogo.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '(document:click)': 'onDocumentClick($event)'
   }

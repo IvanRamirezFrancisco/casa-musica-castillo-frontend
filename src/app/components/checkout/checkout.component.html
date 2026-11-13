@@ -1,6 +1,6 @@
 <!-- ================================================================
-     CHECKOUT — CASA DE MÚSICA CASTILLO
-     ================================================================ -->
+CHECKOUT — CASA DE MÚSICA CASTILLO
+================================================================ -->
 
 <div class="checkout-page">
 
@@ -31,268 +31,299 @@
   <div class="container checkout-body">
 
     <!-- ── ALERTA GLOBAL DE ERROR ──────────────────────────────── -->
-    <div class="alert alert-error" *ngIf="generalError">
-      <span class="material-icons">error_outline</span>
-      <span>{{ generalError }}</span>
-    </div>
+    @if (generalError) {
+      <div class="alert alert-error">
+        <span class="material-icons">error_outline</span>
+        <span>{{ generalError }}</span>
+      </div>
+    }
 
     <!-- ── ADVERTENCIA DE CARRITO NO VÁLIDO ──────────────────── -->
-    <div class="alert alert-warning" *ngIf="warningMessage && !canCheckout">
-      <span class="material-icons">warning_amber</span>
-      <div class="alert-body">
-        <span>{{ warningMessage }}</span>
-        <a routerLink="/carrito" class="alert-link">Volver al carrito →</a>
+    @if (warningMessage && !canCheckout) {
+      <div class="alert alert-warning">
+        <span class="material-icons">warning_amber</span>
+        <div class="alert-body">
+          <span>{{ warningMessage }}</span>
+          <a routerLink="/carrito" class="alert-link">Volver al carrito →</a>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- ── CARRITO VACÍO ───────────────────────────────────────── -->
-    <div class="state-block" *ngIf="cartItems.length === 0 && !generalError && !isProcessing">
-      <div class="state-icon-wrap">
-        <span class="material-icons state-icon">shopping_cart</span>
+    @if (cartItems.length === 0 && !generalError && !isProcessing) {
+      <div class="state-block">
+        <div class="state-icon-wrap">
+          <span class="material-icons state-icon">shopping_cart</span>
+        </div>
+        <h2>Tu carrito está vacío</h2>
+        <p>Agrega productos antes de continuar con el pago.</p>
+        <a routerLink="/catalogo" class="btn-state">
+          <span class="material-icons">explore</span>Ir al Catálogo
+        </a>
       </div>
-      <h2>Tu carrito está vacío</h2>
-      <p>Agrega productos antes de continuar con el pago.</p>
-      <a routerLink="/catalogo" class="btn-state">
-        <span class="material-icons">explore</span>Ir al Catálogo
-      </a>
-    </div>
+    }
 
     <!-- ── CARRITO BLOQUEADO (productos no disponibles) ──────── -->
-    <div class="state-block state-blocked" *ngIf="!canCheckout && cartItems.length > 0">
-      <div class="state-icon-wrap">
-        <span class="material-icons state-icon">remove_shopping_cart</span>
+    @if (!canCheckout && cartItems.length > 0) {
+      <div class="state-block state-blocked">
+        <div class="state-icon-wrap">
+          <span class="material-icons state-icon">remove_shopping_cart</span>
+        </div>
+        <h2>No puedes continuar con la compra</h2>
+        <p>Tu carrito contiene productos no disponibles. Por favor elimínalos antes de continuar.</p>
+        <a routerLink="/carrito" class="btn-state">
+          <span class="material-icons">arrow_back</span>Volver al Carrito
+        </a>
       </div>
-      <h2>No puedes continuar con la compra</h2>
-      <p>Tu carrito contiene productos no disponibles. Por favor elimínalos antes de continuar.</p>
-      <a routerLink="/carrito" class="btn-state">
-        <span class="material-icons">arrow_back</span>Volver al Carrito
-      </a>
-    </div>
+    }
 
     <!-- ================================================================
-         LAYOUT PRINCIPAL: solo visible cuando canCheckout === true
+    LAYOUT PRINCIPAL: solo visible cuando canCheckout === true
     ================================================================= -->
-    <div class="checkout-layout" *ngIf="canCheckout && cartItems.length > 0">
-
-      <!-- ── COLUMNA IZQUIERDA: FORMULARIO ──────────────────────── -->
-      <div class="checkout-form-section">
-        <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
-
-          <!-- ── SECCIÓN 1: MÉTODO DE ENTREGA ───────────────────── -->
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="card-header-icon">
-                <span class="material-icons">local_shipping</span>
+    @if (canCheckout && cartItems.length > 0) {
+      <div class="checkout-layout">
+        <!-- ── COLUMNA IZQUIERDA: FORMULARIO ──────────────────────── -->
+        <div class="checkout-form-section">
+          <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
+            <!-- ── SECCIÓN 1: MÉTODO DE ENTREGA ───────────────────── -->
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="card-header-icon">
+                  <span class="material-icons">local_shipping</span>
+                </div>
+                <div>
+                  <h2 class="card-title">Método de Entrega</h2>
+                  <p class="card-subtitle">¿Cómo quieres recibir tu pedido?</p>
+                </div>
               </div>
-              <div>
-                <h2 class="card-title">Método de Entrega</h2>
-                <p class="card-subtitle">¿Cómo quieres recibir tu pedido?</p>
-              </div>
-            </div>
-            
-            <div class="form-card-body">
-              <div class="payment-options">
-                <div class="payment-option"
-                     [class.selected]="checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'"
-                     (click)="checkoutForm.get('deliveryOption')?.setValue('PICKUP_STORE')">
-                  <div class="payment-icon-wrap"><span class="material-icons">storefront</span></div>
-                  <div class="payment-info">
-                    <span class="payment-label">Recoger en tienda</span>
-                    <span class="payment-desc">Recoge tu pedido personalmente o autoriza a alguien más.</span>
+              <div class="form-card-body">
+                <div class="payment-options">
+                  <div class="payment-option"
+                    [class.selected]="checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'"
+                    (click)="checkoutForm.get('deliveryOption')?.setValue('PICKUP_STORE')">
+                    <div class="payment-icon-wrap"><span class="material-icons">storefront</span></div>
+                    <div class="payment-info">
+                      <span class="payment-label">Recoger en tienda</span>
+                      <span class="payment-desc">Recoge tu pedido personalmente o autoriza a alguien más.</span>
+                    </div>
+                    @if (checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE') {
+                      <span class="payment-check material-icons">check_circle</span>
+                    }
                   </div>
-                  <span class="payment-check material-icons" *ngIf="checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">check_circle</span>
-                </div>
-                
-                <div class="payment-option"
-                     [class.selected]="checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY'"
-                     (click)="checkoutForm.get('deliveryOption')?.setValue('LOCAL_DELIVERY')">
-                  <div class="payment-icon-wrap"><span class="material-icons">local_shipping</span></div>
-                  <div class="payment-info">
-                    <span class="payment-label">Envío Local (Huejutla)</span>
-                    <span class="payment-desc">Envío rápido a domicilio en la zona local.</span>
+                  <div class="payment-option"
+                    [class.selected]="checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY'"
+                    (click)="checkoutForm.get('deliveryOption')?.setValue('LOCAL_DELIVERY')">
+                    <div class="payment-icon-wrap"><span class="material-icons">local_shipping</span></div>
+                    <div class="payment-info">
+                      <span class="payment-label">Envío Local (Huejutla)</span>
+                      <span class="payment-desc">Envío rápido a domicilio en la zona local.</span>
+                    </div>
+                    @if (checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY') {
+                      <span class="payment-check material-icons">check_circle</span>
+                    }
                   </div>
-                  <span class="payment-check material-icons" *ngIf="checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY'">check_circle</span>
-                </div>
-                
-                <div class="payment-option"
-                     [class.selected]="checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE'"
-                     (click)="checkoutForm.get('deliveryOption')?.setValue('EXTERNAL_SHIPPING_QUOTE')">
-                  <div class="payment-icon-wrap"><span class="material-icons">public</span></div>
-                  <div class="payment-info">
-                    <span class="payment-label">Envío Foráneo</span>
-                    <span class="payment-desc">Envíos fuera de Huejutla. Requiere cotización.</span>
+                  <div class="payment-option"
+                    [class.selected]="checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE'"
+                    (click)="checkoutForm.get('deliveryOption')?.setValue('EXTERNAL_SHIPPING_QUOTE')">
+                    <div class="payment-icon-wrap"><span class="material-icons">public</span></div>
+                    <div class="payment-info">
+                      <span class="payment-label">Envío Foráneo</span>
+                      <span class="payment-desc">Envíos fuera de Huejutla. Requiere cotización.</span>
+                    </div>
+                    @if (checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE') {
+                      <span class="payment-check material-icons">check_circle</span>
+                    }
                   </div>
-                  <span class="payment-check material-icons" *ngIf="checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE'">check_circle</span>
                 </div>
-              </div>
-
-              <!-- Mensaje dinámico de Envío Foráneo / Fuera de zona -->
-              <div class="alert mt-3" 
-                   [ngClass]="pricePreviewResult?.requiresQuote ? 'alert-warning' : 'alert-info'" 
-                   *ngIf="checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE' || pricePreviewResult?.requiresQuote">
-                <span class="material-icons">{{ pricePreviewResult?.requiresQuote ? 'info' : 'local_shipping' }}</span>
-                <div class="alert-body">
-                  <span><strong>{{ pricePreviewResult?.requiresQuote ? 'Tu envío requiere cotización.' : 'Información de envío:' }}</strong> 
-                  {{ pricePreviewResult?.message || 'Completa tu dirección para calcular el envío foráneo.' }}</span>
+                <!-- Mensaje dinámico de Envío Foráneo / Fuera de zona -->
+                @if (checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE' || pricePreviewResult?.requiresQuote) {
+                  <div class="alert mt-3"
+                    [ngClass]="pricePreviewResult?.requiresQuote ? 'alert-warning' : 'alert-info'"
+                    >
+                    <span class="material-icons">{{ pricePreviewResult?.requiresQuote ? 'info' : 'local_shipping' }}</span>
+                    <div class="alert-body">
+                      <span><strong>{{ pricePreviewResult?.requiresQuote ? 'Tu envío requiere cotización.' : 'Información de envío:' }}</strong>
+                    {{ pricePreviewResult?.message || 'Completa tu dirección para calcular el envío foráneo.' }}</span>
+                  </div>
                 </div>
-              </div>
+              }
             </div>
           </div><!-- /form-card delivery -->
-
           <!-- ── SECCIÓN 2: DIRECCIÓN O RECOLECCIÓN ──────────────────── -->
-          
           <!-- Recoger en tienda -->
-          <div class="form-card" *ngIf="checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">
-            <div class="form-card-header">
-              <div class="card-header-icon">
-                <span class="material-icons">storefront</span>
+          @if (checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE') {
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="card-header-icon">
+                  <span class="material-icons">storefront</span>
+                </div>
+                <div>
+                  <h2 class="card-title">Sucursal de Recolección y Personas Autorizadas</h2>
+                  <p class="card-subtitle">Consulta la ubicación de nuestra tienda y registra quién recogerá el pedido.</p>
+                </div>
               </div>
-              <div>
-                <h2 class="card-title">Sucursal de Recolección y Personas Autorizadas</h2>
-                <p class="card-subtitle">Consulta la ubicación de nuestra tienda y registra quién recogerá el pedido.</p>
-              </div>
-            </div>
-
-            <div class="form-card-body">
-              <!-- Tarjeta de información de la sucursal Casa de Música Castillo + Distancia opcional -->
-              <div class="store-pickup-location-card">
-                <div class="store-pickup-main">
-                  <div class="store-pickup-badge">
-                    <span class="material-icons">location_on</span>
+              <div class="form-card-body">
+                <!-- Tarjeta de información de la sucursal Casa de Música Castillo + Distancia opcional -->
+                <div class="store-pickup-location-card">
+                  <div class="store-pickup-main">
+                    <div class="store-pickup-badge">
+                      <span class="material-icons">location_on</span>
+                    </div>
+                    <div class="store-pickup-details">
+                      <h3 class="store-pickup-name">{{ storeInfo.name }}</h3>
+                      <p class="store-pickup-address">
+                        {{ storeInfo.streetAddress }}, {{ storeInfo.cityStateZip }}
+                      </p>
+                      @if (storeInfo.schedule) {
+                        <p class="store-pickup-schedule">
+                          <span class="material-icons">schedule</span>
+                          {{ storeInfo.schedule }}
+                        </p>
+                      }
+                    </div>
                   </div>
-                  <div class="store-pickup-details">
-                    <h3 class="store-pickup-name">{{ storeInfo.name }}</h3>
-                    <p class="store-pickup-address">
-                      {{ storeInfo.streetAddress }}, {{ storeInfo.cityStateZip }}
-                    </p>
-                    <p class="store-pickup-schedule" *ngIf="storeInfo.schedule">
-                      <span class="material-icons">schedule</span>
-                      {{ storeInfo.schedule }}
-                    </p>
+                  <div class="store-pickup-actions">
+                    <button
+                      type="button"
+                      class="geo-action-btn primary"
+                      (click)="calculateDistanceForStorePickup()"
+                      [disabled]="isCalculatingStoreDistance"
+                      aria-label="Calcular distancia desde mi ubicación a la tienda"
+                      >
+                      @if (!isCalculatingStoreDistance) {
+                        <span class="material-icons">near_me</span>
+                      }
+                      @if (isCalculatingStoreDistance) {
+                        <span class="spinner spinner-sm"></span>
+                      }
+                      <span>
+                        {{ isCalculatingStoreDistance ? 'Calculando distancia...' : 'Calcular distancia desde mi ubicación' }}
+                      </span>
+                    </button>
+                    <a
+                      [href]="storeInfo.mapsDirectionsUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="geo-action-btn secondary"
+                      aria-label="Ver cómo llegar a Casa de Música Castillo en Google Maps"
+                      >
+                      <span class="material-icons">directions</span>
+                      <span>Cómo llegar</span>
+                    </a>
                   </div>
+                  <!-- Resultado de distancia calculada -->
+                  @if (storeDistanceKm !== null && !storeDistanceError) {
+                    <div
+                      class="store-distance-result"
+                      role="status"
+                      aria-live="polite"
+                      >
+                      <span class="material-icons">straighten</span>
+                      <span>
+                        Distancia aproximada en línea recta: <strong>{{ storeDistanceKm }} km</strong> hasta nuestra sucursal en Huejutla de Reyes. Para la ruta real usa «Cómo llegar».
+                      </span>
+                    </div>
+                  }
+                  <!-- Error no intrusivo si se niega permiso en recolección -->
+                  @if (storeDistanceError) {
+                    <div
+                      class="geo-feedback-alert warning"
+                      role="status"
+                      >
+                      <span class="material-icons">location_disabled</span>
+                      <span>{{ storeDistanceError }}</span>
+                    </div>
+                  }
                 </div>
-
-                <div class="store-pickup-actions">
-                  <button
-                    type="button"
-                    class="geo-action-btn primary"
-                    (click)="calculateDistanceForStorePickup()"
-                    [disabled]="isCalculatingStoreDistance"
-                    aria-label="Calcular distancia desde mi ubicación a la tienda"
-                  >
-                    <span class="material-icons" *ngIf="!isCalculatingStoreDistance">near_me</span>
-                    <span class="spinner spinner-sm" *ngIf="isCalculatingStoreDistance"></span>
-                    <span>
-                      {{ isCalculatingStoreDistance ? 'Calculando distancia...' : 'Calcular distancia desde mi ubicación' }}
-                    </span>
-                  </button>
-
-                  <a
-                    [href]="storeInfo.mapsDirectionsUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="geo-action-btn secondary"
-                    aria-label="Ver cómo llegar a Casa de Música Castillo en Google Maps"
-                  >
-                    <span class="material-icons">directions</span>
-                    <span>Cómo llegar</span>
-                  </a>
-                </div>
-
-                <!-- Resultado de distancia calculada -->
-                <div
-                  *ngIf="storeDistanceKm !== null && !storeDistanceError"
-                  class="store-distance-result"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <span class="material-icons">straighten</span>
-                  <span>
-                    Distancia aproximada en línea recta: <strong>{{ storeDistanceKm }} km</strong> hasta nuestra sucursal en Huejutla de Reyes. Para la ruta real usa «Cómo llegar».
-                  </span>
-                </div>
-
-                <!-- Error no intrusivo si se niega permiso en recolección -->
-                <div
-                  *ngIf="storeDistanceError"
-                  class="geo-feedback-alert warning"
-                  role="status"
-                >
-                  <span class="material-icons">location_disabled</span>
-                  <span>{{ storeDistanceError }}</span>
-                </div>
-              </div>
-
-              <div formArrayName="authorizedPersons">
-              <div class="alert alert-info" style="margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; background-color: rgba(var(--primary-color-rgb), 0.1); border-radius: 8px; color: var(--primary-color);">
-                <span class="material-icons" style="font-size: 20px;">info</span>
-                <p class="text-sm mb-0">Solo las personas registradas podrán recoger el pedido presentando identificación oficial y el código de recolección.</p>
-              </div>
-              
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-sm font-weight-bold" style="color: var(--text-color);">{{ authorizedPersons.length }} de 3 personas autorizadas</span>
-              </div>
-              
-              <div class="authorized-persons-grid" style="display: grid; gap: 1rem;">
-                <div *ngFor="let person of authorizedPersons.controls; let i=index" [formGroupName]="i" class="authorized-person-card" style="border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; background: var(--bg-surface); position: relative; transition: all 0.2s ease;">
-                  
+                <div formArrayName="authorizedPersons">
+                  <div class="alert alert-info" style="margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; background-color: rgba(var(--primary-color-rgb), 0.1); border-radius: 8px; color: var(--primary-color);">
+                    <span class="material-icons" style="font-size: 20px;">info</span>
+                    <p class="text-sm mb-0">Solo las personas registradas podrán recoger el pedido presentando identificación oficial y el código de recolección.</p>
+                  </div>
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 style="font-size: 1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
-                      <span class="material-icons" style="color: var(--primary-color);">person</span> 
-                      Persona {{i + 1}} <span *ngIf="person.get('isPrimary')?.value" class="badge" style="background: var(--primary-color); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Principal</span>
-                    </h3>
-                    
-                    <div style="display: flex; gap: 0.5rem;">
-                      <button type="button" class="btn btn-sm btn-outline-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px;" (click)="fillWithMyData(i)" title="Usar mis datos" *ngIf="i === 0">
-                        Yo recogeré
-                      </button>
-                      <button type="button" class="btn-remove-person" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 0.25rem;" (click)="removeAuthorizedPerson(i)" *ngIf="authorizedPersons.length > 1" title="Eliminar persona">
-                        <span class="material-icons" style="font-size: 20px;">delete_outline</span>
-                      </button>
-                    </div>
+                    <span class="text-sm font-weight-bold" style="color: var(--text-color);">{{ authorizedPersons.length }} de 3 personas autorizadas</span>
                   </div>
-                  
-                  <div class="form-group mb-3">
-                    <label style="font-size: 0.85rem; font-weight: 500;">Nombre completo (como en su INE) <span class="required-mark" style="color: #dc3545;">*</span></label>
-                    <input type="text" formControlName="fullName" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="Ej. Juan Pérez García">
-                    
-                    <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('fullName')?.errors?.['required'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)">Ingresa el nombre completo de la persona.</small>
-                    <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('fullName')?.errors?.['minlength'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)">El nombre debe tener al menos 5 caracteres.</small>
-                    <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('fullName')?.errors?.['pattern'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)">El nombre solo puede contener letras y espacios.</small>
-                    <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('fullName')?.errors?.['duplicatePerson']">Esta persona ya está autorizada.</small>
-                  </div>
-                  
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group mb-0">
-                      <label style="font-size: 0.85rem; font-weight: 500;">Teléfono (opcional)</label>
-                      <input type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" (input)="onAuthorizedPhoneInput(i)" formControlName="phone" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="10 dígitos">
-                      
-                      <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('phone')?.errors?.['invalidPhone'] && (person.get('phone')?.touched || person.get('phone')?.dirty)">El teléfono debe tener exactamente 10 dígitos.</small>
-                      <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('phone')?.errors?.['pattern'] && (person.get('phone')?.touched || person.get('phone')?.dirty)">El teléfono solo puede contener números.</small>
+                  <div class="authorized-persons-grid" style="display: grid; gap: 1rem;">
+                    @for (person of authorizedPersons.controls; track person; let i = $index) {
+                      <div [formGroupName]="i" class="authorized-person-card" style="border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; background: var(--bg-surface); position: relative; transition: all 0.2s ease;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <h3 style="font-size: 1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
+                            <span class="material-icons" style="color: var(--primary-color);">person</span>
+                            Persona {{i + 1}} @if (person.get('isPrimary')?.value) {
+                            <span class="badge" style="background: var(--primary-color); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Principal</span>
+                          }
+                        </h3>
+                        <div style="display: flex; gap: 0.5rem;">
+                          @if (i === 0) {
+                            <button type="button" class="btn btn-sm btn-outline-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px;" (click)="fillWithMyData(i)" title="Usar mis datos">
+                              Yo recogeré
+                            </button>
+                          }
+                          @if (authorizedPersons.length > 1) {
+                            <button type="button" class="btn-remove-person" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 0.25rem;" (click)="removeAuthorizedPerson(i)" title="Eliminar persona">
+                              <span class="material-icons" style="font-size: 20px;">delete_outline</span>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                      <div class="form-group mb-3">
+                        <label style="font-size: 0.85rem; font-weight: 500;">Nombre completo (como en su INE) <span class="required-mark" style="color: #dc3545;">*</span></label>
+                        <input type="text" formControlName="fullName" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="Ej. Juan Pérez García">
+                        @if (person.get('fullName')?.errors?.['required'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)) {
+                          <small class="text-danger" style="display: block; margin-top: 0.25rem;">Ingresa el nombre completo de la persona.</small>
+                        }
+                        @if (person.get('fullName')?.errors?.['minlength'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)) {
+                          <small class="text-danger" style="display: block; margin-top: 0.25rem;">El nombre debe tener al menos 5 caracteres.</small>
+                        }
+                        @if (person.get('fullName')?.errors?.['pattern'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)) {
+                          <small class="text-danger" style="display: block; margin-top: 0.25rem;">El nombre solo puede contener letras y espacios.</small>
+                        }
+                        @if (person.get('fullName')?.errors?.['duplicatePerson']) {
+                          <small class="text-danger" style="display: block; margin-top: 0.25rem;">Esta persona ya está autorizada.</small>
+                        }
+                      </div>
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group mb-0">
+                          <label style="font-size: 0.85rem; font-weight: 500;">Teléfono (opcional)</label>
+                          <input type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" (input)="onAuthorizedPhoneInput(i)" formControlName="phone" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="10 dígitos">
+                          @if (person.get('phone')?.errors?.['invalidPhone'] && (person.get('phone')?.touched || person.get('phone')?.dirty)) {
+                            <small class="text-danger" style="display: block; margin-top: 0.25rem;">El teléfono debe tener exactamente 10 dígitos.</small>
+                          }
+                          @if (person.get('phone')?.errors?.['pattern'] && (person.get('phone')?.touched || person.get('phone')?.dirty)) {
+                            <small class="text-danger" style="display: block; margin-top: 0.25rem;">El teléfono solo puede contener números.</small>
+                          }
+                        </div>
+                        <div class="form-group mb-0">
+                          <label style="font-size: 0.85rem; font-weight: 500;">Parentesco (opcional)</label>
+                          <input type="text" formControlName="relationship" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="Ej. Hermano, Amigo">
+                          @if (person.get('relationship')?.errors?.['maxlength'] && (person.get('relationship')?.touched || person.get('relationship')?.dirty)) {
+                            <small class="text-danger" style="display: block; margin-top: 0.25rem;">La referencia no debe superar 50 caracteres.</small>
+                          }
+                          @if (person.get('relationship')?.errors?.['pattern'] && (person.get('relationship')?.touched || person.get('relationship')?.dirty)) {
+                            <small class="text-danger" style="display: block; margin-top: 0.25rem;">Usa solo letras y espacios.</small>
+                          }
+                        </div>
+                      </div>
                     </div>
-                    <div class="form-group mb-0">
-                      <label style="font-size: 0.85rem; font-weight: 500;">Parentesco (opcional)</label>
-                      <input type="text" formControlName="relationship" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="Ej. Hermano, Amigo">
-                      
-                      <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('relationship')?.errors?.['maxlength'] && (person.get('relationship')?.touched || person.get('relationship')?.dirty)">La referencia no debe superar 50 caracteres.</small>
-                      <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('relationship')?.errors?.['pattern'] && (person.get('relationship')?.touched || person.get('relationship')?.dirty)">Usa solo letras y espacios.</small>
-                    </div>
-                  </div>
+                  }
                 </div>
-              </div>
-              
-              <button type="button" class="btn-add-person mt-3" style="width: 100%; padding: 0.75rem; background: transparent; border: 2px dashed var(--primary-color); color: var(--primary-color); border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;" (click)="addAuthorizedPerson()" *ngIf="authorizedPersons.length < 3">
-                <span class="material-icons">add_circle_outline</span> Autorizar a otra persona
-              </button>
-              <button type="button" class="btn-add-person mt-3" style="width: 100%; padding: 0.75rem; background: transparent; border: 2px dashed #6c757d; color: #6c757d; border-radius: 12px; cursor: not-allowed; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled *ngIf="authorizedPersons.length >= 3">
-                <span class="material-icons">person_off</span> Máximo 3 personas autorizadas
-              </button>
+                @if (authorizedPersons.length < 3) {
+                  <button type="button" class="btn-add-person mt-3" style="width: 100%; padding: 0.75rem; background: transparent; border: 2px dashed var(--primary-color); color: var(--primary-color); border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;" (click)="addAuthorizedPerson()">
+                    <span class="material-icons">add_circle_outline</span> Autorizar a otra persona
+                  </button>
+                }
+                @if (authorizedPersons.length >= 3) {
+                  <button type="button" class="btn-add-person mt-3" style="width: 100%; padding: 0.75rem; background: transparent; border: 2px dashed #6c757d; color: #6c757d; border-radius: 12px; cursor: not-allowed; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
+                    <span class="material-icons">person_off</span> Máximo 3 personas autorizadas
+                  </button>
+                }
               </div>
             </div>
           </div>
-          
-          <!-- Dirección de Envío -->
-          <div class="form-card" *ngIf="checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE'">
+        }
+        <!-- Dirección de Envío -->
+        @if (checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE') {
+          <div class="form-card">
             <div class="form-card-header">
               <div class="card-header-icon">
                 <span class="material-icons">place</span>
@@ -302,36 +333,36 @@
                 <p class="card-subtitle">¿Dónde recibirás tu pedido?</p>
               </div>
             </div>
-            
             <div class="form-card-body" formGroupName="shippingAddress">
-            
               <!-- Barra de datos precargados -->
-              <div class="account-prefill-card complete" *ngIf="userDataLoadStatus === 'COMPLETE'">
-                <div class="account-prefill-icon">
-                  <i class="fas fa-user-check"></i>
+              @if (userDataLoadStatus === 'COMPLETE') {
+                <div class="account-prefill-card complete">
+                  <div class="account-prefill-icon">
+                    <i class="fas fa-user-check"></i>
+                  </div>
+                  <div class="account-prefill-content">
+                    <span class="account-prefill-title">Datos de cuenta cargados</span>
+                    <span class="account-prefill-description">Puedes modificar estos datos para este pedido.</span>
+                  </div>
+                  <button type="button" class="account-prefill-action" (click)="loadUserData(true)">
+                    <i class="fas fa-rotate-right"></i> Usar mis datos de cuenta
+                  </button>
                 </div>
-                <div class="account-prefill-content">
-                  <span class="account-prefill-title">Datos de cuenta cargados</span>
-                  <span class="account-prefill-description">Puedes modificar estos datos para este pedido.</span>
+              }
+              @if (userDataLoadStatus === 'PARTIAL') {
+                <div class="account-prefill-card partial">
+                  <div class="account-prefill-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </div>
+                  <div class="account-prefill-content">
+                    <span class="account-prefill-title">Datos parciales</span>
+                    <span class="account-prefill-description">Completa los campos faltantes antes de confirmar tu pedido.</span>
+                  </div>
+                  <button type="button" class="account-prefill-action" (click)="loadUserData(true)">
+                    <i class="fas fa-rotate-right"></i> Usar mis datos de cuenta
+                  </button>
                 </div>
-                <button type="button" class="account-prefill-action" (click)="loadUserData(true)">
-                  <i class="fas fa-rotate-right"></i> Usar mis datos de cuenta
-                </button>
-              </div>
-
-              <div class="account-prefill-card partial" *ngIf="userDataLoadStatus === 'PARTIAL'">
-                <div class="account-prefill-icon">
-                  <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div class="account-prefill-content">
-                  <span class="account-prefill-title">Datos parciales</span>
-                  <span class="account-prefill-description">Completa los campos faltantes antes de confirmar tu pedido.</span>
-                </div>
-                <button type="button" class="account-prefill-action" (click)="loadUserData(true)">
-                  <i class="fas fa-rotate-right"></i> Usar mis datos de cuenta
-                </button>
-              </div>
-
+              }
               <!-- Nombre y Apellidos -->
               <div class="form-row">
                 <div class="form-group">
@@ -344,730 +375,830 @@
                     [class.input-error]="isFieldInvalid('shippingAddress.firstName')"
                     placeholder="Tu nombre"
                     autocomplete="given-name"
-                  >
-                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.firstName')">
-                    <span class="material-icons">error</span>Nombre es requerido.
-                  </span>
-                </div>
-                <div class="form-group">
-                  <label for="lastName">Apellidos <span class="required-mark">*</span></label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    formControlName="lastName"
-                    class="form-input"
-                    [class.input-error]="isFieldInvalid('shippingAddress.lastName')"
-                    placeholder="Tus apellidos"
-                    autocomplete="family-name"
-                  >
-                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.lastName')">
-                    <span class="material-icons">error</span>Apellidos son requeridos.
-                  </span>
-                </div>
-              </div>
-
-              <!-- Teléfono -->
-              <div class="form-group">
-                <label for="phone">Teléfono de contacto <span class="required-mark">*</span></label>
-                <div class="input-with-icon">
-                  <span class="material-icons input-icon">phone</span>
-                  <input
-                    type="tel"
-                    id="phone"
-                    formControlName="phone"
-                    class="form-input with-icon"
-                    [class.input-error]="isFieldInvalid('shippingAddress.phone')"
-                    placeholder="Ej: 5512345678"
-                    autocomplete="tel"
-                    inputmode="numeric"
-                    maxlength="10"
-                    (input)="sanitizeNumericField('shippingAddress.phone', 10)"
-                  >
-                </div>
-                <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.phone')">
-                  <span class="material-icons">error</span>Ingresa un teléfono válido de 10 dígitos.
-                </span>
-              </div>
-
-              <!-- Selector de origen de dirección: Ubicación actual vs Manual -->
-              <div class="address-origin-selector">
-                <div class="address-origin-header">
-                  <div class="address-helper-icon">
-                    <i class="fas fa-location-dot" aria-hidden="true"></i>
-                  </div>
-                  <div class="address-helper-content">
-                    <span class="address-helper-title">¿Cómo prefieres indicar tu dirección de entrega?</span>
-                    <span class="address-helper-text">
-                      Usa tu ubicación actual para sugerir calle, colonia y código postal, o escríbela manualmente.
-                    </span>
-                  </div>
-                </div>
-
-                <div class="address-origin-buttons">
-                  <button
-                    type="button"
-                    class="origin-option-btn"
-                    [class.active]="addressEntryMode === 'GEOLOCATION' || isDetectingLocation"
-                    (click)="requestCurrentLocationForShipping()"
-                    [disabled]="isDetectingLocation"
-                    aria-label="Usar mi ubicación actual para sugerir dirección de envío"
-                  >
-                    <span class="material-icons" *ngIf="!isDetectingLocation">my_location</span>
-                    <span class="spinner spinner-sm" *ngIf="isDetectingLocation"></span>
-                    <span>
-                      {{ isDetectingLocation ? 'Obteniendo ubicación...' : 'Usar mi ubicación actual' }}
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    class="origin-option-btn"
-                    [class.active]="addressEntryMode === 'MANUAL' && !isDetectingLocation"
-                    (click)="selectManualAddressMode()"
-                    aria-label="Ingresar dirección de envío manualmente"
-                  >
-                    <span class="material-icons">edit_location_alt</span>
-                    <span>Ingresar dirección manualmente</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Tarjeta de Revisión de Ubicación Detectada (Nunca confirma sin revisión del usuario) -->
-              <div
-                *ngIf="detectedShippingAddress && !isDetectingLocation"
-                class="geo-review-card"
-                role="region"
-                aria-label="Revisar ubicación detectada"
-              >
-                <div class="geo-review-header">
-                  <div class="geo-review-title-wrap">
-                    <span class="material-icons geo-pin-icon">where_to_vote</span>
-                    <div>
-                      <h4 class="geo-review-title">Revisar ubicación detectada</h4>
-                      <p class="geo-review-subtitle">
-                        Confirma si los datos sugeridos coinciden con tu domicilio. Podrás editar cualquier campo y completar tu número exterior.
-                      </p>
-                    </div>
-                  </div>
-                  <span class="geo-distance-pill" *ngIf="detectedShippingAddress.distanceToStoreKm">
-                    A {{ detectedShippingAddress.distanceToStoreKm }} km de la tienda
-                  </span>
-                </div>
-
-                <div class="geo-feedback-alert warning" role="status" *ngIf="!detectedShippingAddress.reverseGeocodeResolved">
-                  <span class="material-icons">info</span>
-                  <span>{{ detectedShippingAddress.displayAddress }} Completa tu dirección manualmente.</span>
-                </div>
-
-                <div class="geo-review-grid" *ngIf="detectedShippingAddress.reverseGeocodeResolved">
-                  <div class="geo-review-field">
-                    <span class="geo-field-label">Calle sugerida</span>
-                    <span class="geo-field-val">
-                      {{ detectedShippingAddress.street || 'Completar manualmente' }}
-                    </span>
-                  </div>
-                  <div class="geo-review-field">
-                    <span class="geo-field-label">Colonia / Localidad</span>
-                    <span class="geo-field-val">
-                      {{ detectedShippingAddress.neighborhood || 'Completar manualmente' }}
-                    </span>
-                  </div>
-                  <div class="geo-review-field">
-                    <span class="geo-field-label">Código Postal</span>
-                    <span class="geo-field-val">
-                      {{ detectedShippingAddress.postalCode || 'Completar manualmente' }}
-                    </span>
-                  </div>
-                  <div class="geo-review-field">
-                    <span class="geo-field-label">Municipio y Estado</span>
-                    <span class="geo-field-val">
-                      {{ (detectedShippingAddress.city || '—') + (detectedShippingAddress.state ? ', ' + detectedShippingAddress.state : '') }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="geo-review-actions">
-                  <button
-                    *ngIf="detectedShippingAddress.reverseGeocodeResolved"
-                    type="button"
-                    class="geo-confirm-btn"
-                    (click)="confirmDetectedShippingAddress()"
-                  >
-                    <span class="material-icons">check_circle</span>
-                    <span>Confirmar dirección sugerida</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="geo-manual-btn"
-                    (click)="selectManualAddressMode()"
-                  >
-                    <span class="material-icons">edit</span>
-                    <span>{{ detectedShippingAddress.reverseGeocodeResolved ? 'Ingresar manualmente' : 'Completar dirección manualmente' }}</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Confirmación discreta cuando se aplicó la dirección sugerida -->
-              <div
-                *ngIf="addressConfirmedFromGeo && !detectedShippingAddress"
-                class="geo-feedback-alert success"
-                role="status"
-              >
-                <span class="material-icons">check_circle</span>
-                <span>
-                  Ubicación aplicada como sugerencia. Verifica los datos y completa tu <strong>número exterior</strong> y <strong>referencias</strong>.
-                </span>
-              </div>
-
-              <!-- Mensaje amigable no bloqueante si falla geolocalización o se niega permiso -->
-              <div
-                *ngIf="shippingGeoError"
-                class="geo-feedback-alert warning"
-                role="status"
-                aria-live="polite"
-              >
-                <span class="material-icons">location_off</span>
-                <div class="geo-feedback-body">
-                  <span>{{ shippingGeoError }}</span>
-                </div>
-              </div>
-
-              <!-- Calle -->
-              <div class="form-group">
-                <label for="street">Calle <span class="required-mark">*</span></label>
-                <input
-                  type="text"
-                  id="street"
-                  formControlName="street"
-                  class="form-input"
-                  [class.input-error]="isFieldInvalid('shippingAddress.street')"
-                  placeholder="Nombre de la calle"
-                  autocomplete="address-line1"
-                >
-                <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.street')">
-                  <span class="material-icons">error</span>La calle es requerida.
-                </span>
-              </div>
-
-              <!-- Número ext / int -->
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="exteriorNumber">Número exterior <span class="required-mark">*</span></label>
-                  <input
-                    type="text"
-                    id="exteriorNumber"
-                    formControlName="exteriorNumber"
-                    class="form-input"
-                    [class.input-error]="isFieldInvalid('shippingAddress.exteriorNumber')"
-                    placeholder="Ej: 123"
-                  >
-                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.exteriorNumber')">
-                    <span class="material-icons">error</span>Requerido.
-                  </span>
-                </div>
-                <div class="form-group">
-                  <label for="interiorNumber">Número interior <span class="optional-tag">(opcional)</span></label>
-                  <input
-                    type="text"
-                    id="interiorNumber"
-                    formControlName="interiorNumber"
-                    class="form-input"
-                    placeholder="Ej: 4A"
-                  >
-                </div>
-              </div>
-
-              <!-- Colonia -->
-              <div class="form-group">
-                <label for="neighborhood">Colonia <span class="required-mark">*</span></label>
-                <input
-                  type="text"
-                  id="neighborhood"
-                  formControlName="neighborhood"
-                  class="form-input"
-                  [class.input-error]="isFieldInvalid('shippingAddress.neighborhood')"
-                  placeholder="Nombre de la colonia"
-                >
-                <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.neighborhood')">
-                  <span class="material-icons">error</span>La colonia es requerida.
-                </span>
-              </div>
-
-              <!-- Ciudad / Estado / CP -->
-              <div class="form-row form-row-3">
-                <div class="form-group">
-                  <label for="city">Municipio / Ciudad <span class="required-mark">*</span></label>
-                  <input
-                    type="text"
-                    id="city"
-                    formControlName="city"
-                    class="form-input"
-                    [class.input-error]="isFieldInvalid('shippingAddress.city')"
-                    placeholder="Ciudad"
-                    autocomplete="address-level2"
-                  >
-                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.city')">
-                    <span class="material-icons">error</span>Ciudad requerida.
-                  </span>
-                </div>
-                <div class="form-group">
-                  <label for="state">Estado <span class="required-mark">*</span></label>
-                  <input
-                    type="text"
-                    id="state"
-                    formControlName="state"
-                    class="form-input"
-                    [class.input-error]="isFieldInvalid('shippingAddress.state')"
-                    placeholder="Estado"
-                    autocomplete="address-level1"
-                  >
-                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.state')">
-                    <span class="material-icons">error</span>Estado requerido.
-                  </span>
-                </div>
-                <div class="form-group cp-group">
-                  <label for="zipCode">Código Postal <span class="required-mark">*</span></label>
-                  <input
-                    type="text"
-                    id="zipCode"
-                    formControlName="zipCode"
-                    class="form-input"
-                    [class.input-error]="isFieldInvalid('shippingAddress.zipCode')"
-                    placeholder="00000"
-                    maxlength="5"
-                    inputmode="numeric"
-                    autocomplete="postal-code"
-                    (input)="sanitizeNumericField('shippingAddress.zipCode', 5)"
-                  >
-                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.zipCode')">
-                    <span class="material-icons">error</span>El código postal debe tener 5 dígitos.
-                  </span>
-                </div>
-              </div>
-
-              <!-- Referencias -->
-              <div class="form-group">
-                <label for="references">Referencias de entrega <span class="optional-tag">(opcional)</span></label>
-                <textarea
-                  id="references"
-                  formControlName="references"
-                  class="form-input form-textarea"
-                  placeholder="Ej: Casa blanca con portón negro, entre calle Juárez y Morelos..."
-                  rows="2"
-                ></textarea>
-              </div>
-
-            </div>
-          </div><!-- /form-card shipping -->
-
-          <!-- ── SECCIÓN 3: FACTURACIÓN ──────────────────────────── -->
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="card-header-icon">
-                <span class="material-icons">receipt_long</span>
-              </div>
-              <div>
-                <h2 class="card-title">Facturación</h2>
-                <p class="card-subtitle">¿Necesitas comprobante fiscal?</p>
-              </div>
-            </div>
-
-            <div class="form-card-body">
-              <label class="toggle-label">
-                <input type="checkbox" formControlName="requireInvoice" class="toggle-checkbox">
-                <div class="toggle-box">
-                  <span class="toggle-text">Requiero factura (CFDI)</span>
-                  <span class="toggle-sub">Mis datos de envío no son suficientes para facturar</span>
-                </div>
-              </label>
-
-              <div class="billing-section" *ngIf="isRequireInvoice()" formGroupName="billingAddress">
-                <div class="billing-notice">
-                  <span class="material-icons">info</span>
-                  La facturación será procesada y validada posteriormente por el negocio.
-                </div>
-                <div class="form-row">
-                  <div class="form-group cp-group">
-                    <label for="rfc">RFC <span class="required-mark">*</span></label>
-                    <input
-                      type="text"
-                      id="rfc"
-                      formControlName="rfc"
-                      class="form-input"
-                      [class.input-error]="isFieldInvalid('billingAddress.rfc')"
-                      placeholder="XAXX010101000"
-                      maxlength="13"
-                      (input)="sanitizeRfcField()"
                     >
-                    <span class="field-error" *ngIf="isFieldInvalid('billingAddress.rfc')">
-                      <span class="material-icons">error</span>RFC es requerido (12-13 caracteres).
-                    </span>
-                  </div>
-                  <div class="form-group" style="flex:2">
-                    <label for="businessName">Razón Social <span class="required-mark">*</span></label>
-                    <input
-                      type="text"
-                      id="businessName"
-                      formControlName="businessName"
-                      class="form-input"
-                      [class.input-error]="isFieldInvalid('billingAddress.businessName')"
-                      placeholder="Nombre legal de la empresa o persona"
-                    >
-                    <span class="field-error" *ngIf="isFieldInvalid('billingAddress.businessName')">
-                      <span class="material-icons">error</span>Razón social requerida.
-                    </span>
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group cp-group">
-                    <label for="fiscalZipCode">CP Fiscal <span class="required-mark">*</span></label>
-                    <input
-                      type="text"
-                      id="fiscalZipCode"
-                      formControlName="fiscalZipCode"
-                      class="form-input"
-                      [class.input-error]="isFieldInvalid('billingAddress.fiscalZipCode')"
-                      placeholder="00000"
-                      maxlength="5"
-                      inputmode="numeric"
-                      (input)="sanitizeNumericField('billingAddress.fiscalZipCode', 5)"
-                    >
-                    <span class="field-error" *ngIf="isFieldInvalid('billingAddress.fiscalZipCode')">
-                      <span class="material-icons">error</span>El código postal debe tener 5 dígitos.
-                    </span>
+                    @if (isFieldInvalid('shippingAddress.firstName')) {
+                      <span class="field-error">
+                        <span class="material-icons">error</span>Nombre es requerido.
+                      </span>
+                    }
                   </div>
                   <div class="form-group">
-                    <label for="invoiceEmail">Correo para factura <span class="required-mark">*</span></label>
+                    <label for="lastName">Apellidos <span class="required-mark">*</span></label>
                     <input
-                      type="email"
-                      id="invoiceEmail"
-                      formControlName="invoiceEmail"
+                      type="text"
+                      id="lastName"
+                      formControlName="lastName"
                       class="form-input"
-                      [class.input-error]="isFieldInvalid('billingAddress.invoiceEmail')"
-                      placeholder="factura@empresa.com"
-                    >
-                    <span class="field-error" *ngIf="isFieldInvalid('billingAddress.invoiceEmail')">
-                      <span class="material-icons">error</span>Correo inválido.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div><!-- /form-card billing -->
-
-          <!-- ── SECCIÓN 4: MÉTODO DE PAGO ──────────────────────── -->
-          <div class="form-card" *ngIf="pricePreviewResult?.canProceedToPayment">
-            <div class="form-card-header">
-              <div class="card-header-icon">
-                <span class="material-icons">account_balance</span>
-              </div>
-              <div>
-                <h2 class="card-title">Método de Pago</h2>
-                <p class="card-subtitle">¿Cómo deseas pagar?</p>
-              </div>
-            </div>
-            <div class="form-card-body">
-              <div class="payment-options">
-                <div
-                  class="payment-option"
-                  *ngFor="let method of paymentMethods"
-                  [class.selected]="checkoutForm.get('paymentMethod')?.value === method.value"
-                  (click)="selectPaymentMethod(method.value)"
-                  role="radio"
-                  [attr.aria-checked]="checkoutForm.get('paymentMethod')?.value === method.value"
-                >
-                  <div class="payment-icon-wrap">
-                    <span class="material-icons">{{ method.icon }}</span>
-                  </div>
-                  <div class="payment-info">
-                    <span class="payment-label">{{ method.label }}</span>
-                    <span class="payment-desc">{{ method.description }}</span>
-                    <div class="payment-badges" *ngIf="method.badges">
-                      <span class="payment-badge" *ngFor="let badge of method.badges">{{ badge }}</span>
+                      [class.input-error]="isFieldInvalid('shippingAddress.lastName')"
+                      placeholder="Tus apellidos"
+                      autocomplete="family-name"
+                      >
+                      @if (isFieldInvalid('shippingAddress.lastName')) {
+                        <span class="field-error">
+                          <span class="material-icons">error</span>Apellidos son requeridos.
+                        </span>
+                      }
                     </div>
                   </div>
-                  <span class="payment-check material-icons"
-                    *ngIf="checkoutForm.get('paymentMethod')?.value === method.value">
-                    check_circle
-                  </span>
-                </div>
-              </div>
+                  <!-- Teléfono -->
+                  <div class="form-group">
+                    <label for="phone">Teléfono de contacto <span class="required-mark">*</span></label>
+                    <div class="input-with-icon">
+                      <span class="material-icons input-icon">phone</span>
+                      <input
+                        type="tel"
+                        id="phone"
+                        formControlName="phone"
+                        class="form-input with-icon"
+                        [class.input-error]="isFieldInvalid('shippingAddress.phone')"
+                        placeholder="Ej: 5512345678"
+                        autocomplete="tel"
+                        inputmode="numeric"
+                        maxlength="10"
+                        (input)="sanitizeNumericField('shippingAddress.phone', 10)"
+                        >
+                      </div>
+                      @if (isFieldInvalid('shippingAddress.phone')) {
+                        <span class="field-error">
+                          <span class="material-icons">error</span>Ingresa un teléfono válido de 10 dígitos.
+                        </span>
+                      }
+                    </div>
+                    <!-- Selector de origen de dirección: Ubicación actual vs Manual -->
+                    <div class="address-origin-selector">
+                      <div class="address-origin-header">
+                        <div class="address-helper-icon">
+                          <i class="fas fa-location-dot" aria-hidden="true"></i>
+                        </div>
+                        <div class="address-helper-content">
+                          <span class="address-helper-title">¿Cómo prefieres indicar tu dirección de entrega?</span>
+                          <span class="address-helper-text">
+                            Usa tu ubicación actual para sugerir calle, colonia y código postal, o escríbela manualmente.
+                          </span>
+                        </div>
+                      </div>
+                      <div class="address-origin-buttons">
+                        <button
+                          type="button"
+                          class="origin-option-btn"
+                          [class.active]="addressEntryMode === 'GEOLOCATION' || isDetectingLocation"
+                          (click)="requestCurrentLocationForShipping()"
+                          [disabled]="isDetectingLocation"
+                          aria-label="Usar mi ubicación actual para sugerir dirección de envío"
+                          >
+                          @if (!isDetectingLocation) {
+                            <span class="material-icons">my_location</span>
+                          }
+                          @if (isDetectingLocation) {
+                            <span class="spinner spinner-sm"></span>
+                          }
+                          <span>
+                            {{ isDetectingLocation ? 'Obteniendo ubicación...' : 'Usar mi ubicación actual' }}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          class="origin-option-btn"
+                          [class.active]="addressEntryMode === 'MANUAL' && !isDetectingLocation"
+                          (click)="selectManualAddressMode()"
+                          aria-label="Ingresar dirección de envío manualmente"
+                          >
+                          <span class="material-icons">edit_location_alt</span>
+                          <span>Ingresar dirección manualmente</span>
+                        </button>
+                      </div>
+                    </div>
+                    <!-- Tarjeta de Revisión de Ubicación Detectada (Nunca confirma sin revisión del usuario) -->
+                    @if (detectedShippingAddress && !isDetectingLocation) {
+                      <div
+                        class="geo-review-card"
+                        role="region"
+                        aria-label="Revisar ubicación detectada"
+                        >
+                        <div class="geo-review-header">
+                          <div class="geo-review-title-wrap">
+                            <span class="material-icons geo-pin-icon">where_to_vote</span>
+                            <div>
+                              <h4 class="geo-review-title">Revisar ubicación detectada</h4>
+                              <p class="geo-review-subtitle">
+                                Confirma si los datos sugeridos coinciden con tu domicilio. Podrás editar cualquier campo y completar tu número exterior.
+                              </p>
+                            </div>
+                          </div>
+                          @if (detectedShippingAddress.distanceToStoreKm) {
+                            <span class="geo-distance-pill">
+                              A {{ detectedShippingAddress.distanceToStoreKm }} km de la tienda
+                            </span>
+                          }
+                        </div>
+                        @if (!detectedShippingAddress.reverseGeocodeResolved) {
+                          <div class="geo-feedback-alert warning" role="status">
+                            <span class="material-icons">info</span>
+                            <span>{{ detectedShippingAddress.displayAddress }} Completa tu dirección manualmente.</span>
+                          </div>
+                        }
+                        @if (detectedShippingAddress.reverseGeocodeResolved) {
+                          <div class="geo-review-grid">
+                            <div class="geo-review-field">
+                              <span class="geo-field-label">Calle sugerida</span>
+                              <span class="geo-field-val">
+                                {{ detectedShippingAddress.street || 'Completar manualmente' }}
+                              </span>
+                            </div>
+                            <div class="geo-review-field">
+                              <span class="geo-field-label">Colonia / Localidad</span>
+                              <span class="geo-field-val">
+                                {{ detectedShippingAddress.neighborhood || 'Completar manualmente' }}
+                              </span>
+                            </div>
+                            <div class="geo-review-field">
+                              <span class="geo-field-label">Código Postal</span>
+                              <span class="geo-field-val">
+                                {{ detectedShippingAddress.postalCode || 'Completar manualmente' }}
+                              </span>
+                            </div>
+                            <div class="geo-review-field">
+                              <span class="geo-field-label">Municipio y Estado</span>
+                              <span class="geo-field-val">
+                                {{ (detectedShippingAddress.city || '—') + (detectedShippingAddress.state ? ', ' + detectedShippingAddress.state : '') }}
+                              </span>
+                            </div>
+                          </div>
+                        }
+                        <div class="geo-review-actions">
+                          @if (detectedShippingAddress.reverseGeocodeResolved) {
+                            <button
+                              type="button"
+                              class="geo-confirm-btn"
+                              (click)="confirmDetectedShippingAddress()"
+                              >
+                              <span class="material-icons">check_circle</span>
+                              <span>Confirmar dirección sugerida</span>
+                            </button>
+                          }
+                          <button
+                            type="button"
+                            class="geo-manual-btn"
+                            (click)="selectManualAddressMode()"
+                            >
+                            <span class="material-icons">edit</span>
+                            <span>{{ detectedShippingAddress.reverseGeocodeResolved ? 'Ingresar manualmente' : 'Completar dirección manualmente' }}</span>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                    <!-- Confirmación discreta cuando se aplicó la dirección sugerida -->
+                    @if (addressConfirmedFromGeo && !detectedShippingAddress) {
+                      <div
+                        class="geo-feedback-alert success"
+                        role="status"
+                        >
+                        <span class="material-icons">check_circle</span>
+                        <span>
+                          Ubicación aplicada como sugerencia. Verifica los datos y completa tu <strong>número exterior</strong> y <strong>referencias</strong>.
+                        </span>
+                      </div>
+                    }
+                    <!-- Mensaje amigable no bloqueante si falla geolocalización o se niega permiso -->
+                    @if (shippingGeoError) {
+                      <div
+                        class="geo-feedback-alert warning"
+                        role="status"
+                        aria-live="polite"
+                        >
+                        <span class="material-icons">location_off</span>
+                        <div class="geo-feedback-body">
+                          <span>{{ shippingGeoError }}</span>
+                        </div>
+                      </div>
+                    }
+                    <!-- Calle -->
+                    <div class="form-group">
+                      <label for="street">Calle <span class="required-mark">*</span></label>
+                      <input
+                        type="text"
+                        id="street"
+                        formControlName="street"
+                        class="form-input"
+                        [class.input-error]="isFieldInvalid('shippingAddress.street')"
+                        placeholder="Nombre de la calle"
+                        autocomplete="address-line1"
+                        >
+                        @if (isFieldInvalid('shippingAddress.street')) {
+                          <span class="field-error">
+                            <span class="material-icons">error</span>La calle es requerida.
+                          </span>
+                        }
+                      </div>
+                      <!-- Número ext / int -->
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label for="exteriorNumber">Número exterior <span class="required-mark">*</span></label>
+                          <input
+                            type="text"
+                            id="exteriorNumber"
+                            formControlName="exteriorNumber"
+                            class="form-input"
+                            [class.input-error]="isFieldInvalid('shippingAddress.exteriorNumber')"
+                            placeholder="Ej: 123"
+                            >
+                            @if (isFieldInvalid('shippingAddress.exteriorNumber')) {
+                              <span class="field-error">
+                                <span class="material-icons">error</span>Requerido.
+                              </span>
+                            }
+                          </div>
+                          <div class="form-group">
+                            <label for="interiorNumber">Número interior <span class="optional-tag">(opcional)</span></label>
+                            <input
+                              type="text"
+                              id="interiorNumber"
+                              formControlName="interiorNumber"
+                              class="form-input"
+                              placeholder="Ej: 4A"
+                              >
+                            </div>
+                          </div>
+                          <!-- Colonia -->
+                          <div class="form-group">
+                            <label for="neighborhood">Colonia <span class="required-mark">*</span></label>
+                            <input
+                              type="text"
+                              id="neighborhood"
+                              formControlName="neighborhood"
+                              class="form-input"
+                              [class.input-error]="isFieldInvalid('shippingAddress.neighborhood')"
+                              placeholder="Nombre de la colonia"
+                              >
+                              @if (isFieldInvalid('shippingAddress.neighborhood')) {
+                                <span class="field-error">
+                                  <span class="material-icons">error</span>La colonia es requerida.
+                                </span>
+                              }
+                            </div>
+                            <!-- Ciudad / Estado / CP -->
+                            <div class="form-row form-row-3">
+                              <div class="form-group">
+                                <label for="city">Municipio / Ciudad <span class="required-mark">*</span></label>
+                                <input
+                                  type="text"
+                                  id="city"
+                                  formControlName="city"
+                                  class="form-input"
+                                  [class.input-error]="isFieldInvalid('shippingAddress.city')"
+                                  placeholder="Ciudad"
+                                  autocomplete="address-level2"
+                                  >
+                                  @if (isFieldInvalid('shippingAddress.city')) {
+                                    <span class="field-error">
+                                      <span class="material-icons">error</span>Ciudad requerida.
+                                    </span>
+                                  }
+                                </div>
+                                <div class="form-group">
+                                  <label for="state">Estado <span class="required-mark">*</span></label>
+                                  <input
+                                    type="text"
+                                    id="state"
+                                    formControlName="state"
+                                    class="form-input"
+                                    [class.input-error]="isFieldInvalid('shippingAddress.state')"
+                                    placeholder="Estado"
+                                    autocomplete="address-level1"
+                                    >
+                                    @if (isFieldInvalid('shippingAddress.state')) {
+                                      <span class="field-error">
+                                        <span class="material-icons">error</span>Estado requerido.
+                                      </span>
+                                    }
+                                  </div>
+                                  <div class="form-group cp-group">
+                                    <label for="zipCode">Código Postal <span class="required-mark">*</span></label>
+                                    <input
+                                      type="text"
+                                      id="zipCode"
+                                      formControlName="zipCode"
+                                      class="form-input"
+                                      [class.input-error]="isFieldInvalid('shippingAddress.zipCode')"
+                                      placeholder="00000"
+                                      maxlength="5"
+                                      inputmode="numeric"
+                                      autocomplete="postal-code"
+                                      (input)="sanitizeNumericField('shippingAddress.zipCode', 5)"
+                                      >
+                                      @if (isFieldInvalid('shippingAddress.zipCode')) {
+                                        <span class="field-error">
+                                          <span class="material-icons">error</span>El código postal debe tener 5 dígitos.
+                                        </span>
+                                      }
+                                    </div>
+                                  </div>
+                                  <!-- Referencias -->
+                                  <div class="form-group">
+                                    <label for="references">Referencias de entrega <span class="optional-tag">(opcional)</span></label>
+                                    <textarea
+                                      id="references"
+                                      formControlName="references"
+                                      class="form-input form-textarea"
+                                      placeholder="Ej: Casa blanca con portón negro, entre calle Juárez y Morelos..."
+                                      rows="2"
+                                    ></textarea>
+                                  </div>
+                                </div>
+                              </div>
+                              }<!-- /form-card shipping -->
+                              <!-- ── SECCIÓN 3: FACTURACIÓN ──────────────────────────── -->
+                              <div class="form-card">
+                                <div class="form-card-header">
+                                  <div class="card-header-icon">
+                                    <span class="material-icons">receipt_long</span>
+                                  </div>
+                                  <div>
+                                    <h2 class="card-title">Facturación</h2>
+                                    <p class="card-subtitle">¿Necesitas comprobante fiscal?</p>
+                                  </div>
+                                </div>
+                                <div class="form-card-body">
+                                  <label class="toggle-label">
+                                    <input type="checkbox" formControlName="requireInvoice" class="toggle-checkbox">
+                                    <div class="toggle-box">
+                                      <span class="toggle-text">Requiero factura (CFDI)</span>
+                                      <span class="toggle-sub">Mis datos de envío no son suficientes para facturar</span>
+                                    </div>
+                                  </label>
+                                  @if (isRequireInvoice()) {
+                                    <div class="billing-section" formGroupName="billingAddress">
+                                      <div class="billing-notice">
+                                        <span class="material-icons">info</span>
+                                        La facturación será procesada y validada posteriormente por el negocio.
+                                      </div>
+                                      <div class="form-row">
+                                        <div class="form-group cp-group">
+                                          <label for="rfc">RFC <span class="required-mark">*</span></label>
+                                          <input
+                                            type="text"
+                                            id="rfc"
+                                            formControlName="rfc"
+                                            class="form-input"
+                                            [class.input-error]="isFieldInvalid('billingAddress.rfc')"
+                                            placeholder="XAXX010101000"
+                                            maxlength="13"
+                                            (input)="sanitizeRfcField()"
+                                            >
+                                            @if (isFieldInvalid('billingAddress.rfc')) {
+                                              <span class="field-error">
+                                                <span class="material-icons">error</span>RFC es requerido (12-13 caracteres).
+                                              </span>
+                                            }
+                                          </div>
+                                          <div class="form-group" style="flex:2">
+                                            <label for="businessName">Razón Social <span class="required-mark">*</span></label>
+                                            <input
+                                              type="text"
+                                              id="businessName"
+                                              formControlName="businessName"
+                                              class="form-input"
+                                              [class.input-error]="isFieldInvalid('billingAddress.businessName')"
+                                              placeholder="Nombre legal de la empresa o persona"
+                                              >
+                                              @if (isFieldInvalid('billingAddress.businessName')) {
+                                                <span class="field-error">
+                                                  <span class="material-icons">error</span>Razón social requerida.
+                                                </span>
+                                              }
+                                            </div>
+                                          </div>
+                                          <div class="form-row">
+                                            <div class="form-group cp-group">
+                                              <label for="fiscalZipCode">CP Fiscal <span class="required-mark">*</span></label>
+                                              <input
+                                                type="text"
+                                                id="fiscalZipCode"
+                                                formControlName="fiscalZipCode"
+                                                class="form-input"
+                                                [class.input-error]="isFieldInvalid('billingAddress.fiscalZipCode')"
+                                                placeholder="00000"
+                                                maxlength="5"
+                                                inputmode="numeric"
+                                                (input)="sanitizeNumericField('billingAddress.fiscalZipCode', 5)"
+                                                >
+                                                @if (isFieldInvalid('billingAddress.fiscalZipCode')) {
+                                                  <span class="field-error">
+                                                    <span class="material-icons">error</span>El código postal debe tener 5 dígitos.
+                                                  </span>
+                                                }
+                                              </div>
+                                              <div class="form-group">
+                                                <label for="invoiceEmail">Correo para factura <span class="required-mark">*</span></label>
+                                                <input
+                                                  type="email"
+                                                  id="invoiceEmail"
+                                                  formControlName="invoiceEmail"
+                                                  class="form-input"
+                                                  [class.input-error]="isFieldInvalid('billingAddress.invoiceEmail')"
+                                                  placeholder="factura@empresa.com"
+                                                  >
+                                                  @if (isFieldInvalid('billingAddress.invoiceEmail')) {
+                                                    <span class="field-error">
+                                                      <span class="material-icons">error</span>Correo inválido.
+                                                    </span>
+                                                  }
+                                                </div>
+                                              </div>
+                                            </div>
+                                          }
+                                        </div>
+                                      </div><!-- /form-card billing -->
+                                      <!-- ── SECCIÓN 4: MÉTODO DE PAGO ──────────────────────── -->
+                                      @if (pricePreviewResult?.canProceedToPayment) {
+                                        <div class="form-card">
+                                          <div class="form-card-header">
+                                            <div class="card-header-icon">
+                                              <span class="material-icons">account_balance</span>
+                                            </div>
+                                            <div>
+                                              <h2 class="card-title">Método de Pago</h2>
+                                              <p class="card-subtitle">¿Cómo deseas pagar?</p>
+                                            </div>
+                                          </div>
+                                          <div class="form-card-body">
+                                            <div class="payment-options">
+                                              @for (method of paymentMethods; track method) {
+                                                <div
+                                                  class="payment-option"
+                                                  [class.selected]="checkoutForm.get('paymentMethod')?.value === method.value"
+                                                  (click)="selectPaymentMethod(method.value)"
+                                                  role="radio"
+                                                  [attr.aria-checked]="checkoutForm.get('paymentMethod')?.value === method.value"
+                                                  >
+                                                  <div class="payment-icon-wrap">
+                                                    <span class="material-icons">{{ method.icon }}</span>
+                                                  </div>
+                                                  <div class="payment-info">
+                                                    <span class="payment-label">{{ method.label }}</span>
+                                                    <span class="payment-desc">{{ method.description }}</span>
+                                                    @if (method.badges) {
+                                                      <div class="payment-badges">
+                                                        @for (badge of method.badges; track badge) {
+                                                          <span class="payment-badge">{{ badge }}</span>
+                                                        }
+                                                      </div>
+                                                    }
+                                                  </div>
+                                                  @if (checkoutForm.get('paymentMethod')?.value === method.value) {
+                                                    <span class="payment-check material-icons"
+                                                      >
+                                                      check_circle
+                                                    </span>
+                                                  }
+                                                </div>
+                                              }
+                                            </div>
+                                            <!-- Panel informativo dinámico -->
+                                            @if (checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER') {
+                                              <div class="payment-info-panel">
+                                                <span class="material-icons info-icon">account_balance</span>
+                                                <p>Al confirmar tu pedido, te mostraremos los datos bancarios para realizar la transferencia. Después podrás subir tu comprobante para revisión.</p>
+                                              </div>
+                                            }
+                                            @if (checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO') {
+                                              <div class="payment-info-panel mp-panel">
+                                                <span class="material-icons info-icon">shield</span>
+                                                <p>Serás redirigido al entorno seguro de Mercado Pago para completar tu pago. La confirmación final se realizará automáticamente cuando Mercado Pago notifique el resultado.</p>
+                                                <span class="secure-badge-mp">Redirección segura</span>
+                                              </div>
+                                            }
+                                          </div>
+                                        </div>
+                                        }<!-- /form-card payment -->
+                                        <!-- ── SECCIÓN 5: NOTAS ────────────────────────────────── -->
+                                        <div class="form-card">
+                                          <div class="form-card-header">
+                                            <div class="card-header-icon">
+                                              <span class="material-icons">notes</span>
+                                            </div>
+                                            <div>
+                                              <h2 class="card-title">Notas o referencias para la entrega <span class="optional-tag">(opcional)</span></h2>
+                                            </div>
+                                          </div>
+                                          <div class="form-card-body">
+                                            <textarea
+                                              id="notes"
+                                              formControlName="notes"
+                                              class="form-input form-textarea"
+                                              placeholder="Ejemplo: llamar antes de llegar, entregar después de las 4 pm, cuidado especial del instrumento…"
+                                              rows="3"
+                                            ></textarea>
+                                          </div>
+                                        </div>
+                                        <!-- ── ERRORES DE VALIDACIÓN DEL BACKEND ──────────────── -->
+                                        @if (validationErrors.length > 0) {
+                                          <div class="validation-errors-block">
+                                            <span class="material-icons">error</span>
+                                            <ul>
+                                              @for (err of validationErrors; track err) {
+                                                <li>{{ err }}</li>
+                                              }
+                                            </ul>
+                                          </div>
+                                        }
+                                        <!-- ── BOTÓN SUBMIT MÓVIL ──────────────────────────────── -->
+                                        <div class="submit-mobile">
+                                          @if (pricePreviewResult?.message) {
+                                            <div class="preview-message mb-2">
+                                              <span class="material-icons">info</span> {{ pricePreviewResult?.message }}
+                                            </div>
+                                          }
+                                          <!-- Block reasons -->
+                                          @if (!canSubmitCheckout()) {
+                                            <div class="alert alert-warning mb-2" style="font-size: 0.85rem; padding: 0.75rem; text-align: left;">
+                                              <strong>Corrige lo siguiente para continuar:</strong>
+                                              <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.25rem;">
+                                                @for (reason of getCheckoutBlockReasons(); track reason) {
+                                                  <li>{{ reason }}</li>
+                                                }
+                                              </ul>
+                                            </div>
+                                          }
+                                          <div>
+                                            <button
+                                              type="submit"
+                                              class="btn-confirm"
+                                              [disabled]="isProcessing || !canSubmitCheckout()"
+                                              >
+                                              @if (isProcessing || isLoadingPreview) {
+                                                <span class="spinner"></span>
+                                              }
+                                              @if (!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO' && canSubmitCheckout()) {
+                                                <span class="material-icons">lock</span>
+                                              }
+                                              @if (!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO' && canSubmitCheckout()) {
+                                                <span class="material-icons">shield</span>
+                                              }
+                                              @if (isValidating) {
+                                                <span>Validando carrito...</span>
+                                              }
+                                              @if (isLoadingPreview) {
+                                                <span>Calculando envío...</span>
+                                              }
+                                              @if (isSubmitting && !isProcessingPayment) {
+                                                <span>Generando pedido...</span>
+                                              }
+                                              @if (isProcessingPayment) {
+                                                <span>Preparando redirección segura...</span>
+                                              }
+                                              @if (!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER') {
+                                                <span>Confirmar Pedido — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
+                                              }
+                                              @if (!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO') {
+                                                <span>Confirmar y pagar con Mercado Pago — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
+                                              }
+                                              @if (!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE') {
+                                                <span>Completa todos los campos</span>
+                                              }
+                                              @if (!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE') {
+                                                <span>Completa datos de recolección</span>
+                                              }
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </form>
+                                    </div><!-- /checkout-form-section -->
+                                    <!-- ── COLUMNA DERECHA: RESUMEN ──────────────────────────── -->
+                                    <aside class="checkout-summary">
+                                      <div class="summary-card">
+                                        <!-- Header resumen -->
+                                        <div class="summary-header">
+                                          <span class="material-icons">receipt</span>
+                                          <h2>Resumen del Pedido</h2>
+                                        </div>
+                                        <!-- Productos -->
+                                        <div class="summary-items">
+                                          @for (item of cartItems; track trackByItemId($index, item)) {
+                                            <div class="summary-item">
+                                              <div class="item-img-wrap">
+                                                <img
+                                                  [src]="item.product.images && item.product.images.length > 0 ? item.product.images[0] : '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png'"
+                                                  [alt]="item.product.name"
+                                                  class="item-img"
+                                                  (error)="onImageError($event)"
+                                                  >
+                                                  <span class="item-qty">{{ item.quantity }}</span>
+                                                </div>
+                                                <div class="item-info">
+                                                  <span class="item-name">{{ item.product.name }}</span>
+                                                  @if (item.product.sku) {
+                                                    <span class="item-sku">{{ item.product.sku }}</span>
+                                                  }
+                                                </div>
+                                                <span class="item-price">${{ (item.backendUnitPrice * item.quantity) | number:'1.2-2' }}</span>
+                                              </div>
+                                            }
+                                          </div>
+                                          <div class="summary-sep"></div>
+                                          <!-- Totales -->
+                                          @if (!isLoadingPreview) {
+                                            <div class="totals-block">
+                                              <div class="total-row">
+                                                <span>Subtotal</span>
+                                                <span>${{ (pricePreviewResult ? pricePreviewResult.subtotal : cartSubtotal) | number:'1.2-2' }}</span>
+                                              </div>
+                                              <div class="total-row">
+                                                <span>IVA (16%)</span>
+                                                <span>${{ (pricePreviewResult ? pricePreviewResult.tax : cartTax) | number:'1.2-2' }}</span>
+                                              </div>
+                                              <div class="total-row">
+                                                <span>Envío @if (pricePreviewResult?.deliveryLabel) {
+                                                  <small>({{pricePreviewResult?.deliveryLabel}})</small>
+                                                }</span>
+                                                <!-- Caso: calculado como Gratis -->
+                                                @if (pricePreviewResult?.shipping === 0 && !pricePreviewResult?.requiresQuote && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE') {
+                                                  <span>Gratis</span>
+                                                }
+                                                <!-- Caso: requiere cotización -->
+                                                @if (pricePreviewResult?.requiresQuote) {
+                                                  <span>Por cotizar</span>
+                                                }
+                                                <!-- Caso: falta dirección (LOCAL) -->
+                                                @if (checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY' && !pricePreviewResult?.canProceedToPayment && !pricePreviewResult?.requiresQuote) {
+                                                  <span>Pendiente por calcular</span>
+                                                }
+                                                <!-- Caso: costo de envío mayor a 0 -->
+                                                @if (pricePreviewResult?.shipping! > 0) {
+                                                  <span>${{ $safeNavigationMigration(pricePreviewResult?.shipping) | number:'1.2-2' }}</span>
+                                                }
+                                              </div>
+                                              @if (cartDiscount > 0) {
+                                                <div class="total-row discount">
+                                                  <span>Descuento</span>
+                                                  <span>-${{ cartDiscount | number:'1.2-2' }}</span>
+                                                </div>
+                                              }
+                                              @if (unavailableItemsTotal > 0) {
+                                                <div class="total-row unavail">
+                                                  <span>No disponible (excluido)</span>
+                                                  <span>-${{ unavailableItemsTotal | number:'1.2-2' }}</span>
+                                                </div>
+                                              }
+                                            </div>
+                                          }
+                                          <!-- Cargando Totales -->
+                                          @if (isLoadingPreview) {
+                                            <div class="totals-block">
+                                              <div class="text-center py-3">
+                                                <span class="spinner spinner-sm" style="display:inline-block; margin-right: 8px;"></span>
+                                                Calculando totales y envío...
+                                              </div>
+                                            </div>
+                                          }
+                                          <div class="summary-sep"></div>
+                                          <!-- Gran total -->
+                                          <div class="grand-total-row">
+                                            <span class="grand-label">Total a pagar</span>
+                                            @if (!isLoadingPreview) {
+                                              <span class="grand-value">${{ (pricePreviewResult ? pricePreviewResult.total : cartTotal) | number:'1.2-2' }}</span>
+                                            }
+                                            @if (isLoadingPreview) {
+                                              <span class="spinner spinner-sm"></span>
+                                            }
+                                          </div>
+                                          @if (pricePreviewResult?.message) {
+                                            <div class="alert alert-info mt-2">
+                                              <span class="material-icons" style="font-size: 18px;">info</span>
+                                              <span style="font-size: 13px;">{{ pricePreviewResult?.message }}</span>
+                                            </div>
+                                          }
+                                          <!-- Método seleccionado -->
+                                          @if (checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER') {
+                                            <div class="payment-selected-info">
+                                              <span class="material-icons">account_balance</span>
+                                              <span>Transferencia bancaria</span>
+                                            </div>
+                                          }
+                                          @if (checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO') {
+                                            <div class="payment-selected-info mp-selected">
+                                              <span class="material-icons">shield</span>
+                                              <span>Mercado Pago Checkout Pro</span>
+                                              <span class="secure-badge-sm">Pago protegido</span>
+                                            </div>
+                                          }
+                                          <div class="summary-sep"></div>
+                                          <!-- BOTÓN CONFIRMAR (desktop) — SIEMPRE VISIBLE SI NO REQUIERE COTIZACIÓN -->
+                                          @if (!canSubmitCheckout() && !pricePreviewResult?.requiresQuote) {
+                                            <div class="alert alert-warning mb-3" style="font-size: 0.85rem; padding: 1rem; text-align: left; border-radius: 8px;">
+                                              <strong style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><span class="material-icons" style="font-size: 1.2rem;">warning</span> Corrige lo siguiente para continuar:</strong>
+                                              <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.25rem;">
+                                                @for (reason of getCheckoutBlockReasons(); track reason) {
+                                                  <li style="margin-bottom: 0.25rem;">{{ reason }}</li>
+                                                }
+                                              </ul>
+                                            </div>
+                                          }
+                                          <div>
+                                            @if (!pricePreviewResult?.requiresQuote) {
+                                              <button
+                                                type="button"
+                                                class="btn-confirm"
+                                                (click)="onSubmit()"
+                                                [disabled]="isProcessing || !canSubmitCheckout()"
+                                                id="btn-confirmar-pedido"
+                                                >
+                                                @if (isProcessing || isLoadingPreview) {
+                                                  <span class="spinner"></span>
+                                                }
+                                                @if (!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO' && canSubmitCheckout()) {
+                                                  <span class="material-icons">lock</span>
+                                                }
+                                                @if (!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO' && canSubmitCheckout()) {
+                                                  <span class="material-icons">shield</span>
+                                                }
+                                                @if (isValidating) {
+                                                  <span>Validando carrito...</span>
+                                                }
+                                                @if (isLoadingPreview) {
+                                                  <span>Calculando envío...</span>
+                                                }
+                                                @if (isSubmitting && !isProcessingPayment) {
+                                                  <span>Generando pedido...</span>
+                                                }
+                                                @if (isProcessingPayment) {
+                                                  <span>Preparando redirección segura...</span>
+                                                }
+                                                @if (!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER') {
+                                                  <span>Confirmar Pedido — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
+                                                }
+                                                @if (!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO') {
+                                                  <span>Confirmar y pagar con Mercado Pago — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
+                                                }
+                                                @if (!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE') {
+                                                  <span>Completa todos los campos</span>
+                                                }
+                                                @if (!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE') {
+                                                  <span>Completa datos de recolección</span>
+                                                }
+                                              </button>
+                                            }
+                                          </div>
+                                          <!-- BOTÓN COTIZAR Y CONTACTO (Cuando requiere cotización) -->
+                                          @if (pricePreviewResult?.requiresQuote) {
+                                            <div class="quote-contact-box mt-3" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem;">
+                                              <h3 style="font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; color: var(--text-color);">Tu envío requiere cotización</h3>
+                                              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Para envíos fuera de Huejutla, el costo puede variar según tu ubicación. Contáctanos para confirmar el costo antes de realizar tu compra.</p>
+                                              @if (pricePreviewResult?.businessHours) {
+                                                <div style="font-size: 0.85rem; margin-bottom: 1rem;">
+                                                  <strong>Horario:</strong> {{ pricePreviewResult?.businessHours }}
+                                                </div>
+                                              }
+                                              <button
+                                                type="button"
+                                                class="btn-confirm"
+                                                style="background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0.5rem;"
+                                                (click)="requestShippingQuote()"
+                                                [disabled]="!pricePreviewResult?.contactWhatsapp || !checkoutForm.get('shippingAddress.state')?.value || !checkoutForm.get('shippingAddress.city')?.value"
+                                                >
+                                                <span class="material-icons">chat</span>
+                                                Solicitar cotización por WhatsApp
+                                              </button>
+                                              @if ((!checkoutForm.get('shippingAddress.state')?.value || !checkoutForm.get('shippingAddress.city')?.value) && pricePreviewResult?.contactWhatsapp) {
+                                                <p style="font-size: 0.75rem; text-align: center; color: #dc3545; margin-bottom: 0.5rem;">
+                                                  Completa tu dirección para solicitar la cotización
+                                                </p>
+                                              }
+                                              @if (pricePreviewResult?.contactPhone) {
+                                                <a [href]="'tel:' + $safeNavigationMigration(pricePreviewResult?.contactPhone)" class="btn btn-outline-primary w-100" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                                  <span class="material-icons">call</span>
+                                                  Llamar al negocio
+                                                </a>
+                                              }
+                                              @if (!pricePreviewResult?.contactWhatsapp && !pricePreviewResult?.contactPhone) {
+                                                <div class="alert alert-info mt-2 mb-0" style="font-size: 0.85rem; padding: 0.75rem;">
+                                                  Comunícate directamente con Casa de Música Castillo para cotizar tu envío.
+                                                </div>
+                                              }
+                                            </div>
+                                          }
+                                          <a routerLink="/carrito" class="back-link">
+                                            <span class="material-icons">arrow_back</span>Volver al carrito
+                                          </a>
+                                          <!-- Garantías -->
+                                          <div class="guarantees">
+                                            <div class="guarantee">
+                                              <span class="material-icons">verified_user</span>
+                                              <span>Compra 100% segura</span>
+                                            </div>
+                                            <div class="guarantee">
+                                              <span class="material-icons">cached</span>
+                                              <span>30 días de devolución</span>
+                                            </div>
+                                            <div class="guarantee">
+                                              <span class="material-icons">support_agent</span>
+                                              <span>Soporte en tu compra</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </aside>
+                                    </div>
+                                    }<!-- /checkout-layout -->
 
-              <!-- Panel informativo dinámico -->
-              <div class="payment-info-panel" *ngIf="checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">
-                <span class="material-icons info-icon">account_balance</span>
-                <p>Al confirmar tu pedido, te mostraremos los datos bancarios para realizar la transferencia. Después podrás subir tu comprobante para revisión.</p>
-              </div>
-
-              <div class="payment-info-panel mp-panel" *ngIf="checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">
-                <span class="material-icons info-icon">shield</span>
-                <p>Serás redirigido al entorno seguro de Mercado Pago para completar tu pago. La confirmación final se realizará automáticamente cuando Mercado Pago notifique el resultado.</p>
-                <span class="secure-badge-mp">Redirección segura</span>
-              </div>
-            </div>
-          </div><!-- /form-card payment -->
-
-          <!-- ── SECCIÓN 5: NOTAS ────────────────────────────────── -->
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="card-header-icon">
-                <span class="material-icons">notes</span>
-              </div>
-              <div>
-                <h2 class="card-title">Notas o referencias para la entrega <span class="optional-tag">(opcional)</span></h2>
-              </div>
-            </div>
-            <div class="form-card-body">
-              <textarea
-                id="notes"
-                formControlName="notes"
-                class="form-input form-textarea"
-                placeholder="Ejemplo: llamar antes de llegar, entregar después de las 4 pm, cuidado especial del instrumento…"
-                rows="3"
-              ></textarea>
-            </div>
-          </div>
-
-          <!-- ── ERRORES DE VALIDACIÓN DEL BACKEND ──────────────── -->
-          <div class="validation-errors-block" *ngIf="validationErrors.length > 0">
-            <span class="material-icons">error</span>
-            <ul>
-              <li *ngFor="let err of validationErrors">{{ err }}</li>
-            </ul>
-          </div>
-
-          <!-- ── BOTÓN SUBMIT MÓVIL ──────────────────────────────── -->
-          <div class="submit-mobile">
-            <div *ngIf="pricePreviewResult?.message" class="preview-message mb-2">
-              <span class="material-icons">info</span> {{ pricePreviewResult?.message }}
-            </div>
-            
-            <!-- Block reasons -->
-            <div *ngIf="!canSubmitCheckout()" class="alert alert-warning mb-2" style="font-size: 0.85rem; padding: 0.75rem; text-align: left;">
-              <strong>Corrige lo siguiente para continuar:</strong>
-              <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.25rem;">
-                <li *ngFor="let reason of getCheckoutBlockReasons()">{{ reason }}</li>
-              </ul>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                class="btn-confirm"
-                [disabled]="isProcessing || !canSubmitCheckout()"
-              >
-                <span class="spinner" *ngIf="isProcessing || isLoadingPreview"></span>
-                <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO' && canSubmitCheckout()">lock</span>
-                <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO' && canSubmitCheckout()">shield</span>
-                <span *ngIf="isValidating">Validando carrito...</span>
-                <span *ngIf="isLoadingPreview">Calculando envío...</span>
-                <span *ngIf="isSubmitting && !isProcessingPayment">Generando pedido...</span>
-                <span *ngIf="isProcessingPayment">Preparando redirección segura...</span>
-                <span *ngIf="!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">Confirmar Pedido — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
-                <span *ngIf="!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">Confirmar y pagar con Mercado Pago — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
-                <span *ngIf="!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE'">Completa todos los campos</span>
-                <span *ngIf="!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">Completa datos de recolección</span>
-              </button>
-            </div>
-          </div>
-
-        </form>
-      </div><!-- /checkout-form-section -->
-
-      <!-- ── COLUMNA DERECHA: RESUMEN ──────────────────────────── -->
-      <aside class="checkout-summary">
-        <div class="summary-card">
-
-          <!-- Header resumen -->
-          <div class="summary-header">
-            <span class="material-icons">receipt</span>
-            <h2>Resumen del Pedido</h2>
-          </div>
-
-          <!-- Productos -->
-          <div class="summary-items">
-            <div class="summary-item" *ngFor="let item of cartItems; trackBy: trackByItemId">
-              <div class="item-img-wrap">
-                <img
-                  [src]="item.product.images && item.product.images.length > 0 ? item.product.images[0] : '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png'"
-                  [alt]="item.product.name"
-                  class="item-img"
-                  (error)="onImageError($event)"
-                >
-                <span class="item-qty">{{ item.quantity }}</span>
-              </div>
-              <div class="item-info">
-                <span class="item-name">{{ item.product.name }}</span>
-                <span class="item-sku" *ngIf="item.product.sku">{{ item.product.sku }}</span>
-              </div>
-              <span class="item-price">${{ (item.backendUnitPrice * item.quantity) | number:'1.2-2' }}</span>
-            </div>
-          </div>
-
-          <div class="summary-sep"></div>
-
-          <!-- Totales -->
-          <div class="totals-block" *ngIf="!isLoadingPreview">
-            <div class="total-row">
-              <span>Subtotal</span>
-              <span>${{ (pricePreviewResult ? pricePreviewResult.subtotal : cartSubtotal) | number:'1.2-2' }}</span>
-            </div>
-            <div class="total-row">
-              <span>IVA (16%)</span>
-              <span>${{ (pricePreviewResult ? pricePreviewResult.tax : cartTax) | number:'1.2-2' }}</span>
-            </div>
-            <div class="total-row">
-              <span>Envío <small *ngIf="pricePreviewResult?.deliveryLabel">({{pricePreviewResult?.deliveryLabel}})</small></span>
-              
-              <!-- Caso: calculado como Gratis -->
-              <span *ngIf="pricePreviewResult?.shipping === 0 && !pricePreviewResult?.requiresQuote && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">Gratis</span>
-              
-              <!-- Caso: requiere cotización -->
-              <span *ngIf="pricePreviewResult?.requiresQuote">Por cotizar</span>
-              
-              <!-- Caso: falta dirección (LOCAL) -->
-              <span *ngIf="checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY' && !pricePreviewResult?.canProceedToPayment && !pricePreviewResult?.requiresQuote">Pendiente por calcular</span>
-              
-              <!-- Caso: costo de envío mayor a 0 -->
-              <span *ngIf="pricePreviewResult?.shipping! > 0">${{ pricePreviewResult?.shipping | number:'1.2-2' }}</span>
-            </div>
-            <div class="total-row discount" *ngIf="cartDiscount > 0">
-              <span>Descuento</span>
-              <span>-${{ cartDiscount | number:'1.2-2' }}</span>
-            </div>
-            <div class="total-row unavail" *ngIf="unavailableItemsTotal > 0">
-              <span>No disponible (excluido)</span>
-              <span>-${{ unavailableItemsTotal | number:'1.2-2' }}</span>
-            </div>
-          </div>
-          
-          <!-- Cargando Totales -->
-          <div class="totals-block" *ngIf="isLoadingPreview">
-            <div class="text-center py-3">
-              <span class="spinner spinner-sm" style="display:inline-block; margin-right: 8px;"></span>
-              Calculando totales y envío...
-            </div>
-          </div>
-
-          <div class="summary-sep"></div>
-
-          <!-- Gran total -->
-          <div class="grand-total-row">
-            <span class="grand-label">Total a pagar</span>
-            <span class="grand-value" *ngIf="!isLoadingPreview">${{ (pricePreviewResult ? pricePreviewResult.total : cartTotal) | number:'1.2-2' }}</span>
-            <span class="spinner spinner-sm" *ngIf="isLoadingPreview"></span>
-          </div>
-          
-          <div class="alert alert-info mt-2" *ngIf="pricePreviewResult?.message">
-            <span class="material-icons" style="font-size: 18px;">info</span>
-            <span style="font-size: 13px;">{{ pricePreviewResult?.message }}</span>
-          </div>
-
-          <!-- Método seleccionado -->
-          <div class="payment-selected-info" *ngIf="checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">
-            <span class="material-icons">account_balance</span>
-            <span>Transferencia bancaria</span>
-          </div>
-
-          <div class="payment-selected-info mp-selected" *ngIf="checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">
-            <span class="material-icons">shield</span>
-            <span>Mercado Pago Checkout Pro</span>
-            <span class="secure-badge-sm">Pago protegido</span>
-          </div>
-
-          <div class="summary-sep"></div>
-
-          <!-- BOTÓN CONFIRMAR (desktop) — SIEMPRE VISIBLE SI NO REQUIERE COTIZACIÓN -->
-          
-          <div *ngIf="!canSubmitCheckout() && !pricePreviewResult?.requiresQuote" class="alert alert-warning mb-3" style="font-size: 0.85rem; padding: 1rem; text-align: left; border-radius: 8px;">
-            <strong style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><span class="material-icons" style="font-size: 1.2rem;">warning</span> Corrige lo siguiente para continuar:</strong>
-            <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.25rem;">
-              <li *ngFor="let reason of getCheckoutBlockReasons()" style="margin-bottom: 0.25rem;">{{ reason }}</li>
-            </ul>
-          </div>
-
-          <div>
-            <button
-              *ngIf="!pricePreviewResult?.requiresQuote"
-              type="button"
-              class="btn-confirm"
-              (click)="onSubmit()"
-              [disabled]="isProcessing || !canSubmitCheckout()"
-              id="btn-confirmar-pedido"
-            >
-              <span class="spinner" *ngIf="isProcessing || isLoadingPreview"></span>
-              <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO' && canSubmitCheckout()">lock</span>
-              <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO' && canSubmitCheckout()">shield</span>
-              <span *ngIf="isValidating">Validando carrito...</span>
-              <span *ngIf="isLoadingPreview">Calculando envío...</span>
-              <span *ngIf="isSubmitting && !isProcessingPayment">Generando pedido...</span>
-              <span *ngIf="isProcessingPayment">Preparando redirección segura...</span>
-              
-              <span *ngIf="!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">Confirmar Pedido — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
-              <span *ngIf="!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">Confirmar y pagar con Mercado Pago — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
-              
-              <span *ngIf="!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE'">Completa todos los campos</span>
-              <span *ngIf="!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">Completa datos de recolección</span>
-            </button>
-          </div>
-
-          <!-- BOTÓN COTIZAR Y CONTACTO (Cuando requiere cotización) -->
-          <div *ngIf="pricePreviewResult?.requiresQuote" class="quote-contact-box mt-3" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem;">
-            <h3 style="font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; color: var(--text-color);">Tu envío requiere cotización</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Para envíos fuera de Huejutla, el costo puede variar según tu ubicación. Contáctanos para confirmar el costo antes de realizar tu compra.</p>
-            
-            <div *ngIf="pricePreviewResult?.businessHours" style="font-size: 0.85rem; margin-bottom: 1rem;">
-              <strong>Horario:</strong> {{ pricePreviewResult?.businessHours }}
-            </div>
-
-            <button 
-              type="button" 
-              class="btn-confirm"
-              style="background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0.5rem;"
-              (click)="requestShippingQuote()"
-              [disabled]="!pricePreviewResult?.contactWhatsapp || !checkoutForm.get('shippingAddress.state')?.value || !checkoutForm.get('shippingAddress.city')?.value"
-            >
-              <span class="material-icons">chat</span>
-              Solicitar cotización por WhatsApp
-            </button>
-            <p *ngIf="(!checkoutForm.get('shippingAddress.state')?.value || !checkoutForm.get('shippingAddress.city')?.value) && pricePreviewResult?.contactWhatsapp" style="font-size: 0.75rem; text-align: center; color: #dc3545; margin-bottom: 0.5rem;">
-              Completa tu dirección para solicitar la cotización
-            </p>
-
-            <a *ngIf="pricePreviewResult?.contactPhone" [href]="'tel:' + pricePreviewResult?.contactPhone" class="btn btn-outline-primary w-100" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-              <span class="material-icons">call</span>
-              Llamar al negocio
-            </a>
-
-            <div *ngIf="!pricePreviewResult?.contactWhatsapp && !pricePreviewResult?.contactPhone" class="alert alert-info mt-2 mb-0" style="font-size: 0.85rem; padding: 0.75rem;">
-              Comunícate directamente con Casa de Música Castillo para cotizar tu envío.
-            </div>
-          </div>
-
-          <a routerLink="/carrito" class="back-link">
-            <span class="material-icons">arrow_back</span>Volver al carrito
-          </a>
-
-          <!-- Garantías -->
-          <div class="guarantees">
-            <div class="guarantee">
-              <span class="material-icons">verified_user</span>
-              <span>Compra 100% segura</span>
-            </div>
-            <div class="guarantee">
-              <span class="material-icons">cached</span>
-              <span>30 días de devolución</span>
-            </div>
-            <div class="guarantee">
-              <span class="material-icons">support_agent</span>
-              <span>Soporte en tu compra</span>
-            </div>
-          </div>
-
-        </div>
-      </aside>
-
-    </div><!-- /checkout-layout -->
-
-  </div><!-- /container -->
-</div><!-- /checkout-page -->
+                                  </div><!-- /container -->
+                                </div><!-- /checkout-page -->
