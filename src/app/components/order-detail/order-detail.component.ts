@@ -4,7 +4,6 @@ import { HttpResponse } from '@angular/common/http';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { OrderService } from '../../services/order.service';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { 
   Order, 
   OrderStatus, 
@@ -51,7 +50,6 @@ export class OrderDetailComponent implements OnInit {
   pdfDocument: PDFDocumentProxy | null = null;
   showProofPreviewModal = false;
   proofPreviewUrl: string | null = null;
-  proofPreviewSafeUrl: SafeResourceUrl | null = null;
   proofPreviewBlob: Blob | null = null;
   proofPreviewContentType: string | null = null;
   proofPreviewFilename: string | null = null;
@@ -87,7 +85,6 @@ export class OrderDetailComponent implements OnInit {
     private router: Router,
     private orderService: OrderService,
     private fb: FormBuilder,
-    private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
   ) {
     this.proofForm = this.fb.group({
@@ -547,22 +544,7 @@ export class OrderDetailComponent implements OnInit {
         const typedBlob = new Blob([rawBlob as Blob], { type: contentType });
 
         // LOGS TEMPORALES DIAGNOSTICO
-        console.log('--- DIAGNOSTICO PDF.JS CLIENTE ---');
-        console.log('response.status:', response.status);
-        console.log('Content-Type header:', response.headers.get('Content-Type'));
-        console.log('Content-Disposition:', response.headers.get('Content-Disposition'));
-        console.log('blob instanceof Blob:', rawBlob instanceof Blob);
-        console.log('blob.size:', (rawBlob as any)?.size);
-        console.log('blob.type:', (rawBlob as any)?.type);
-        console.log('typedBlob.size:', typedBlob.size);
-        console.log('typedBlob.type:', typedBlob.type);
 
-        if (typedBlob.size > 0) {
-          const head = new Uint8Array(await typedBlob.slice(0, 8).arrayBuffer());
-          console.log('PDF HEAD BYTES:', Array.from(head));
-          console.log('PDF HEAD TEXT:', String.fromCharCode(...head));
-        }
-        console.log('----------------------------------');
 
         if (!(typedBlob instanceof Blob) || typedBlob.size === 0) {
           this.proofPreviewError = 'Archivo inválido o vacío';
@@ -582,7 +564,6 @@ export class OrderDetailComponent implements OnInit {
         // URL Segura
         if (this.proofPreviewUrl) URL.revokeObjectURL(this.proofPreviewUrl);
         this.proofPreviewUrl = URL.createObjectURL(typedBlob);
-        this.proofPreviewSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.proofPreviewUrl);
 
         if (contentType === 'application/pdf') {
           await this.renderPdf(typedBlob);
@@ -624,8 +605,8 @@ export class OrderDetailComponent implements OnInit {
 
   closeProofPreview(): void {
     this.showProofPreviewModal = false;
+    if (this.proofPreviewUrl) URL.revokeObjectURL(this.proofPreviewUrl);
     this.proofPreviewUrl = null;
-    this.proofPreviewSafeUrl = null;
     this.proofPreviewBlob = null;
     this.proofPreviewContentType = null;
     this.pdfDocument = null;

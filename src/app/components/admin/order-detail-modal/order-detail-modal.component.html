@@ -699,13 +699,13 @@
               <p class="text-red-600 font-medium">{{ proofPreviewError }}</p>
             </div>
           }
-          @if (!loadingProofPreview && !proofPreviewError && proofPreviewSafeUrl) {
+          @if (!loadingProofPreview && !proofPreviewError && proofPreviewUrl) {
             <div class="w-full h-full flex items-center justify-center">
               @if (proofPreviewContentType === 'application/pdf') {
                 <canvas #pdfCanvas class="bg-white rounded shadow-sm max-w-full" style="border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></canvas>
               }
               @if (proofPreviewContentType?.startsWith('image/')) {
-                <img [src]="proofPreviewSafeUrl" alt="Comprobante" class="max-w-full max-h-[75vh] object-contain rounded shadow-md bg-white">
+                <img [src]="proofPreviewUrl" alt="Comprobante" class="max-w-full max-h-[75vh] object-contain rounded shadow-md bg-white">
               }
             </div>
           }

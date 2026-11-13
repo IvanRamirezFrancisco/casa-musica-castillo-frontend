@@ -22,7 +22,7 @@ interface Receipt { requestId: string; status: 'RECEIVED' }
       } @else if (!available()) {
         <output>{{ available() === null ? 'Consultando disponibilidad…' : 'La recepción de solicitudes aún no está disponible.' }}</output>
       } @else if (signIn()) {
-        <p><a routerLink="/login">Iniciar sesión para solicitar eliminación</a></p>
+        <p><a routerLink="/login" [queryParams]="{returnUrl: '/eliminar-cuenta'}">Iniciar sesión para solicitar eliminación</a></p>
       } @else {
         <form (ngSubmit)="submit()">
           <label for="deletion-password">Contraseña actual</label>

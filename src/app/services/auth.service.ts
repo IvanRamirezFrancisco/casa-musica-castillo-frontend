@@ -570,23 +570,24 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
    * Si se proporciona una returnUrl, valida que pertenezca al Allowlist estricto.
    */
   public resolveSafeReturnUrl(url: string | null): string | null {
-    if (!url) return null;
+    if (!url?.startsWith('/') || url.startsWith('//') || url.includes('\\')) return null;
 
     // Minimal Allowlist de rutas protegidas que pueden requerir redirección tras login
     const ALLOWED_ROUTES = [
       '/orders/my',
       '/checkout',
       '/carrito',
-      '/wishlist'
+      '/wishlist',
+      '/eliminar-cuenta'
     ];
 
     try {
       // Usar URL API para validar path y bloquear open redirects (http://, javascript:, etc.)
       // Al anteponer un dummy origin, podemos parsear de forma segura si la URL intenta salir del dominio.
-      const parsedUrl = new URL(url, 'http://dummy.local');
+      const parsedUrl = new URL(url, 'https://return-url.invalid');
       
       // Bloquear explícitamente redirects que intentan escapar o inyectar schemes
-      if (parsedUrl.origin !== 'http://dummy.local') {
+      if (parsedUrl.origin !== 'https://return-url.invalid') {
         return null;
       }
       
