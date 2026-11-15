@@ -69,13 +69,10 @@
       "urls": [
         "https://casa-musica-castillo-backend.onrender.com/api/public/products/latest**",
         "https://casa-musica-castillo-backend.onrender.com/api/public/products/featured**",
-        "https://casa-musica-castillo-backend.onrender.com/api/public/products/trending**",
         "http://localhost:8080/api/public/products/latest**",
         "http://localhost:8080/api/public/products/featured**",
-        "http://localhost:8080/api/public/products/trending**",
         "/api/public/products/latest**",
-        "/api/public/products/featured**",
-        "/api/public/products/trending**"
+        "/api/public/products/featured**"
       ],
       "cacheConfig": {
         "strategy": "freshness",
@@ -102,13 +99,10 @@
       "name": "public-product-detail",
       "urls": [
         "https://casa-musica-castillo-backend.onrender.com/api/public/products/*",
-        "https://casa-musica-castillo-backend.onrender.com/api/public/products/*/trend-status",
         "https://casa-musica-castillo-backend.onrender.com/api/public/products/*/recommendations",
         "http://localhost:8080/api/public/products/*",
-        "http://localhost:8080/api/public/products/*/trend-status",
         "http://localhost:8080/api/public/products/*/recommendations",
         "/api/public/products/*",
-        "/api/public/products/*/trend-status",
         "/api/public/products/*/recommendations"
       ],
       "cacheConfig": {
