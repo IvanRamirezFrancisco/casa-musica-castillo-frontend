@@ -111,7 +111,11 @@ export interface InfoSection {
                   </a>
                 }
                 @if (pageType === 'privacidad') {
-                  <a routerLink="/eliminar-cuenta">Solicitar la eliminación de mi cuenta</a>
+                  <a routerLink="/eliminar-cuenta"
+                    class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#FAF6F0] hover:bg-[#722F37] text-[#722F37] hover:text-white border border-[#722F37]/30 transition-colors">
+                    <span>Solicitar la eliminación de mi cuenta</span>
+                    <span class="material-icons text-sm" aria-hidden="true">person_remove</span>
+                  </a>
                 }
                 @if (pageType !== 'privacidad') {
                   <a routerLink="/privacidad"
@@ -292,10 +296,11 @@ export class InformationPageComponent implements OnInit {
           number: '04',
           icon: 'inventory_2',
           title: 'Condiciones de tratamiento y conservación',
-          summary: 'Los datos se conservan bajo criterios de confidencialidad y únicamente durante el periodo necesario para cumplir con las finalidades operativas.',
+          summary: 'Los datos personales se conservan bajo criterios de confidencialidad y únicamente durante el periodo estrictamente necesario.',
           points: [
             'Acceso restringido exclusivamente al personal autorizado de administración para validar pedidos y entregas.',
-            'Conservación del historial de pedidos para fines de seguimiento, comprobación de compra y atención al cliente.'
+            'Cuando eliminas tu cuenta, se borran definitivamente perfil, credenciales, 2FA, sesiones, direcciones, carrito y favoritos.',
+            'Los folios, importes e impuestos de pedidos concluidos y pagos se conservan desvinculados y anonimizados hasta por 5 años conforme al Art. 30 del Código Fiscal de la Federación.'
           ]
         },
         {
@@ -306,20 +311,20 @@ export class InformationPageComponent implements OnInit {
           summary: 'Casa de Música Castillo no comercializa ni vende datos personales a terceros.',
           points: [
             'Pasarela de pago: cuando eliges pagar con Mercado Pago, la transacción se realiza bajo los controles y políticas de seguridad de dicha plataforma.',
-            'Servicios de mensajería o logística: únicamente los datos de contacto y domicilio indispensables para concretar la entrega de tu instrumento.'
+            'Servicios de mensajería y envío transaccional (Brevo/Cloudinary): empleados exclusivamente para entregar correos de seguridad y gestionar comprobantes o envíos.'
           ]
         },
         {
           id: 'derechos-arco',
           number: '06',
           icon: 'manage_accounts',
-          title: 'Derechos ARCO (Acceso, Rectificación, Cancelación y Oposición)',
-          summary: 'Como titular de tus datos personales, cuentas con mecanismos para consultar y actualizar tu información.',
+          title: 'Derechos ARCO y eliminación de cuenta',
+          summary: 'Como titular de tus datos personales, cuentas con mecanismos directos en línea para consultar, actualizar o cancelar tu cuenta.',
           points: [
-            'Acceso y Rectificación: puedes consultar y actualizar tus datos de perfil y seguridad directamente desde tu panel de cuenta.',
-            'Cancelación y Oposición: puedes solicitar orientación o gestionar solicitudes relativas a tu cuenta a través de los canales oficiales de contacto de la tienda.'
+            'Acceso y Rectificación: puedes consultar y actualizar tus datos de perfil y seguridad directamente desde tu panel de cuenta (/dashboard/seguridad).',
+            'Cancelación y Eliminación: puedes solicitar el cierre definitivo de tu cuenta con o sin sesión iniciada desde /eliminar-cuenta (o desde la app Android).'
           ],
-          note: 'El procedimiento formal y los plazos legales específicos de respuesta ARCO se actualizarán conforme a la validación jurídica final del titular.'
+          note: 'Si tienes pedidos en curso o comprobantes en validación, la solicitud queda en revisión administrativa hasta concluir la entrega o reembolso correspondiente sin afectar compras vigentes.'
         },
         {
           id: 'cookies-pwa',
