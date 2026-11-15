@@ -191,12 +191,7 @@ export const routes: Routes = [
         canActivate: [PermissionGuard],
         data: { requiredPermission: 'DATABASE_BACKUP' }
       },
-      {
-        path: 'gestion-db',
-        loadComponent: () => import('./components/admin/admin-db-management/admin-db-management.component').then(m => m.AdminDbManagementComponent),
-        canActivate: [PermissionGuard],
-        data: { requiredPermission: 'DATABASE_VIEW' }
-      },
+      { path: 'gestion-db', redirectTo: 'backups', pathMatch: 'full' },
       {
         path: 'customers',
         canActivate: [PermissionGuard],
@@ -209,20 +204,6 @@ export const routes: Routes = [
         loadComponent: () => import('./components/admin/admin-payment-settings/admin-payment-settings.component').then(m => m.AdminPaymentSettingsComponent),
         canActivate: [PermissionGuard],
         data: { requiredPermission: ['SYSTEM_SETTINGS', 'BANK_TRANSFER_SETTINGS_READ', 'BANK_TRANSFER_SETTINGS_UPDATE', 'PAYMENT_SETTINGS_READ', 'PAYMENT_SETTINGS_UPDATE'] }
-      },
-      {
-        path: 'analitica/patrones-compra',
-        canActivate: [PermissionGuard],
-        data: { requiredPermission: 'REPORT_VIEW' },
-        loadComponent: () => import('./components/admin/admin-purchase-clustering/admin-purchase-clustering.component')
-          .then(m => m.AdminPurchaseClusteringComponent)
-      },
-      {
-        path: 'analitica/pronostico-demanda',
-        canActivate: [PermissionGuard],
-        data: { requiredPermission: 'REPORT_VIEW' },
-        loadComponent: () => import('./components/admin/admin-demand-forecast/admin-demand-forecast.component')
-          .then(m => m.AdminDemandForecastComponent)
       },
       {
         path: 'help-center',

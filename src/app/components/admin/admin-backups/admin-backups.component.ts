@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, interval, takeUntil } from 'rxjs';
@@ -32,9 +32,6 @@ import { NotificationCenterService } from '../../../core/services/notification-c
   styleUrl: './admin-backups.component.css'
 })
 export class AdminBackupsComponent implements OnInit, OnDestroy {
-
-  /** Emite cuando el usuario quiere navegar a la pestaña de automatizaciones */
-  @Output() navigateToAutomations = new EventEmitter<void>();
 
   // ── Estado de la tabla ───────────────────────────────────────────────────
   backupPage: BackupPage | null = null;
@@ -474,19 +471,6 @@ export class AdminBackupsComponent implements OnInit, OnDestroy {
     this.liveProgress     = 0;
     this.liveElapsedSec   = 0;
     this.loadHistory(false);
-  }
-
-  // ── Expiración de enlace ──────────────────────────────────────────────────
-
-  /**
-   * Devuelve true si han pasado más de 1 hora desde la creación del backup.
-   * Las URLs firmadas de Supabase Storage expiran a los 3600 s (1 hora).
-   * @param createdAt fecha ISO 8601 del campo BackupLog.createdAt
-   */
-  isExpired(createdAt: string | Date): boolean {
-    const created  = new Date(createdAt).getTime();
-    const expireAt = created + 60 * 60 * 1000;   // +1 hora en ms
-    return Date.now() > expireAt;
   }
 
   // ── Formatters ────────────────────────────────────────────────────────────

@@ -31,7 +31,6 @@ export class OrderDetailModalComponent implements OnInit {
   @Input() order!: Order;
   @Output() close = new EventEmitter<void>();
   @Output() orderUpdated = new EventEmitter<Order>();
-  @Output() analyzePatternEvent = new EventEmitter<number>();
 
   // Estados editables
   selectedOrderStatus: OrderStatus;
@@ -45,7 +44,6 @@ export class OrderDetailModalComponent implements OnInit {
   successMessage: string | null = null;
   allowedTransitions: OrderTransitionsDTO | null = null;
   loadingTransitions = false;
-  hasReportViewPermission = false;
 
   // Comprobante
   proofMetadata: PaymentProofResponse | null = null;
@@ -86,7 +84,6 @@ export class OrderDetailModalComponent implements OnInit {
     this.selectedOrderStatus = OrderStatus.PENDING;
     this.selectedPaymentStatus = PaymentStatus.PENDING;
     this.selectedShippingStatus = ShippingStatus.PENDING;
-    this.hasReportViewPermission = this.authService.hasPermission('REPORT_VIEW');
   }
 
   ngOnInit(): void {
@@ -194,12 +191,6 @@ export class OrderDetailModalComponent implements OnInit {
         console.error('Error recargando orden tras mutación:', err);
       }
     });
-  }
-
-  onAnalyzePattern(): void {
-    const orderId = this.order.id;
-    this.closeModal();
-    this.analyzePatternEvent.emit(orderId);
   }
 
   // ==================== CERRAR Y NOTIFICAR ====================

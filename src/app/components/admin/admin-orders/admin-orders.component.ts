@@ -5,7 +5,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { OrderService } from '../../../services/order.service';
-import { AuthService } from '../../../services/auth.service';
 import { NotificationCenterService } from '../../../core/services/notification-center.service';
 import { 
   Order, 
@@ -64,7 +63,6 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   PaymentStatus = PaymentStatus;
   ShippingStatus = ShippingStatus;
 
-  hasReportViewPermission = false;
 
   // Opciones para selects
   orderStatusOptions = Object.values(OrderStatus);
@@ -163,10 +161,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     private notifService: NotificationCenterService,
     private paymentSettingsService: PaymentSettingsService,
     private router: Router,
-    private route: ActivatedRoute,
-    private authService: AuthService
+    private route: ActivatedRoute
   ) {
-    this.hasReportViewPermission = this.authService.hasPermission('REPORT_VIEW');
   }
 
   ngOnInit(): void {
@@ -284,18 +280,6 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.endDate = '';
     this.currentPage = 0;
     this.loadOrders();
-  }
-
-  /** Navega al módulo de clustering para analizar la orden */
-  analyzePattern(orderId: number): void {
-    // Si viene del modal, ya cerró. Nos aseguramos.
-    this.closeDetailModal();
-    this.router.navigate(['/admin/analitica/patrones-compra'], { queryParams: { orderId } });
-  }
-
-  onAnalyzePatternRow(orderId: number, event: Event): void {
-    event.stopPropagation();
-    this.analyzePattern(orderId);
   }
 
   // ==================== PAGINACIÓN ====================

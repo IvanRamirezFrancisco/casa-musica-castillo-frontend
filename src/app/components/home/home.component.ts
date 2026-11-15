@@ -7,7 +7,7 @@ import { skip, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { PublicApiService } from '../../services/public-api.service';
 import { User } from '../../models/user.model';
-import { PublicProduct, PublicCategory, PublicTrendingProduct } from '../../models/product.model';
+import { PublicProduct, PublicCategory } from '../../models/product.model';
 import { ConnectivityService } from '../../services/connectivity.service';
 
 @Component({
@@ -34,12 +34,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Datos reales del backend
   featuredProducts: PublicProduct[] = [];
   latestProducts: PublicProduct[] = [];
-  trendingProducts: PublicTrendingProduct[] = [];
   categories: PublicCategory[] = [];
   loadingFeatured = true;
-  loadingTrending = true;
-  trendingError = false;
-  trendingEmpty = false;
   loadingCategories = true;
   categoriesError = false;
   categoriesEmpty = false;
@@ -152,9 +148,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (this.categoriesError || this.categories.length === 0) {
           this.loadCategories();
         }
-        if (this.trendingError || this.trendingProducts.length === 0) {
-          this.loadTrending();
-        }
         if (this.featuredProducts.length === 0 || this.latestProducts.length === 0) {
           this.loadFeaturedAndLatest();
         }
@@ -164,7 +157,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   loadHomeData(): void {
     this.loadFeaturedAndLatest();
-    this.loadTrending();
     this.loadCategories();
   }
 
@@ -181,22 +173,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.publicApiService.getLatestProducts().pipe(takeUntil(this.destroy$)).subscribe({
       next: (products) => { this.latestProducts = products; },
       error: () => {}
-    });
-  }
-
-  loadTrending(): void {
-    this.loadingTrending = true;
-    this.trendingError = false;
-    this.publicApiService.getTrendingProducts(8).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (products) => {
-        this.trendingProducts = products;
-        this.loadingTrending = false;
-        this.trendingEmpty = products.length === 0;
-      },
-      error: () => {
-        this.loadingTrending = false;
-        this.trendingError = true;
-      }
     });
   }
 
@@ -232,11 +208,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   getDiscountPercent(p: PublicProduct): number {
     if (!p.discountPrice || p.discountPrice >= p.price) return 0;
     return Math.round((1 - p.discountPrice / p.price) * 100);
-  }
-
-  getTrendingDiscountPercent(p: PublicTrendingProduct): number {
-    if (!p.discountPrice || p.discountPrice >= p.regularPrice) return 0;
-    return Math.round((1 - p.discountPrice / p.regularPrice) * 100);
   }
 
   onDocumentClick(event: MouseEvent): void {

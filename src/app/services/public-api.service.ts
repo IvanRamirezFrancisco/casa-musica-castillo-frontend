@@ -7,9 +7,7 @@ import {
   PublicProduct,
   PublicCategory,
   SpringPage,
-  ProductRecommendation,
-  PublicTrendingProduct,
-  ProductTrendStatus
+  ProductRecommendation
 } from '../models/product.model';
 
 /**
@@ -186,27 +184,6 @@ export class PublicApiService {
         }
         return throwError(() => err);
       })
-    );
-  }
-
-  /**
-   * GET /api/public/products/trending
-   * Devuelve los productos en tendencia basados en el pronóstico de demanda.
-   */
-  getTrendingProducts(limit = 8): Observable<PublicTrendingProduct[]> {
-    const params = new HttpParams().set('limit', limit);
-    return this.http.get<PublicTrendingProduct[]>(`${this.PRODUCTS}/trending`, { params }).pipe(
-      catchError(() => of([]))
-    );
-  }
-
-  /**
-   * GET /api/public/products/{id}/trend-status
-   * Verifica si un producto está en tendencia (endpoint secundario no bloqueante).
-   */
-  getProductTrendStatus(id: number): Observable<ProductTrendStatus> {
-    return this.http.get<ProductTrendStatus>(`${this.PRODUCTS}/${id}/trend-status`).pipe(
-      catchError(() => of({ productId: id, trending: false, label: null, reason: null }))
     );
   }
 
