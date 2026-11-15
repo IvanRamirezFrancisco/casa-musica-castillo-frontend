@@ -7,6 +7,8 @@ export interface BrandDTO {
   name: string;
   description?: string;
   logoUrl?: string;
+  logoProvider?: string;
+  logoPublicId?: string;
   websiteUrl?: string;
   countryOrigin?: string;
   active: boolean;

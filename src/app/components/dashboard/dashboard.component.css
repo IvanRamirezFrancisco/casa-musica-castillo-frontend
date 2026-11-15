@@ -228,7 +228,7 @@
 }
 
 .stat-card {
-  background: white;
+  background: #FDFCFB;
   padding: 1.75rem;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
@@ -317,7 +317,7 @@
 }
 
 .action-card {
-  background: white;
+  background: #FDFCFB;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
@@ -378,7 +378,7 @@
 }
 
 .activity-list {
-  background: white;
+  background: #FDFCFB;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   border: 1px solid #e9ecef;
@@ -452,7 +452,7 @@
 }
 
 .loading-spinner {
-  background: white;
+  background: #FDFCFB;
   padding: 2rem;
   border-radius: 12px;
   text-align: center;
@@ -625,7 +625,7 @@
 }
 
 .security-card {
-  background: white;
+  background: #FDFCFB;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -698,7 +698,7 @@
 .phone-info small {
   color: #6c757d;
   font-size: 11px;
-  background: #f8f9fa;
+  background: #FAF8F6;
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -743,7 +743,7 @@
 .phone-info, .email-info {
   margin-top: 8px;
   padding: 4px 8px;
-  background: #e9ecef;
+  background: #ede8e1;
   border-radius: 4px;
   text-align: center;
 }
@@ -860,7 +860,7 @@
 }
 
 .backup-codes-modal-content {
-  background: white;
+  background: #FDFCFB;
   border-radius: 20px;
   padding: 0;
   max-width: 600px;
@@ -1000,7 +1000,7 @@
 }
 
 .backup-code {
-  background: white;
+  background: #FDFCFB;
   color: var(--primary-700);
   padding: 0.5rem;
   border-radius: 6px;

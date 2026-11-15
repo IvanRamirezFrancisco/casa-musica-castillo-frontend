@@ -9,7 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #ffffff;
+  background: #FDFCFB;
   position: relative;
   overflow: hidden;
   padding: 2rem;
@@ -22,7 +22,7 @@
 
 /* Contenedor de contenido */
 .error-content {
-  background: white;
+  background: #FDFCFB;
   border-radius: 16px;
   padding: 3rem 2rem;
   max-width: 600px;
@@ -54,7 +54,7 @@
 
 .error-icon .material-icons {
   font-size: 120px;
-  color: #800020;
+  color: #722f37;
   animation: pulseIcon 2s ease-in-out infinite;
 }
 
@@ -74,7 +74,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 96px;
   font-weight: 800;
-  color: #800020;
+  color: #722f37;
   text-align: center;
   margin-bottom: 1rem;
   letter-spacing: 0.1em;
@@ -129,7 +129,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #800020 0%, #66001a 100%);
+  background: linear-gradient(135deg, #722f37 0%, #66001a 100%);
   color: white;
 }
 
@@ -152,7 +152,7 @@
 
 /* Información adicional */
 .error-info {
-  background: #f8f9fa;
+  background: #FAF8F6;
   border-left: 4px solid #C5A059;
   border-radius: 8px;
   padding: 1rem 1.5rem;
@@ -168,7 +168,7 @@
 }
 
 .error-info strong {
-  color: #800020;
+  color: #722f37;
   font-weight: 600;
 }
 
@@ -200,7 +200,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem;
-  background: white;
+  background: #FDFCFB;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   text-decoration: none;
@@ -220,7 +220,7 @@
 
 .link-card .material-icons {
   font-size: 32px;
-  color: #800020;
+  color: #722f37;
 }
 
 /* =================================================================

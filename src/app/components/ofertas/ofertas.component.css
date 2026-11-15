@@ -17,7 +17,7 @@
 }
 
 .breadcrumbs a {
-  color: #800020;
+  color: #722f37;
   text-decoration: none;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -98,7 +98,7 @@
 }
 
 .search-icon {
-  color: #800020;
+  color: #722f37;
   font-size: 24px;
 }
 
@@ -228,7 +228,7 @@
   align-items: center;
   gap: 12px;
   padding: 1.25rem;
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   border-radius: 12px 12px 0 0;
 }
 
@@ -301,7 +301,7 @@
 
 .dropdown-item .material-icons {
   font-size: 20px;
-  color: #800020;
+  color: #722f37;
 }
 
 .logout-item {
@@ -364,7 +364,7 @@
 
 /* Banner de ofertas */
 .ofertas-banner {
-  background: linear-gradient(135deg, #800020 0%, #660018 100%);
+  background: linear-gradient(135deg, #722f37 0%, #660018 100%);
   padding: 3rem 0;
   text-align: center;
   color: white;
@@ -411,7 +411,7 @@
   position: absolute;
   top: 1rem;
   left: 1rem;
-  background: #800020;
+  background: #722f37;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -455,7 +455,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 1.8rem;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
   margin: 0;
 }
 
@@ -501,7 +501,7 @@
 .precio-actual {
   font-size: 2rem;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
 }
 
 .precio-original {
@@ -542,7 +542,7 @@
 }
 
 .btn-agregar {
-  background: #800020;
+  background: #722f37;
   color: white;
 }
 
@@ -554,12 +554,12 @@
 
 .btn-detalles {
   background: white;
-  color: #800020;
-  border: 2px solid #800020;
+  color: #722f37;
+  border: 2px solid #722f37;
 }
 
 .btn-detalles:hover {
-  background: #800020;
+  background: #722f37;
   color: white;
   transform: translateY(-2px);
 }
@@ -571,7 +571,7 @@
 
 /* Footer */
 .footer-main {
-  background: linear-gradient(135deg, #800020 0%, #660018 100%);
+  background: linear-gradient(135deg, #722f37 0%, #660018 100%);
   color: white;
   padding: 3rem 0 1rem;
   margin-top: 4rem;
@@ -973,7 +973,7 @@
 
 /* Banner */
 .ofertas-banner {
-  background: linear-gradient(135deg, #800020 0%, #3A0D0D 100%);
+  background: linear-gradient(135deg, #722f37 0%, #3A0D0D 100%);
   padding: 3rem 0;
   margin-bottom: 2rem;
 }
@@ -1085,7 +1085,7 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  color: #800020;
+  color: #722f37;
 }
 
 .loading-container .material-symbols-outlined {
@@ -1237,7 +1237,7 @@
 }
 
 .oferta-nombre:hover {
-  color: #800020;
+  color: #722f37;
 }
 
 /* Meta Info (Rating + Stock) */
@@ -1339,7 +1339,7 @@
 .precio-actual {
   font-size: 2rem;
   font-weight: 800;
-  color: #800020;
+  color: #722f37;
   line-height: 1;
   font-family: 'Montserrat', sans-serif;
 }
@@ -1418,7 +1418,7 @@
   justify-content: center;
   gap: 0.4rem;
   padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #800020 0%, #a00028 100%);
+  background: linear-gradient(135deg, #722f37 0%, #a00028 100%);
   color: white;
   border: none;
   border-radius: 8px;

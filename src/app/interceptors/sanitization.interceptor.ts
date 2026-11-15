@@ -17,10 +17,22 @@ export class SanitizationInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
     return next.handle(req).pipe(
       map((response: any) => {
-        if (response instanceof HttpResponse) {
+        if (response instanceof HttpResponse && response.body) {
+          // Ignorar descargas de archivos y contenido binario
+          if (
+            response.body instanceof Blob ||
+            response.body instanceof File ||
+            response.body instanceof ArrayBuffer ||
+            response.body instanceof FormData
+          ) {
+            return response;
+          }
+
           // Sanitizar el cuerpo de la respuesta si es necesario
-          const sanitizedBody = this.sanitizeResponse(response.body);
-          return response.clone({ body: sanitizedBody });
+          if (typeof response.body === 'object') {
+            const sanitizedBody = this.sanitizeResponse(response.body);
+            return response.clone({ body: sanitizedBody });
+          }
         }
         return response;
       }),

@@ -7,6 +7,8 @@ export interface Category {
   name: string;
   description?: string;
   imageUrl?: string;
+  imagePublicId?: string;
+  imageProvider?: string;
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -16,6 +18,9 @@ export interface Category {
   parentId?: number | null;
   parentName?: string | null;
   subcategoryCount?: number;
+  hasChildren?: boolean;
+  level?: number;
+  hierarchyPath?: string;
 }
 
 export interface CreateCategoryRequest {

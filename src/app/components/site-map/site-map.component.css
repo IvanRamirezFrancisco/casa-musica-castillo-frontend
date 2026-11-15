@@ -30,7 +30,7 @@
 }
 
 .breadcrumbs a {
-  color: #800020;
+  color: #722f37;
   text-decoration: none;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -86,7 +86,7 @@
   width: 100px;
   height: 100px;
   margin: 0 auto 24px;
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -140,7 +140,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 48px;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
   margin: 0 0 16px;
   letter-spacing: -0.5px;
 }
@@ -166,7 +166,7 @@
 }
 
 .sitemap-section {
-  background: white;
+  background: #FDFCFB;
   border-radius: 20px;
   padding: 32px;
   box-shadow: 
@@ -197,7 +197,7 @@
   left: 0;
   width: 4px;
   height: 0;
-  background: linear-gradient(180deg, #C5A059 0%, #800020 100%);
+  background: linear-gradient(180deg, #C5A059 0%, #722f37 100%);
   transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -241,7 +241,7 @@
 
 .section-icon-wrapper .material-icons {
   font-size: 28px;
-  color: #800020;
+  color: #722f37;
   transition: color 0.3s ease;
 }
 
@@ -315,7 +315,7 @@
 
 .link-icon {
   font-size: 20px;
-  color: #800020;
+  color: #722f37;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -333,7 +333,7 @@
 }
 
 .link-content:hover .link-name {
-  color: #800020;
+  color: #722f37;
 }
 
 .link-description {
@@ -360,7 +360,7 @@
 }
 
 .stat-card {
-  background: white;
+  background: #FDFCFB;
   border-radius: 16px;
   padding: 32px;
   display: flex;
@@ -388,7 +388,7 @@
 
 .stat-icon {
   font-size: 48px;
-  color: #800020;
+  color: #722f37;
   background: linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(197, 160, 89, 0.05) 100%);
   padding: 16px;
   border-radius: 12px;
@@ -411,7 +411,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 36px;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
   line-height: 1;
 }
 
@@ -429,7 +429,7 @@
   position: fixed;
   bottom: 32px;
   right: 32px;
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: white;
   border: none;
   border-radius: 50px;
@@ -465,7 +465,7 @@
   box-shadow: 
     0 8px 20px rgba(128, 0, 32, 0.4),
     0 16px 40px rgba(128, 0, 32, 0.25);
-  background: linear-gradient(135deg, #600015 0%, #800020 100%);
+  background: linear-gradient(135deg, #600015 0%, #722f37 100%);
 }
 
 .back-to-top .material-icons {
@@ -506,7 +506,7 @@
 }
 
 .footer-link {
-  color: #800020;
+  color: #722f37;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s ease;

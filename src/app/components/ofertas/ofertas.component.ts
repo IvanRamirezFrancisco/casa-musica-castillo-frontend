@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,7 @@ import { Product } from '../../models/product.model';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './ofertas.component.html',
   styleUrl: './ofertas.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '(document:click)': 'onDocumentClick($event)'
   }
@@ -21,7 +22,6 @@ import { Product } from '../../models/product.model';
 export class OfertasComponent implements OnInit {
   searchQuery = '';
   cartItemCount = 0;
-  wishlistCount = 0;
 
   // Usuario logueado
   isLoggedIn = false;
@@ -168,10 +168,6 @@ export class OfertasComponent implements OnInit {
 
   navigateToCart(): void {
     this.router.navigate(['/carrito']);
-  }
-
-  toggleWishlist(): void {
-    // Toggle silencioso
   }
 
   navigateToHome(): void {

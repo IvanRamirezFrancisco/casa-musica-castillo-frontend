@@ -861,3 +861,39 @@
     height: 200px;
   }
 }
+
+/* FASE 1 - Carrito - 2026-05-15 */
+.pending-backend-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: #fff8e1;
+  border: 1.5px solid #f9a825;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+.pending-backend-banner .pending-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+.pending-backend-banner .pending-content h3 {
+  margin: 0 0 0.5rem;
+  color: #e65100;
+  font-size: 1.1rem;
+}
+.pending-backend-banner .pending-content p {
+  margin: 0 0 0.5rem;
+  color: #555;
+  font-size: 0.93rem;
+}
+.pending-backend-banner .pending-content strong {
+  font-family: monospace;
+  background: #ffe0b2;
+  padding: 0 4px;
+  border-radius: 3px;
+}
+.pending-backend-banner .pending-note {
+  font-style: italic;
+  color: #888 !important;
+}

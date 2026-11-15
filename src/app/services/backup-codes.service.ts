@@ -29,8 +29,8 @@ export class BackupCodesService {
   /**
    * Generar nuevos códigos de respaldo (solo disponible si Google Auth está activado)
    */
-  generateBackupCodes(): Observable<BackupCodeResponse> {
-    return this.http.post<BackupCodeResponse>(`${this.API_URL}/backup-codes/generate`, {});
+  generateBackupCodes(currentPassword: string): Observable<BackupCodeResponse> {
+    return this.http.post<BackupCodeResponse>(`${this.API_URL}/backup-codes/generate`, { currentPassword });
   }
 
   /**
@@ -50,8 +50,8 @@ export class BackupCodesService {
   /**
    * Desactivar códigos de respaldo (elimina todos los códigos)
    */
-  disableBackupCodes(): Observable<BackupCodeResponse> {
-    return this.http.post<BackupCodeResponse>(`${this.API_URL}/backup-codes/disable`, {});
+  disableBackupCodes(currentPassword: string): Observable<BackupCodeResponse> {
+    return this.http.post<BackupCodeResponse>(`${this.API_URL}/backup-codes/disable`, { currentPassword });
   }
 
   /**

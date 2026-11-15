@@ -1,6 +1,13 @@
-﻿/* Admin Orders - los estilos visuales son gestionados por Tailwind CSS en el template */
+/* Admin Orders - los estilos visuales son gestionados por Tailwind CSS en el template */
 /* Solo se mantienen overrides globales que Tailwind no puede manejar directamente */
 
 :host {
   display: block;
+  background-color: #f5f0eb;
+  min-height: 100%;
+}
+
+/* ── El div raíz usa bg-gray-50 (Tailwind), lo forzamos al tono correcto ── */
+:host > div {
+  background-color: #f5f0eb !important;
 }

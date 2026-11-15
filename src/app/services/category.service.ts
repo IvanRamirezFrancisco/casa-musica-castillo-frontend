@@ -71,6 +71,30 @@ export class CategoryService {
   }
 
   /**
+   * Subir imagen de categoría (ADMIN)
+   */
+  uploadCategoryImage(id: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    // Para multipart/form-data NO debemos establecer Content-Type en los headers de Angular, 
+    // el navegador lo hace automáticamente incluyendo el boundary.
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.post<any>(`${this.API_URL}/${id}/image`, formData, { headers });
+  }
+
+  /**
+   * Eliminar imagen de categoría (ADMIN)
+   */
+  deleteCategoryImage(id: number): Observable<any> {
+    return this.http.delete(`${this.API_URL}/${id}/image`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  /**
    * Obtener headers de autenticación
    */
   private getAuthHeaders(): HttpHeaders {

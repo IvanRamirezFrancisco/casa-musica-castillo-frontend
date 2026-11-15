@@ -1,312 +1,317 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import {
+  Observable,
+  BehaviorSubject,
+  Subscription,
+  of,
+  EMPTY
+} from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {
-  WishlistItemDTO,
-  AddToWishlistRequest,
-  UpdateWishlistItemRequest,
-  WishlistSummaryDTO,
-  WishlistNotificationDTO,
-  PriceDropItemDTO,
-  BulkAddToWishlistRequest,
-  BulkRemoveFromWishlistRequest,
-  MoveToCartResponse,
+  WishlistItem,
   WishlistResponse,
-  NotificationsResponse
+  WishlistCheckResponse,
+  WishlistSummary,
+  AddToWishlistRequest,
+  UpdateWishlistRequest,
+  WishlistNotification
 } from '../models/wishlist.model';
+import { AuthService } from './auth.service';
 
 /**
- * Servicio para gestionar la lista de deseos (wishlist)
- * Consume los 15 endpoints de WishlistController del backend
+ * Servicio para gestionar la lista de deseos (Wishlist — Fase 2).
+ *
+ * Diseño de estado reactivo:
+ * - `_productIds$` → BehaviorSubject<Set<number>> con los productId en wishlist.
+ *   Permite la consulta `isInWishlist(id)` en O(1) desde cualquier componente.
+ * - `wishlistItems$` → BehaviorSubject<WishlistItem[]> con la lista completa.
+ * - `wishlistCount$` → BehaviorSubject<number> para el badge del header.
+ *
+ * El toggle actualiza optimistamente el estado local ANTES de la llamada HTTP,
+ * dando feedback visual instantáneo, y revierte si el servidor falla.
  */
 @Injectable({
   providedIn: 'root'
 })
-export class WishlistService {
+export class WishlistService implements OnDestroy {
+
   private readonly API_URL = `${environment.apiUrl}/wishlist`;
-  
-  // Subject para compartir el estado de la wishlist entre componentes
-  private wishlistSubject = new BehaviorSubject<WishlistItemDTO[]>([]);
-  public wishlist$ = this.wishlistSubject.asObservable();
-  
-  private wishlistCountSubject = new BehaviorSubject<number>(0);
-  public wishlistCount$ = this.wishlistCountSubject.asObservable();
 
-  constructor(private http: HttpClient) {
-    // Cargar wishlist al inicializar el servicio
-    this.loadWishlist();
+  // ── Estado reactivo ────────────────────────────────────────────────────────
+
+  private _productIds$ = new BehaviorSubject<Set<number>>(new Set<number>());
+  private _items$      = new BehaviorSubject<WishlistItem[]>([]);
+  private _count$      = new BehaviorSubject<number>(0);
+
+  /** Observable con los items completos de la wishlist */
+  readonly wishlistItems$ = this._items$.asObservable();
+
+  /** Observable con el conteo de items (para el badge del header) */
+  readonly wishlistCount$ = this._count$.asObservable();
+
+  private authSub?: Subscription;
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {
+    // Cuando el usuario inicia sesión, cargamos la wishlist automáticamente.
+    // Cuando cierra sesión, limpiamos el estado local.
+    this.authSub = this.authService.isLoggedIn$.subscribe(isLoggedIn => {
+      if (isLoggedIn) {
+        this.loadWishlistSilently();
+      } else {
+        this.clearLocalState();
+      }
+    });
   }
 
-  // ============================================
-  // ENDPOINTS PRINCIPALES
-  // ============================================
+  ngOnDestroy(): void {
+    this.authSub?.unsubscribe();
+  }
+
+  // ── Consultas ──────────────────────────────────────────────────────────────
 
   /**
-   * Obtener la wishlist del usuario
-   * GET /api/wishlist
-   * Requiere: USER role
+   * Devuelve un Observable<boolean> que emite true/false según si el producto
+   * está en la wishlist del usuario. Ideal para el botón corazón.
+   * Usa el Set interno — sin llamadas HTTP adicionales.
    */
-  getWishlist(): Observable<WishlistItemDTO[]> {
-    return this.http.get<WishlistItemDTO[]>(this.API_URL).pipe(
-      tap(items => {
-        this.wishlistSubject.next(items);
-        this.wishlistCountSubject.next(items.length);
-      })
+  isInWishlist$(productId: number): Observable<boolean> {
+    return this._productIds$.pipe(
+      map(ids => ids.has(productId))
     );
   }
 
   /**
-   * Agregar producto a la wishlist
-   * POST /api/wishlist
-   * Requiere: USER role
-   */
-  addToWishlist(request: AddToWishlistRequest): Observable<WishlistItemDTO> {
-    return this.http.post<WishlistItemDTO>(this.API_URL, request).pipe(
-      tap(() => {
-        // Recargar la wishlist después de agregar
-        this.getWishlist().subscribe();
-      })
-    );
-  }
-
-  /**
-   * Obtener un item específico de la wishlist
-   * GET /api/wishlist/{itemId}
-   * Requiere: USER role
-   */
-  getWishlistItem(itemId: number): Observable<WishlistItemDTO> {
-    return this.http.get<WishlistItemDTO>(`${this.API_URL}/${itemId}`);
-  }
-
-  /**
-   * Actualizar un item de la wishlist
-   * PUT /api/wishlist/{itemId}
-   * Requiere: USER role
-   */
-  updateWishlistItem(itemId: number, request: UpdateWishlistItemRequest): Observable<WishlistItemDTO> {
-    return this.http.put<WishlistItemDTO>(`${this.API_URL}/${itemId}`, request).pipe(
-      tap(() => {
-        // Recargar la wishlist después de actualizar
-        this.getWishlist().subscribe();
-      })
-    );
-  }
-
-  /**
-   * Eliminar un item de la wishlist
-   * DELETE /api/wishlist/{itemId}
-   * Requiere: USER role
-   */
-  removeFromWishlist(itemId: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/${itemId}`).pipe(
-      tap(() => {
-        // Recargar la wishlist después de eliminar
-        this.getWishlist().subscribe();
-      })
-    );
-  }
-
-  /**
-   * Obtener resumen de la wishlist
-   * GET /api/wishlist/summary
-   * Requiere: USER role
-   */
-  getWishlistSummary(): Observable<WishlistSummaryDTO> {
-    return this.http.get<WishlistSummaryDTO>(`${this.API_URL}/summary`);
-  }
-
-  /**
-   * Obtener items con descuento
-   * GET /api/wishlist/price-drops
-   * Requiere: USER role
-   */
-  getPriceDrops(): Observable<PriceDropItemDTO[]> {
-    return this.http.get<PriceDropItemDTO[]>(`${this.API_URL}/price-drops`);
-  }
-
-  /**
-   * Verificar precios de todos los items
-   * POST /api/wishlist/check-prices
-   * Requiere: USER role
-   */
-  checkPrices(): Observable<WishlistItemDTO[]> {
-    return this.http.post<WishlistItemDTO[]>(`${this.API_URL}/check-prices`, {}).pipe(
-      tap(items => {
-        this.wishlistSubject.next(items);
-      })
-    );
-  }
-
-  /**
-   * Mover item al carrito
-   * POST /api/wishlist/{itemId}/move-to-cart
-   * Requiere: USER role
-   */
-  moveToCart(itemId: number): Observable<MoveToCartResponse> {
-    return this.http.post<MoveToCartResponse>(`${this.API_URL}/${itemId}/move-to-cart`, {}).pipe(
-      tap(() => {
-        // Recargar la wishlist después de mover al carrito
-        this.getWishlist().subscribe();
-      })
-    );
-  }
-
-  /**
-   * Obtener notificaciones de la wishlist
-   * GET /api/wishlist/notifications
-   * Requiere: USER role
-   */
-  getNotifications(unreadOnly: boolean = false): Observable<NotificationsResponse> {
-    const url = unreadOnly 
-      ? `${this.API_URL}/notifications?unreadOnly=true`
-      : `${this.API_URL}/notifications`;
-    
-    return this.http.get<NotificationsResponse>(url);
-  }
-
-  /**
-   * Marcar notificación como leída
-   * PATCH /api/wishlist/notifications/{notificationId}/read
-   * Requiere: USER role
-   */
-  markNotificationAsRead(notificationId: number): Observable<void> {
-    return this.http.patch<void>(`${this.API_URL}/notifications/${notificationId}/read`, {});
-  }
-
-  /**
-   * Agregar múltiples productos a la wishlist
-   * POST /api/wishlist/bulk-add
-   * Requiere: USER role
-   */
-  bulkAddToWishlist(request: BulkAddToWishlistRequest): Observable<WishlistItemDTO[]> {
-    return this.http.post<WishlistItemDTO[]>(`${this.API_URL}/bulk-add`, request).pipe(
-      tap(() => {
-        // Recargar la wishlist después de agregar múltiples items
-        this.getWishlist().subscribe();
-      })
-    );
-  }
-
-  /**
-   * Eliminar múltiples items de la wishlist
-   * POST /api/wishlist/bulk-remove
-   * Requiere: USER role
-   */
-  bulkRemoveFromWishlist(request: BulkRemoveFromWishlistRequest): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/bulk-remove`, request).pipe(
-      tap(() => {
-        // Recargar la wishlist después de eliminar múltiples items
-        this.getWishlist().subscribe();
-      })
-    );
-  }
-
-  /**
-   * Vaciar la wishlist completamente
-   * DELETE /api/wishlist/clear
-   * Requiere: USER role
-   */
-  clearWishlist(): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/clear`).pipe(
-      tap(() => {
-        this.wishlistSubject.next([]);
-        this.wishlistCountSubject.next(0);
-      })
-    );
-  }
-
-  // ============================================
-  // MÉTODOS HELPER
-  // ============================================
-
-  /**
-   * Verificar si un producto está en la wishlist
+   * Verificación síncrona rápida (para lógica no reactiva).
    */
   isInWishlist(productId: number): boolean {
-    const items = this.wishlistSubject.value;
-    return items.some(item => item.productId === productId);
+    return this._productIds$.value.has(productId);
   }
 
   /**
-   * Obtener item de wishlist por productId
+   * Carga la wishlist completa desde el backend.
+   * GET /api/wishlist
    */
-  getItemByProductId(productId: number): WishlistItemDTO | undefined {
-    const items = this.wishlistSubject.value;
-    return items.find(item => item.productId === productId);
-  }
-
-  /**
-   * Calcular ahorro total por descuentos
-   */
-  calculateTotalSavings(items: WishlistItemDTO[]): number {
-    return items.reduce((total, item) => total + item.priceDrop, 0);
-  }
-
-  /**
-   * Obtener items con alertas activas
-   */
-  getItemsWithAlerts(items: WishlistItemDTO[]): WishlistItemDTO[] {
-    return items.filter(item => 
-      item.notifyWhenAvailable || item.notifyOnDiscount
+  getWishlist(): Observable<WishlistResponse> {
+    return this.http.get<WishlistResponse>(this.API_URL).pipe(
+      tap(response => this.updateLocalState(response.items)),
+      catchError(err => {
+        console.error('[WishlistService] Error cargando wishlist:', err);
+        throw err;
+      })
     );
   }
 
   /**
-   * Ordenar wishlist por prioridad
+   * Obtiene el resumen estadístico.
+   * GET /api/wishlist/summary
    */
-  sortByPriority(items: WishlistItemDTO[]): WishlistItemDTO[] {
-    return [...items].sort((a, b) => b.priority - a.priority);
+  getSummary(): Observable<WishlistSummary> {
+    return this.http.get<WishlistSummary>(`${this.API_URL}/summary`);
   }
 
   /**
-   * Ordenar wishlist por descuento
+   * Obtiene items con bajada de precio.
+   * GET /api/wishlist/price-drops
    */
-  sortByDiscount(items: WishlistItemDTO[]): WishlistItemDTO[] {
-    return [...items].sort((a, b) => b.priceDropPercentage - a.priceDropPercentage);
+  getPriceDrops(): Observable<WishlistItem[]> {
+    return this.http.get<WishlistItem[]>(`${this.API_URL}/price-drops`);
   }
 
   /**
-   * Formatear tiempo desde que se agregó
+   * Obtiene notificaciones de precio/stock.
+   * GET /api/wishlist/notifications
    */
-  getTimeSinceAdded(addedAt: string): string {
-    const now = new Date();
-    const added = new Date(addedAt);
-    const diffMs = now.getTime() - added.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Hoy';
-    if (diffDays === 1) return 'Ayer';
-    if (diffDays < 7) return `Hace ${diffDays} días`;
-    if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`;
-    return `Hace ${Math.floor(diffDays / 30)} meses`;
+  getNotifications(): Observable<{ priceDrops: WishlistNotification[]; backInStock: WishlistNotification[]; total: number }> {
+    return this.http.get<any>(`${this.API_URL}/notifications`);
   }
 
+  // ── Toggle del botón corazón ────────────────────────────────────────────────
+
   /**
-   * Cargar wishlist al inicializar
+   * Añade o quita un producto de la wishlist.
+   *
+   * - Si el producto NO está en wishlist → POST /api/wishlist
+   * - Si el producto SÍ está en wishlist → DELETE /api/wishlist/by-product/{productId}
+   *
+   * Actualiza optimistamente el estado local antes de la llamada HTTP.
+   * Revierte si el servidor devuelve error.
+   *
+   * @returns Observable<boolean> — true si quedó en wishlist, false si fue removido.
    */
-  private loadWishlist(): void {
-    const token = localStorage.getItem('token');
-    if (token) {
-      this.getWishlist().subscribe({
-        error: (err) => {
-          console.warn('No se pudo cargar la wishlist:', err);
-        }
-      });
+  toggle(productId: number): Observable<boolean> {
+    const currentlyIn = this.isInWishlist(productId);
+
+    if (currentlyIn) {
+      // Actualización optimista: quitar del estado local
+      this.removeFromLocalState(productId);
+
+      return this.http
+        .delete<any>(`${this.API_URL}/by-product/${productId}`)
+        .pipe(
+          map(() => false),
+          catchError(err => {
+            console.error('[WishlistService] Error eliminando de wishlist:', err);
+            // Revertir — volver a agregar al estado local
+            this.reloadWishlistSilently();
+            throw err;
+          })
+        );
+    } else {
+      // Actualización optimista: agregar al estado local
+      this.addToLocalState(productId);
+
+      const request: AddToWishlistRequest = { productId, priority: 2 };
+      return this.http
+        .post<WishlistItem>(this.API_URL, request)
+        .pipe(
+          tap(item => {
+            // Refrescar estado con el item real devuelto por el servidor
+            const current = this._items$.value;
+            const updated = [...current, item];
+            this.updateLocalState(updated);
+          }),
+          map(() => true),
+          catchError(err => {
+            console.error('[WishlistService] Error agregando a wishlist:', err);
+            // Revertir — quitar del estado local
+            this.removeFromLocalState(productId);
+            throw err;
+          })
+        );
     }
   }
 
+  // ── Operaciones completas (para la página /wishlist) ───────────────────────
+
   /**
-   * Obtener wishlist actual del BehaviorSubject
+   * Elimina un item por su wishlistId (ID del registro).
+   * DELETE /api/wishlist/{itemId}
    */
-  getCurrentWishlist(): WishlistItemDTO[] {
-    return this.wishlistSubject.value;
+  removeByWishlistId(wishlistId: number, productId: number): Observable<void> {
+    this.removeFromLocalState(productId);
+    return this.http.delete<void>(`${this.API_URL}/${wishlistId}`).pipe(
+      catchError(err => {
+        this.reloadWishlistSilently();
+        throw err;
+      })
+    );
   }
 
   /**
-   * Obtener contador actual de items
+   * Mueve un item de la wishlist al carrito usando el SP sp_move_wishlist_to_cart.
+   * POST /api/wishlist/{itemId}/move-to-cart
    */
+  moveToCart(wishlistId: number, productId: number): Observable<any> {
+    return this.http.post<any>(`${this.API_URL}/${wishlistId}/move-to-cart`, {}).pipe(
+      tap(() => {
+        // El SP elimina el item de la wishlist, actualizamos estado local
+        this.removeFromLocalState(productId);
+      }),
+      catchError(err => {
+        console.error('[WishlistService] Error moviendo al carrito:', err);
+        throw err;
+      })
+    );
+  }
+
+  /**
+   * Mueve todos los items en stock al carrito.
+   * POST /api/wishlist/move-all-to-cart
+   */
+  moveAllToCart(): Observable<any> {
+    return this.http.post<any>(`${this.API_URL}/move-all-to-cart`, {}).pipe(
+      tap(() => this.reloadWishlistSilently())
+    );
+  }
+
+  /**
+   * Actualiza prioridad/notas de un item.
+   * PUT /api/wishlist/{itemId}
+   */
+  updateItem(wishlistId: number, request: UpdateWishlistRequest): Observable<WishlistItem> {
+    return this.http.put<WishlistItem>(`${this.API_URL}/${wishlistId}`, request).pipe(
+      tap(() => this.reloadWishlistSilently())
+    );
+  }
+
+  /**
+   * Vacía la wishlist completa del usuario.
+   * DELETE /api/wishlist
+   */
+  clearWishlist(): Observable<any> {
+    return this.http.delete<any>(this.API_URL).pipe(
+      tap(() => this.clearLocalState())
+    );
+  }
+
+  // ── Estado local ───────────────────────────────────────────────────────────
+
+  /** Devuelve los items actuales sin suscripción */
+  getCurrentItems(): WishlistItem[] {
+    return this._items$.value;
+  }
+
+  /** Devuelve el conteo actual */
   getCurrentCount(): number {
-    return this.wishlistCountSubject.value;
+    return this._count$.value;
+  }
+
+  // ── Privados ───────────────────────────────────────────────────────────────
+
+  /**
+   * Carga la wishlist en silencio al iniciar sesión.
+   * Los errores (ej. token expirado) se suprimen para no interrumpir la UX.
+   */
+  private loadWishlistSilently(): void {
+    this.http.get<WishlistResponse>(this.API_URL).pipe(
+      catchError(() => EMPTY)
+    ).subscribe(response => {
+      if (response) {
+        this.updateLocalState(response.items);
+      }
+    });
+  }
+
+  private reloadWishlistSilently(): void {
+    this.loadWishlistSilently();
+  }
+
+  /** Actualiza los tres BehaviorSubjects con la lista recibida del servidor */
+  private updateLocalState(items: WishlistItem[]): void {
+    const ids = new Set(items.map(i => i.productId));
+    this._productIds$.next(ids);
+    this._items$.next(items);
+    this._count$.next(items.length);
+  }
+
+  /** Agrega un productId al Set local (actualización optimista) */
+  private addToLocalState(productId: number): void {
+    const current = new Set(this._productIds$.value);
+    current.add(productId);
+    this._productIds$.next(current);
+    this._count$.next(current.size);
+  }
+
+  /** Quita un productId del Set local y del array de items (actualización optimista) */
+  private removeFromLocalState(productId: number): void {
+    const current = new Set(this._productIds$.value);
+    current.delete(productId);
+    this._productIds$.next(current);
+
+    const updatedItems = this._items$.value.filter(i => i.productId !== productId);
+    this._items$.next(updatedItems);
+    this._count$.next(current.size);
+  }
+
+  /** Limpia todo el estado local (al cerrar sesión) */
+  private clearLocalState(): void {
+    this._productIds$.next(new Set());
+    this._items$.next([]);
+    this._count$.next(0);
   }
 }

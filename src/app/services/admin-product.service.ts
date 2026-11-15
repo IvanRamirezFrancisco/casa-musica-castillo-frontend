@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product, PageResponse } from '../models/admin.models';
+import { Product, PageResponse, ProductImageResponse } from '../models/admin.models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminProductService {
-  private apiUrl = `${environment.apiUrl}/api/admin/products`;
+  private apiUrl = `${environment.apiUrl}/admin/products`;
 
   constructor(private http: HttpClient) { }
 
@@ -53,5 +53,25 @@ export class AdminProductService {
 
   getProductsCount(): Observable<{ count: number }> {
     return this.http.get<{ count: number }>(`${this.apiUrl}/count`);
+  }
+
+  // ==================== IMAGES ====================
+
+  getProductImages(productId: number): Observable<ProductImageResponse[]> {
+    return this.http.get<ProductImageResponse[]>(`${this.apiUrl}/${productId}/images`);
+  }
+
+  uploadProductImage(productId: number, file: File): Observable<{ success: boolean; message: string; data: ProductImageResponse }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ success: boolean; message: string; data: ProductImageResponse }>(`${this.apiUrl}/${productId}/images`, formData);
+  }
+
+  setPrimaryProductImage(productId: number, imageId: number): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${productId}/images/${imageId}/primary`, {});
+  }
+
+  deleteProductImage(productId: number, imageId: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${productId}/images/${imageId}`);
   }
 }

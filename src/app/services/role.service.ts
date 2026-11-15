@@ -59,9 +59,9 @@ export class RoleService {
     return this.http.get<Permission[]>(`${this.apiUrl}/permissions`);
   }
 
-  /** Obtiene permisos agrupados por categoría desde el backend */
+  /** Obtiene permisos agrupados por categoría desde el backend, filtrados según acceso */
   getPermissionsByCategory(): Observable<PermissionsByCategory> {
-    return this.http.get<PermissionsByCategory>(`${this.apiUrl}/permissions/by-category`);
+    return this.http.get<PermissionsByCategory>(`${this.apiUrl}/assignable-permissions-by-category`);
   }
 
   /** Obtiene la cantidad de usuarios que tienen un rol asignado */

@@ -1,10 +1,10 @@
-﻿/* ================================================================
+/* ================================================================
    ADMIN ROLES & PERMISSIONS
-   Paleta: Tinto #800020 | Dorado #D4A347 | Oscuro #1a1a2e
+   Paleta: Tinto #722f37 | Dorado #D4A347 | Oscuro #1a1a2e
    ================================================================ */
 
 :host {
-  --wine:        #800020;
+  --wine:        #722f37;
   --wine-dark:   #600018;
   --wine-light:  rgba(128,0,32,.09);
   --gold:        #D4A347;
@@ -24,7 +24,7 @@
   --transition:  .22s ease;
 }
 
-/* ── Wrapper ──────────────────────────────────────────────────── */
+/* -- Wrapper ---------------------------------------------------- */
 :host {
   display: block;
 }
@@ -35,7 +35,64 @@
   margin: 0 auto;
 }
 
-/* ── Encabezado de página ─────────────────────────────────────── */
+/* ── Barra de contexto minimalista ────────────────────────────── */
+.module-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.module-info-bar__stat {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.module-info-bar__stat svg {
+  width: 16px;
+  height: 16px;
+  color: var(--wine, #8b1a1a);
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+.module-info-bar__num {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--wine, #8b1a1a);
+  line-height: 1;
+}
+
+.module-info-bar__label {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #6b7280);
+  font-weight: 500;
+}
+
+.module-info-bar__divider {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--border, #e5e7eb);
+  flex-shrink: 0;
+}
+
+.module-info-bar__hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #6b7280);
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* -- Encabezado de p�gina --------------------------------------- */
 .page-header {
   display: flex;
   align-items: center;
@@ -119,7 +176,7 @@
   margin-top: 1px;
 }
 
-/* ── Botón Crear ─────────────────────────────────────────────── */
+/* -- Bot�n Crear ----------------------------------------------- */
 .btn-create {
   display: inline-flex;
   align-items: center;
@@ -151,7 +208,7 @@
 
 .btn-create:active { transform: translateY(0); }
 
-/* ── Alerta acceso restringido ───────────────────────────────── */
+/* -- Alerta acceso restringido --------------------------------- */
 .alert-restricted {
   display: flex;
   align-items: center;
@@ -172,7 +229,7 @@
   flex-shrink: 0;
 }
 
-/* ── Loading ─────────────────────────────────────────────────── */
+/* -- Loading --------------------------------------------------- */
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -195,14 +252,14 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Grid de roles ───────────────────────────────────────────── */
+/* -- Grid de roles --------------------------------------------- */
 .roles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: 1.5rem;
 }
 
-/* ── Tarjeta de rol ──────────────────────────────────────────── */
+/* -- Tarjeta de rol -------------------------------------------- */
 .role-card {
   background: var(--bg-card);
   border-radius: var(--radius-card);
@@ -319,7 +376,7 @@
   overflow: hidden;
 }
 
-/* Estadísticas de tarjeta */
+/* Estad�sticas de tarjeta */
 .role-card__stats {
   display: flex;
   gap: .75rem;
@@ -350,6 +407,19 @@
 }
 
 /* Pie de tarjeta */
+.role-card__own-badge {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .35rem 1.25rem;
+  font-size: .72rem;
+  font-weight: 600;
+  color: #4338ca;
+  background: #eef2ff;
+  border-top: 1px solid #e0e7ff;
+  letter-spacing: .02em;
+}
+
 .role-card__footer {
   display: flex;
   align-items: center;
@@ -360,7 +430,7 @@
   flex-wrap: wrap;
 }
 
-/* Botones de acción en tarjeta */
+/* Botones de acci�n en tarjeta */
 .btn-action {
   display: inline-flex;
   align-items: center;
@@ -426,7 +496,7 @@
   stroke: var(--text-light);
 }
 
-/* ── Estado vacío ────────────────────────────────────────────── */
+/* -- Estado vac�o ---------------------------------------------- */
 .empty-state {
   grid-column: 1 / -1;
   display: flex;
@@ -490,7 +560,7 @@
 
 /* Caja del modal */
 .modal-box {
-  background: #fff;
+  background: #FDFCFB;
   border-radius: 18px;
   box-shadow: var(--shadow-lg);
   display: flex;
@@ -581,7 +651,7 @@
 
 .modal-box__close:hover { background: rgba(255,255,255,.22); }
 
-/* Barra de estadísticas (modal permisos) */
+/* Barra de estad�sticas (modal permisos) */
 .modal-stats-bar {
   display: flex;
   gap: 1px;
@@ -596,7 +666,7 @@
   flex-direction: column;
   align-items: center;
   padding: .75rem 1rem;
-  background: #fff;
+  background: #FDFCFB;
   gap: .1rem;
 }
 
@@ -648,7 +718,7 @@
   display: inline-flex;
   align-items: center;
   padding: .55rem 1.2rem;
-  background: #fff;
+  background: #FDFCFB;
   color: #374151;
   border: 1.5px solid #d1d5db;
   border-radius: var(--radius-btn);
@@ -715,7 +785,7 @@
   padding: .6rem .875rem;
   font-size: .9rem;
   color: var(--text-main);
-  background: #fff;
+  background: #FDFCFB;
   border: 1.5px solid #d1d5db;
   border-radius: var(--radius-btn);
   outline: none;
@@ -828,15 +898,6 @@
 .create-cat-block { border-bottom: 1px solid var(--border); }
 .create-cat-block:last-child { border-bottom: none; }
 
-.create-cat-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: .65rem 1rem;
-  background: #f9fafb;
-  border-bottom: 1px solid var(--border);
-}
-
 .create-cat-toggle {
   display: flex;
   align-items: center;
@@ -944,15 +1005,11 @@
   border: 1.5px solid var(--border);
   border-radius: 11px;
   overflow: hidden;
+  transition: border-color var(--transition);
 }
 
-.cat-block__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: .7rem 1rem;
-  background: #f9fafb;
-  border-bottom: 1px solid var(--border);
+.cat-block:hover {
+  border-color: rgba(128,0,32,.2);
 }
 
 .cat-toggle {
@@ -1079,7 +1136,7 @@
   letter-spacing: .02em;
 }
 
-/* Spinner pequeño */
+/* Spinner peque�o */
 .spinner-xs {
   display: inline-block;
   width: 14px;
@@ -1095,7 +1152,7 @@ input[type="checkbox"]:indeterminate {
   accent-color: var(--wine);
 }
 
-/* ── Responsive ──────────────────────────────────────────────── */
+/* -- Responsive ------------------------------------------------ */
 @media (max-width: 900px) {
   .roles-grid {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1133,10 +1190,10 @@ input[type="checkbox"]:indeterminate {
 }
 
 /* ================================================================
-   NUEVOS ESTILOS — Mejoras UX v2
+   NUEVOS ESTILOS � Mejoras UX v2
    ================================================================ */
 
-/* ── Stat-pill clickeable ────────────────────────────────────── */
+/* -- Stat-pill clickeable -------------------------------------- */
 button.stat-pill {
   all: unset;
   display: flex;
@@ -1181,7 +1238,7 @@ button.stat-pill:hover strong {
   color: var(--wine);
 }
 
-/* ── Botón "Ver Permisos" (solo lectura) ─────────────────────── */
+/* -- Bot�n "Ver Permisos" (solo lectura) ----------------------- */
 .btn-action--view {
   background: rgba(59,130,246,.07);
   color: #2563eb;
@@ -1201,7 +1258,7 @@ button.stat-pill:hover strong {
   stroke: #fff;
 }
 
-/* ── Badge "Solo lectura" en header del modal ────────────────── */
+/* -- Badge "Solo lectura" en header del modal ------------------ */
 .badge-readonly {
   display: inline-flex;
   align-items: center;
@@ -1217,7 +1274,7 @@ button.stat-pill:hover strong {
   vertical-align: middle;
 }
 
-/* ── Tabla de usuarios por rol ───────────────────────────────── */
+/* -- Tabla de usuarios por rol --------------------------------- */
 .users-table {
   width: 100%;
   border-collapse: collapse;
@@ -1293,7 +1350,7 @@ button.stat-pill:hover strong {
   white-space: nowrap;
 }
 
-/* ── Badge de estado ─────────────────────────────────────────── */
+/* -- Badge de estado ------------------------------------------- */
 .status-dot {
   display: inline-flex;
   align-items: center;
@@ -1340,7 +1397,7 @@ button.stat-pill:hover strong {
   background: #dc2626;
 }
 
-/* ── Paginación del modal usuarios ───────────────────────────── */
+/* -- Paginaci�n del modal usuarios ----------------------------- */
 .users-pagination {
   display: flex;
   align-items: center;
@@ -1358,7 +1415,7 @@ button.stat-pill:hover strong {
   padding: 0 .4rem;
   border: 1.5px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: #FDFCFB;
   color: var(--text-muted);
   font-size: .82rem;
   font-weight: 600;
@@ -1384,7 +1441,7 @@ button.stat-pill:hover strong {
   cursor: not-allowed;
 }
 
-/* ── Readonly: cursor default en items de permisos ───────────── */
+/* -- Readonly: cursor default en items de permisos ------------- */
 .perm-item--readonly {
   cursor: default;
   opacity: .85;
@@ -1392,4 +1449,360 @@ button.stat-pill:hover strong {
 
 .perm-item--readonly:hover {
   background: transparent;
+}
+
+/* ================================================================
+   ACCORDION (Collapsible Categories)
+   ================================================================ */
+
+/* Cabecera de categoría clickeable */
+.cat-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .7rem 1rem;
+  background: #f9fafb;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition);
+}
+
+.cat-block__header:hover {
+  background: #f3f4f6;
+}
+
+.cat-header-left {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+.cat-header-right {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.cat-chevron {
+  width: 16px;
+  height: 16px;
+  stroke: var(--text-light);
+  transition: transform .25s ease;
+  flex-shrink: 0;
+}
+
+.cat-block--collapsed .cat-chevron {
+  transform: rotate(-90deg);
+}
+
+.cat-block--collapsed .cat-block__header {
+  border-bottom: none;
+}
+
+/* Cat body transition */
+.cat-body {
+  overflow: hidden;
+}
+
+/* Selection badge N/M */
+.cat-selection-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: .15rem .55rem;
+  border-radius: 12px;
+  font-size: .72rem;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: var(--text-light);
+  border: 1px solid var(--border);
+  min-width: 36px;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.cat-selection-badge--active {
+  background: rgba(128,0,32,.08);
+  color: var(--wine);
+  border-color: rgba(128,0,32,.2);
+}
+
+/* Create modal accordion */
+.create-cat-block--collapsed .create-perms-list {
+  display: none;
+}
+
+.create-cat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .65rem 1rem;
+  background: #f9fafb;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition);
+}
+
+.create-cat-header:hover {
+  background: #f3f4f6;
+}
+
+.create-cat-right {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.create-cat-block--collapsed .cat-chevron {
+  transform: rotate(-90deg);
+}
+
+.create-cat-block--collapsed .create-cat-header {
+  border-bottom: none;
+}
+
+/* ================================================================
+   ACTION TAGS (color-coded by permission type)
+   ================================================================ */
+
+.tag-action {
+  display: inline-block;
+  padding: .12rem .45rem;
+  border-radius: 4px;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  /* Default: neutral */
+  background: #f3f4f6;
+  color: var(--text-muted);
+}
+
+.tag-action.action--view {
+  background: rgba(59,130,246,.1);
+  color: #2563eb;
+}
+
+.tag-action.action--create {
+  background: rgba(22,163,74,.1);
+  color: #16a34a;
+}
+
+.tag-action.action--edit {
+  background: rgba(212,163,71,.12);
+  color: #92700c;
+}
+
+.tag-action.action--delete {
+  background: rgba(220,38,38,.08);
+  color: #dc2626;
+}
+
+.tag-action.action--manage {
+  background: rgba(128,0,32,.08);
+  color: var(--wine);
+}
+
+/* Technical name badge */
+.tag-technical {
+  display: inline-block;
+  padding: .12rem .4rem;
+  border-radius: 4px;
+  font-size: .62rem;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: var(--text-light);
+  font-family: 'Courier New', monospace;
+  letter-spacing: .02em;
+}
+
+/* Security badges */
+.tag-critical {
+  display: inline-block;
+  padding: .12rem .4rem;
+  border-radius: 4px;
+  font-size: .62rem;
+  font-weight: 700;
+  background: rgba(220,38,38,.1);
+  color: #dc2626;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  border: 1px solid rgba(220,38,38,.2);
+}
+
+.tag-owner-only {
+  display: inline-block;
+  padding: .12rem .4rem;
+  border-radius: 4px;
+  font-size: .62rem;
+  font-weight: 700;
+  background: rgba(139,92,246,.1);
+  color: #7c3aed;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  border: 1px solid rgba(139,92,246,.2);
+}
+
+/* Create modal perm tags */
+.create-perm-tags {
+  display: flex;
+  gap: .3rem;
+  flex-wrap: wrap;
+  margin-top: .2rem;
+}
+
+/* ================================================================
+   TAG RESOURCE — REMOVE OLD STYLE (replaced by action tags)
+   ================================================================ */
+.tag-resource {
+  display: inline-block;
+  padding: .12rem .4rem;
+  border-radius: 4px;
+  font-size: .66rem;
+  font-weight: 700;
+  background: var(--wine-light);
+  color: var(--wine);
+  letter-spacing: .02em;
+}
+
+/* ================================================================
+   SEARCH BAR
+   ================================================================ */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+
+.search-bar__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 420px;
+}
+
+.search-bar__icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-bar__input {
+  width: 100%;
+  padding: .55rem .55rem .55rem 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  font-size: .85rem;
+  color: var(--text-main);
+  background: var(--bg-card);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+
+.search-bar__input::placeholder {
+  color: var(--text-light);
+}
+
+.search-bar__input:focus {
+  border-color: var(--wine);
+  box-shadow: 0 0 0 3px rgba(114,47,55,.1);
+}
+
+.search-bar__clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.search-bar__clear svg {
+  width: 14px;
+  height: 14px;
+}
+
+.search-bar__clear:hover {
+  color: var(--wine);
+}
+
+.search-bar__count {
+  font-size: .78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ================================================================
+   CHIP CUSTOM (for non-system roles)
+   ================================================================ */
+.chip-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: .25rem .65rem;
+  background: rgba(114,47,55,.08);
+  border: 1px solid rgba(114,47,55,.25);
+  border-radius: 20px;
+  font-size: .71rem;
+  font-weight: 700;
+  color: var(--wine);
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.chip-custom svg {
+  width: 11px;
+  height: 11px;
+  stroke: var(--wine);
+}
+
+/* ================================================================
+   ROLE CARD — CUSTOM VARIANT
+   ================================================================ */
+.role-card--custom {
+  border-left: 3px solid var(--wine);
+}
+
+.role-card--custom:hover {
+  border-left-color: var(--wine-dark);
+}
+
+/* ================================================================
+   STAT PILL — CATEGORIES
+   ================================================================ */
+.stat-pill--categories {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .3rem .65rem;
+  background: #f3f4f6;
+  border-radius: 20px;
+  font-size: .76rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.stat-pill--categories svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ================================================================
+   FIELD ERROR (duplicate name)
+   ================================================================ */
+.field-error {
+  display: block;
+  margin-top: .3rem;
+  font-size: .78rem;
+  color: #c62828;
+  font-weight: 600;
 }

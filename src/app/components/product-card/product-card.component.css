@@ -1,7 +1,7 @@
 .product-card {
   background: var(--color-blanco);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
@@ -42,19 +42,103 @@
   text-transform: uppercase;
 }
 
-.discount-badge {
-  right: 12px;
-  background: var(--color-error);
-  color: var(--color-blanco);
-}
-
 .new-badge {
   left: 12px;
   background: var(--color-exito);
   color: var(--color-blanco);
 }
 
-/* Imagen del producto */
+.discount-badge {
+  left: 12px;
+  top: 36px;
+  background: var(--color-error);
+  color: var(--color-blanco);
+}
+
+/* ==============================================================
+   CLASE BASE: ICON BUTTONS (FASE 3 Y 4)
+   ============================================================== */
+.product-icon-button {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none;
+  background: var(--color-blanco);
+  color: var(--color-texto-secundario);
+  box-sizing: border-box !important;
+  display: grid !important;
+  place-items: center !important;
+  position: relative;
+  flex: 0 0 36px !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-icon-button > svg {
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: static !important;
+  transform: none !important;
+  flex: none !important;
+  vertical-align: initial !important;
+}
+
+.product-icon-button:hover:not(:disabled) {
+  transform: scale(1.1);
+  background: var(--color-blanco);
+  color: var(--color-primario);
+}
+
+.product-icon-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==============================================================
+   BOTÓN FAVORITOS (FASE 6 Y 8)
+   ============================================================== */
+.fav-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.fav-btn.active {
+  color: var(--color-primario);
+}
+
+/* ==============================================================
+   BOTÓN OJO / VISTA RÁPIDA (FASE 7 Y 9)
+   ============================================================== */
+.eye-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  color: var(--color-texto-secundario);
+}
+.eye-btn:hover:not(:disabled) {
+  background: var(--color-primario);
+  color: var(--color-blanco);
+}
+
+/* ==============================================================
+   IMAGEN DEL PRODUCTO
+   ============================================================== */
 .product-image {
   position: relative;
   width: 100%;
@@ -71,52 +155,6 @@
 
   &:hover img {
     transform: scale(1.05);
-  }
-}
-
-.image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s ease;
-}
-
-.btn-icon {
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  background: var(--color-blanco);
-  color: var(--color-primario);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-
-  &:hover {
-    transform: scale(1.1);
-    background: var(--color-primario);
-    color: var(--color-blanco);
-  }
-
-  &.active {
-    background: var(--color-error);
-    color: var(--color-blanco);
-  }
-
-  .material-symbols-outlined {
-    font-size: 18px;
   }
 }
 
@@ -316,8 +354,16 @@
   text-align: center;
 }
 
-.btn-add-cart {
+/* Fila de acciones principales */
+.main-action-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
+}
+
+.btn-add-cart {
+  flex: 1;
   padding: 12px;
   border: 2px solid var(--color-primario);
   border-radius: 8px;
@@ -372,11 +418,59 @@
   animation: spin 1s linear infinite;
 }
 
+/* Spinner del botón favorito */
+.fav-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+.btn-icon.toggling {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Alerta de login para favoritos */
+.fav-alert {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  background: rgba(33, 33, 33, 0.92);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  animation: slideDown 0.2s ease;
+  backdrop-filter: blur(4px);
+
+  .material-symbols-outlined {
+    font-size: 16px;
+    color: #90caf9;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
+
 
 /* Responsive */
 @media (max-width: 768px) {

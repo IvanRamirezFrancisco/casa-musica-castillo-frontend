@@ -1,37 +1,9 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { RegisterDebugComponent } from './components/register/register-debug.component';
-import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
-import { VerifyAccountComponent } from './components/verify-account/verify-account.component';
-import { GoogleAuthSetupComponent } from './google-auth-setup/google-auth-setup.component';
+
 import { AuthGuard } from './auth.guard';
-import { ProfileLayoutComponent } from './components/profile-layout/profile-layout.component';
-import { ProfileSecurityComponent } from './components/profile-security/profile-security.component';
-import { UserProfileComponent } from './components/user-profile/user-profile.component';
-import { OfertasComponent } from './components/ofertas/ofertas.component';
-import { CatalogoComponent } from './components/catalogo/catalogo.component';
-import { ProductDetailComponent } from './components/product-detail/product-detail.component';
-import { SearchResultsComponent } from './components/search-results/search-results.component';
-import { HelpCenterComponent } from './components/help-center/help-center.component';
-import { NotFoundComponent } from './components/not-found/not-found.component';
-import { ServerErrorComponent } from './components/server-error/server-error.component';
-import { SiteMapComponent } from './components/site-map/site-map.component';
 import { AdminGuard } from './guards/admin.guard';
-import { SuperAdminGuard } from './guards/super-admin.guard';
-import { AdminLayoutComponent } from './components/admin/admin-layout/admin-layout.component';
-import { AdminDashboardComponent } from './components/admin/admin-dashboard/admin-dashboard.component';
-import { AdminCouponsComponent } from './components/admin/admin-coupons/admin-coupons.component';
-import { AdminReviewsComponent } from './components/admin/admin-reviews/admin-reviews.component';
-import { AdminAbandonedCartsComponent } from './components/admin/admin-abandoned-carts/admin-abandoned-carts.component';
-import { AdminBrandsComponent } from './components/admin/admin-brands/admin-brands.component';
-import { AdminCategoriesComponent } from './components/admin/admin-categories/admin-categories.component';
-import { AdminStaffComponent } from './components/admin/admin-staff/admin-staff.component';
-import { AdminRolesComponent } from './components/admin/admin-roles/admin-roles.component';
-import { AdminBackupsComponent } from './components/admin/admin-backups/admin-backups.component';
-import { AdminDbManagementComponent } from './components/admin/admin-db-management/admin-db-management.component';
+import { PermissionGuard } from './guards/permission.guard';
 import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
@@ -39,118 +11,214 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent },
   
   // Rutas de autenticación (solo para usuarios NO logueados)
-  { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
-  { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
-  { path: 'register-debug', component: RegisterDebugComponent, canActivate: [guestGuard] },
-  { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [guestGuard] },
-  { path: 'reset-password', component: ResetPasswordComponent, canActivate: [guestGuard] },
-  { path: 'verify-account', component: VerifyAccountComponent },
+  { path: 'login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent), canActivate: [guestGuard] },
+  { path: 'register', loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent), canActivate: [guestGuard] },
+  { path: 'forgot-password', loadComponent: () => import('./components/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent), canActivate: [guestGuard] },
+  { path: 'reset-password', loadComponent: () => import('./components/reset-password/reset-password.component').then(m => m.ResetPasswordComponent), canActivate: [guestGuard] },
+  { path: 'eliminar-cuenta', loadComponent: () => import('./components/account-deletion/account-deletion.component').then(m => m.AccountDeletionComponent) },
+  { path: 'verify-account', loadComponent: () => import('./components/verify-account/verify-account.component').then(m => m.VerifyAccountComponent) },
+  
+  // Ruta pública de aceptación de invitación (sin auth guard)
+  { path: 'auth/accept-invitation/:token', loadComponent: () => import('./components/accept-invitation/accept-invitation.component').then(m => m.AcceptInvitationComponent) },
   
   // Rutas públicas
-  { path: 'ofertas', component: OfertasComponent },
-  { path: 'catalogo', component: CatalogoComponent },
-  { path: 'busqueda', component: SearchResultsComponent },
-  { path: 'ayuda', component: HelpCenterComponent },
-  { path: 'mapa-sitio', component: SiteMapComponent },
+  { path: 'catalogo', loadComponent: () => import('./components/catalogo/catalogo.component').then(m => m.CatalogoComponent) },
+  { path: 'busqueda', loadComponent: () => import('./components/search-results/search-results.component').then(m => m.SearchResultsComponent) },
+  { path: 'ayuda', loadComponent: () => import('./components/help-center/help-center.component').then(m => m.HelpCenterComponent) },
+  // Rutas públicas de información (estructurales)
+  { 
+    path: 'informacion/envios', 
+    loadComponent: () => import('./components/shipping-info/shipping-info.component').then(m => m.ShippingInfoComponent),
+    data: { title: 'Envíos y Entregas' }
+  },
+  { 
+    path: 'informacion/cancelaciones', 
+    loadComponent: () => import('./components/information-page/information-page.component').then(m => m.InformationPageComponent),
+    data: { type: 'cancelaciones', title: 'Cancelaciones de Pedidos' }
+  },
+  { 
+    path: 'informacion/pagos', 
+    loadComponent: () => import('./components/payments-info/payments-info.component').then(m => m.PaymentsInfoComponent),
+    data: { title: 'Formas de Pago' }
+  },
+  { 
+    path: 'terminos', 
+    loadComponent: () => import('./components/information-page/information-page.component').then(m => m.InformationPageComponent),
+    data: { type: 'terminos', title: 'Términos y Condiciones' }
+  },
+  { 
+    path: 'privacidad', 
+    loadComponent: () => import('./components/information-page/information-page.component').then(m => m.InformationPageComponent),
+    data: { type: 'privacidad', title: 'Aviso de Privacidad' }
+  },
+  { path: 'mapa-sitio', loadComponent: () => import('./components/site-map/site-map.component').then(m => m.SiteMapComponent) },
+  {
+    path: 'debug-help-center',
+    loadComponent: () => import('./components/admin/admin-help-center/admin-help-center.component').then(m => m.AdminHelpCenterComponent)
+  },
   
   // Nueva arquitectura: /dashboard con rutas anidadas
   { 
     path: 'dashboard', 
-    component: ProfileLayoutComponent,
+    loadComponent: () => import('./components/profile-layout/profile-layout.component').then(m => m.ProfileLayoutComponent),
     canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'seguridad', pathMatch: 'full' },
-      { path: 'seguridad', component: ProfileSecurityComponent }
+      { path: 'seguridad', loadComponent: () => import('./components/profile-security/profile-security.component').then(m => m.ProfileSecurityComponent) }
       // TODO: Agregar más rutas anidadas cuando se creen los componentes
     ]
   },
-  // {
-  //   path: 'catalogo',
-  //   loadComponent: () =>
-  //     import('./components/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent)
-  // },
   // Rutas de navegación temporal (placeholder)
   { path: 'catalog', component: HomeComponent }, // Temporal redirect
   { path: 'services', component: HomeComponent }, // Temporal redirect
   { path: 'product-details', component: HomeComponent }, // Temporal redirect
   // Ruta para detalle de producto
-  { path: 'producto/:id', component: ProductDetailComponent },
+  { path: 'producto/:id', loadComponent: () => import('./components/product-detail/product-detail.component').then(m => m.ProductDetailComponent) },
   {
     path: 'carrito',
     loadComponent: () =>
       import('./components/cart/cart.component').then(m => m.CartComponent),
     canActivate: [AuthGuard]
   },
-  // {
-  //   path: 'checkout',
-  //   loadComponent: () =>
-  //     import('./components/checkout/checkout.component').then(m => m.CheckoutComponent),
-  //   canActivate: [AuthGuard]
-  // },
-  // {
-  //   path: 'perfil',
-  //   loadComponent: () =>
-  //     import('./components/profile/profile.component').then(m => m.ProfileComponent),
-  //   canActivate: [AuthGuard]
-  // },
-  // {
-  //   path: 'pedidos',
-  //   loadComponent: () =>
-  //     import('./components/orders/orders.component').then(m => m.OrdersComponent),
-  //   canActivate: [AuthGuard]
-  // },
-  // {
-  //   path: 'favoritos',
-  //   loadComponent: () =>
-  //     import('./components/favorites/favorites.component').then(m => m.FavoritesComponent),
-  //   canActivate: [AuthGuard]
-  // },
+  // FASE 2 — Wishlist / Favoritos
+  {
+    path: 'wishlist',
+    loadComponent: () => import('./components/wishlist/wishlist.component').then(m => m.WishlistComponent),
+    canActivate: [AuthGuard]
+  },
+  // FASE 4 — Checkout y Pedidos del Cliente
+  {
+    path: 'checkout',
+    loadComponent: () => import('./components/checkout/checkout.component').then(m => m.CheckoutComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'orders/my',
+    loadComponent: () => import('./components/order-list/order-list.component').then(m => m.OrderListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'orders/my/:id',
+    loadComponent: () => import('./components/order-detail/order-detail.component').then(m => m.OrderDetailComponent),
+    canActivate: [AuthGuard]
+  },
   {
     path: 'google-auth-setup',
     loadComponent: () =>
       import('./google-auth-setup/google-auth-setup.component').then(m => m.GoogleAuthSetupComponent)
   },
   
+  // FASE 7B — Retorno UX de Mercado Pago
+  {
+    path: 'payment/mercado-pago/success',
+    loadComponent: () => import('./components/mercado-pago-return/mercado-pago-return.component').then(m => m.MercadoPagoReturnComponent)
+  },
+  {
+    path: 'payment/mercado-pago/failure',
+    loadComponent: () => import('./components/mercado-pago-return/mercado-pago-return.component').then(m => m.MercadoPagoReturnComponent)
+  },
+  {
+    path: 'payment/mercado-pago/pending',
+    loadComponent: () => import('./components/mercado-pago-return/mercado-pago-return.component').then(m => m.MercadoPagoReturnComponent)
+  },
+  
   // Rutas de Administración (protegidas con AdminGuard)
   {
     path: 'admin',
-    component: AdminLayoutComponent,
+    loadComponent: () => import('./components/admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     canActivate: [AdminGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: AdminDashboardComponent },
-      { path: 'brands', component: AdminBrandsComponent },
-      { path: 'categories', component: AdminCategoriesComponent },
-      { 
-        path: 'products', 
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./components/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'DASHBOARD_VIEW' }
+      },
+      {
+        path: 'brands',
+        loadComponent: () => import('./components/admin/admin-brands/admin-brands.component').then(m => m.AdminBrandsComponent),
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'BRAND_MANAGE' }
+      },
+      {
+        path: 'categories',
+        loadComponent: () => import('./components/admin/admin-categories/admin-categories.component').then(m => m.AdminCategoriesComponent),
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'CATEGORY_MANAGE' }
+      },
+      {
+        path: 'products',
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'PRODUCT_READ' },
         loadComponent: () => import('./components/admin/admin-products/admin-products.component')
           .then(m => m.AdminProductsComponent)
       },
-      { 
-        path: 'orders', 
+      {
+        path: 'orders',
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'ORDER_READ' },
         loadComponent: () => import('./components/admin/admin-orders/admin-orders.component')
           .then(m => m.AdminOrdersComponent)
       },
-      { path: 'coupons', component: AdminCouponsComponent },
-      { path: 'reviews', component: AdminReviewsComponent },
-      { path: 'abandoned-carts', component: AdminAbandonedCartsComponent },
-      // Nuevas rutas: Gestión de Staff, Clientes y Roles
-      { path: 'staff', component: AdminStaffComponent },
-      { path: 'roles', component: AdminRolesComponent, canActivate: [SuperAdminGuard] },
-      { path: 'backups', component: AdminBackupsComponent, canActivate: [SuperAdminGuard] },
-      { path: 'gestion-db', component: AdminDbManagementComponent, canActivate: [SuperAdminGuard] },
+      {
+        path: 'coupons',
+        loadComponent: () => import('./components/admin/admin-coupons/admin-coupons.component').then(m => m.AdminCouponsComponent),
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'PRODUCT_READ' }
+      },
+      {
+        path: 'abandoned-carts',
+        loadComponent: () => import('./components/admin/admin-abandoned-carts/admin-abandoned-carts.component').then(m => m.AdminAbandonedCartsComponent),
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'ORDER_READ' }
+      },
+      {
+        path: 'staff',
+        loadComponent: () => import('./components/admin/admin-staff/admin-staff.component').then(m => m.AdminStaffComponent),
+        canActivate: [AdminGuard, PermissionGuard],
+        data: { requiredPermission: 'USER_READ' }
+      },
+      {
+        path: 'roles',
+        loadComponent: () => import('./components/admin/admin-roles/admin-roles.component').then(m => m.AdminRolesComponent),
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'ROLE_READ' }
+      },
+      {
+        path: 'backups',
+        loadComponent: () => import('./components/admin/admin-backups/admin-backups.component').then(m => m.AdminBackupsComponent),
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'DATABASE_BACKUP' }
+      },
+      { path: 'gestion-db', redirectTo: 'backups', pathMatch: 'full' },
       {
         path: 'customers',
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'CUSTOMER_READ' },
         loadComponent: () => import('./components/admin/admin-customers/admin-customers.component')
           .then(m => m.AdminCustomersComponent)
+      },
+      {
+        path: 'payment-settings',
+        loadComponent: () => import('./components/admin/admin-payment-settings/admin-payment-settings.component').then(m => m.AdminPaymentSettingsComponent),
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: ['SYSTEM_SETTINGS', 'BANK_TRANSFER_SETTINGS_READ', 'BANK_TRANSFER_SETTINGS_UPDATE', 'PAYMENT_SETTINGS_READ', 'PAYMENT_SETTINGS_UPDATE'] }
+      },
+      {
+        path: 'help-center',
+        canActivate: [PermissionGuard],
+        data: { requiredPermission: 'HELP_MANAGE' },
+        loadComponent: () => import('./components/admin/admin-help-center/admin-help-center.component')
+          .then(m => m.AdminHelpCenterComponent)
       }
     ]
   },
   
   // Páginas de error
-  { path: 'not-found', component: NotFoundComponent },
-  { path: 'server-error', component: ServerErrorComponent },
+  { path: 'not-found', loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent) },
+  { path: 'server-error', loadComponent: () => import('./components/server-error/server-error.component').then(m => m.ServerErrorComponent) },
   
   // Wildcard - debe ser la última ruta
-  { path: '**', component: NotFoundComponent }
+  { path: '**', loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent) }
 ];

@@ -5,7 +5,7 @@
 
 :root {
   /* === PALETA CASA DE MÚSICA CASTILLO - ACTUALIZADA === */
-  --primary-burgundy: #800020;      /* Borgoña Principal - Color del Home */
+  --primary-burgundy: #722f37;      /* Borgoña Principal - Color del Home */
   --secondary-gold: #C5A059;        /* Dorado - Color Secundario del Home */
   --dark-bg: #34495e;               /* Fondo Oscuro */
   --background-gris: #F8F6F4;       /* Fondo Crema Elegante */
@@ -30,7 +30,7 @@
   --border-radius-large: 20px;
   
   /* === GRADIENTES PROFESIONALES - ACTUALIZADOS === */
-  --gradient-primary: linear-gradient(135deg, #800020 0%, #600015 100%);
+  --gradient-primary: linear-gradient(135deg, #722f37 0%, #600015 100%);
   --gradient-accent: linear-gradient(135deg, #C5A059 0%, #d4b36a 100%);
   --gradient-highlight: linear-gradient(135deg, #C5A059 0%, #FFD54F 100%);
   --gradient-card: linear-gradient(145deg, #FFFFFF 0%, #FEFEFE 100%);
@@ -43,7 +43,7 @@
 
 /* ===== CONTAINER PRINCIPAL ===== */
 .security-container {
-  background: #f8f9fa;
+  background: #FAF8F6;
   min-height: calc(100vh - 160px);
   font-family: var(--font-body);
   position: relative;
@@ -366,7 +366,7 @@
 .card::before {
   content: '';
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 3px;
@@ -377,8 +377,8 @@
 
 .card:hover {
   box-shadow: var(--shadow-elegant);
-  transform: translateY(-4px) scale(1.01);
-  border-color: rgba(199, 93, 44, 0.15);
+  transform: translateY(-2px);
+  border-color: rgba(114, 47, 55, 0.15);
 }
 
 .card:hover::before {
@@ -389,32 +389,34 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 2rem 2rem 0 2rem;
-  margin-bottom: 1.5rem;
+  padding: 1.5rem 2rem;
+  margin-bottom: 0;
   position: relative;
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .card-header .material-symbols-outlined {
-  font-size: 28px;
-  color: var(--white);
-  background: var(--gradient-accent);
-  padding: 0.75rem;
+  font-size: 24px;
+  color: var(--secondary-gold);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.6rem;
   border-radius: var(--border-radius-small);
-  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
   font-weight: 500;
 }
 
 .card-header h2 {
   font-family: var(--font-heading);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #FFFFFF;
   margin: 0;
   letter-spacing: -0.02em;
 }
 
 .card-content {
-  padding: 0 2rem 2rem 2rem;
+  padding: 1.5rem 2rem 2rem 2rem;
 }
 
 /* ===== PROFILE CARD ===== */
@@ -759,6 +761,127 @@
 
 .twofa-actions {
   margin-bottom: 1.5rem;
+}
+
+/* ===== 2FA METHODS ===== */
+.methods-divider {
+  border: none;
+  border-top: 1px solid rgba(62, 39, 35, 0.1);
+  margin: 1.5rem 0;
+}
+
+.twofa-method {
+  background: var(--neutral-light);
+  border: 1px solid rgba(62, 39, 35, 0.08);
+  border-radius: var(--border-radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  transition: var(--transition);
+}
+
+.twofa-method:hover {
+  border-color: rgba(114, 47, 55, 0.15);
+  box-shadow: 0 4px 16px rgba(128, 0, 32, 0.06);
+}
+
+.method-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.method-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.method-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(114, 47, 55, 0.1) 0%, rgba(96, 0, 21, 0.08) 100%);
+}
+
+.method-icon .material-symbols-outlined {
+  font-size: 24px;
+  color: var(--primary-burgundy);
+}
+
+.method-icon--email {
+  background: linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(197, 160, 89, 0.08) 100%);
+}
+
+.method-icon--email .material-symbols-outlined {
+  color: var(--secondary-gold);
+}
+
+.method-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+}
+
+.method-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.method-status {
+  flex-shrink: 0;
+}
+
+.method-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: rgba(127, 140, 141, 0.12);
+  color: var(--text-secondary);
+  border: 1px solid rgba(127, 140, 141, 0.2);
+}
+
+.method-badge.active {
+  background: rgba(39, 174, 96, 0.1);
+  color: var(--success);
+  border-color: rgba(39, 174, 96, 0.25);
+}
+
+.method-actions {
+  padding-top: 0.5rem;
+}
+
+.method-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-danger-outline {
+  background: var(--white);
+  color: var(--error);
+  border: 2px solid var(--error);
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: var(--error);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(231, 76, 60, 0.3);
 }
 
 /* ===== 2FA SETUP ===== */

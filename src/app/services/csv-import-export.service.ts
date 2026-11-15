@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-// ── Interfaces (match con CsvImportResultDto / CsvRowErrorDto Java Records) ───
+// -- Interfaces (match con DTOs Java) --
 
 export interface CsvRowError {
   rowNumber: number;
@@ -20,14 +20,40 @@ export interface CsvImportResult {
   errors:        CsvRowError[];
 }
 
-/** Estrategia de colisión al encontrar un SKU ya existente */
-export type CollisionRule = 'UPDATE' | 'SKIP';
+export interface ColumnMetadata {
+  key:      string;
+  label:    string;
+  required: boolean;
+}
 
-/** Tipos de módulo soportados por la API de CSV */
+export interface ExportConfig {
+  columns: string[];
+  sortBy:  string;
+  sortDir: string;
+  limit:   number;
+}
+
+export interface CsvPreviewRow {
+  rowNumber: number;
+  cells:     Record<string, string>;
+  valid:     boolean;
+  errors:    string[];
+}
+
+export interface CsvImportPreview {
+  headers:    string[];
+  rows:       CsvPreviewRow[];
+  totalRows:  number;
+  validCount: number;
+  errorCount: number;
+  fileName:   string;
+  fileSizeKb: number;
+}
+
+export type CollisionRule = 'UPDATE' | 'SKIP';
 export type CsvModuleType = 'products' | 'users';
 
-// ── Service ──────────────────────────────────────────────────────────────────
-
+// -- Service --
 @Injectable({ providedIn: 'root' })
 export class CsvImportExportService {
 
@@ -35,22 +61,22 @@ export class CsvImportExportService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Descarga el CSV del módulo indicado.
-   */
   exportData(module: CsvModuleType): Observable<Blob> {
     return this.http.get(`${this.base}/export/${module}`, {
       responseType: 'blob'
     });
   }
 
-  /**
-   * Sube un archivo CSV para importar datos del módulo indicado.
-   *
-   * @param module  'products' | 'users'
-   * @param file    Archivo CSV seleccionado por el usuario
-   * @param rule    'UPDATE' (default) | 'SKIP' — solo aplica para products
-   */
+  getProductColumns(): Observable<ColumnMetadata[]> {
+    return this.http.get<ColumnMetadata[]>(`${this.base}/export/columns/products`);
+  }
+
+  exportProductsWithConfig(config: ExportConfig): Observable<Blob> {
+    return this.http.post(`${this.base}/export/products/download`, config, {
+      responseType: 'blob'
+    });
+  }
+
   importData(module: CsvModuleType, file: File, rule: CollisionRule = 'UPDATE'): Observable<CsvImportResult> {
     const form = new FormData();
     form.append('file', file, file.name);
@@ -58,5 +84,25 @@ export class CsvImportExportService {
       form.append('rule', rule);
     }
     return this.http.post<CsvImportResult>(`${this.base}/import/${module}`, form);
+  }
+
+  previewProductImport(file: File): Observable<CsvImportPreview> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<CsvImportPreview>(`${this.base}/import/preview/products`, form);
+  }
+
+  confirmProductImport(file: File, selectedRows: number[], rule: CollisionRule): Observable<CsvImportResult> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    selectedRows.forEach(row => form.append('selectedRows', String(row)));
+    form.append('rule', rule);
+    return this.http.post<CsvImportResult>(`${this.base}/import/confirm/products`, form);
+  }
+
+  downloadProductTemplate(): Observable<Blob> {
+    return this.http.get(`${this.base}/import/template/products`, {
+      responseType: 'blob'
+    });
   }
 }

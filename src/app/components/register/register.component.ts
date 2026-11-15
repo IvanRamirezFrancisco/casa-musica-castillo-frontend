@@ -1,20 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { SanitizationService } from '../../services/sanitization.service';
-import { CommonModule } from '@angular/common';
+
 import zxcvbn from 'zxcvbn';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, RouterModule],
   templateUrl: './register.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
+  legalDocuments: { required: boolean; termsVersion: string; privacyVersion: string } | null = null;
   isLoading = false;
   errorMessage = '';
   successMessage = '';
@@ -74,6 +76,7 @@ export class RegisterComponent implements OnInit {
       ]],
       confirmPassword: ['', [Validators.required]],
       phone: [''], // Opcional
+      privacyRead: [false],
       acceptTerms: [false, [Validators.requiredTrue]]
     }, { validators: this.passwordMatchValidator });
 
@@ -81,6 +84,10 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.authService.registrationDocuments().subscribe({
+      next: documents => { if (documents?.required === true) this.legalDocuments = documents; },
+      error: () => undefined,
+    });
     this.route.queryParams.subscribe(params => {
       if (params['email']) {
         this.registerForm.patchValue({ email: params['email'] });
@@ -975,18 +982,23 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.isLoading) return;
     this.errorMessage = '';
     this.successMessage = '';
     this.showEmailVerification = false;
     
-    this.markFormGroupTouched();
+    this.registerForm.markAllAsTouched();
     
     if (!this.registerForm.valid) {
-      this.errorMessage = 'Por favor completa todos los campos correctamente para continuar';
+      this.focusFirstInvalidField();
       return;
     }
     
     const rawData = this.registerForm.value;
+    if (this.legalDocuments?.required && (!rawData.acceptTerms || !rawData.privacyRead)) {
+      this.errorMessage = 'Confirma por separado los términos y la lectura del aviso de privacidad.';
+      return;
+    }
     const sanitizedData = {
       username: this.sanitizationService.sanitizeUserInput(rawData.username || ''),
       email: this.sanitizationService.sanitizeUserInput(rawData.email || ''),
@@ -999,6 +1011,7 @@ export class RegisterComponent implements OnInit {
     // Validación adicional de seguridad
     if (!this.sanitizationService.isValidEmail(sanitizedData.email)) {
       this.errorMessage = 'Email no válido o contiene caracteres peligrosos';
+      this.focusFirstInvalidField();
       return;
     }
     
@@ -1015,7 +1028,13 @@ export class RegisterComponent implements OnInit {
       email: sanitizedData.email,
       password: sanitizedData.password,
       firstName: sanitizedData.firstName,
-      lastName: sanitizedData.lastName
+      lastName: sanitizedData.lastName,
+      ...(this.legalDocuments?.required ? { legalAcceptance: {
+        termsAccepted: rawData.acceptTerms === true,
+        privacyRead: rawData.privacyRead === true,
+        termsVersion: this.legalDocuments.termsVersion,
+        privacyVersion: this.legalDocuments.privacyVersion,
+      } } : {})
     };
     
     this.authService.register(registerData).subscribe({
@@ -1028,49 +1047,24 @@ export class RegisterComponent implements OnInit {
       error: (error) => {
         this.isLoading = false;
         
-        if (error.status === 409 || error.error?.message?.includes('ya existe')) {
-          this.errorMessage = '❌ ' + (error.error?.message || 'Este correo o nombre de usuario ya está registrado.');
-        } else if (error.error?.errors) {
-          const errorsArray: string[] = [];
-          const errorsObj = error.error.errors;
-          
-          // Recorrer el objeto de errores y extraer los mensajes
-          if (typeof errorsObj === 'object' && errorsObj !== null) {
-            Object.keys(errorsObj).forEach(key => {
-              const errorValue = errorsObj[key];
-              
-              // Si el error es un string, agregarlo directamente
-              if (typeof errorValue === 'string') {
-                errorsArray.push(errorValue);
-              } 
-              // Si es un array, agregar cada elemento
-              else if (Array.isArray(errorValue)) {
-                errorsArray.push(...errorValue);
-              }
-              // Si es un objeto con mensaje, extraer el mensaje
-              else if (typeof errorValue === 'object' && errorValue.message) {
-                errorsArray.push(errorValue.message);
-              }
-              // Fallback: convertir a string
-              else {
-                errorsArray.push(String(errorValue));
-              }
-            });
-          }
-          
-          // Construir mensaje legible
-          if (errorsArray.length > 0) {
-            this.errorMessage = '❌ Se encontraron los siguientes errores:\n' + 
-              errorsArray.map((err, index) => `${index + 1}. ${err}`).join('\n');
+        // ✅ Mensajes genéricos anti-enumeración: NUNCA revelar si el email/usuario ya existe
+        if (error.status === 0) {
+          this.errorMessage = '❌ No se pudo conectar con el servidor. Verifica tu conexión a internet.';
+        } else if (error.status === 422 || error.status === 400) {
+          // Errores de validación de campos (formato, longitud, etc.)
+          // Mapeo seguro backend a frontend si es posible, de lo contrario error general
+          const backendErrorMsg = error.error?.message?.toLowerCase() || '';
+          if (backendErrorMsg.includes('username') || backendErrorMsg.includes('usuario')) {
+            this.registerForm.get('username')?.setErrors({ serverError: true });
+            this.errorMessage = 'El nombre de usuario ya está en uso o no es válido.';
+          } else if (backendErrorMsg.includes('email') || backendErrorMsg.includes('correo')) {
+            this.registerForm.get('email')?.setErrors({ serverError: true });
+            this.errorMessage = 'El correo electrónico ya está registrado o no es válido.';
           } else {
             this.errorMessage = '❌ Error de validación. Por favor revisa los campos del formulario.';
           }
-        } else if (error.error?.message) {
-          // Mensaje de error simple del backend
-          this.errorMessage = '❌ ' + error.error.message;
         } else {
-          // Error genérico
-          this.errorMessage = '❌ ' + (error.message || 'Ocurrió un error al crear tu cuenta. Por favor intenta nuevamente.');
+          this.errorMessage = '❌ Ocurrió un error al procesar tu solicitud. Por favor intenta nuevamente.';
         }
       },
       complete: () => {
@@ -1079,11 +1073,21 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  private markFormGroupTouched(): void {
-    Object.keys(this.registerForm.controls).forEach(key => {
-      const control = this.registerForm.get(key);
-      control?.markAsTouched();
-    });
+  /**
+   * Localiza y enfoca el primer campo inválido del formulario.
+   */
+  private focusFirstInvalidField(): void {
+    const controls = this.registerForm.controls;
+    for (const name in controls) {
+      if (controls[name].invalid) {
+        const invalidElement = document.getElementById(name);
+        if (invalidElement) {
+          invalidElement.focus();
+          invalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        break;
+      }
+    }
   }
 
   /**

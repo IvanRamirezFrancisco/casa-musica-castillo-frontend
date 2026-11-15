@@ -25,7 +25,7 @@
 
 /* Header principal */
 .header-main {
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: #F5F5F5;
   padding: 15px 0;
   box-shadow: 0 4px 20px rgba(128, 0, 32, 0.3);
@@ -72,15 +72,16 @@
 .search-bar {
   display: flex;
   align-items: center;
-  background: white;
+  background: #FDFCFB;
   border-radius: 30px;
   padding: 8px 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(45,42,38,0.08);
   transition: all 0.3s ease;
+  border: 1px solid #E8E2DC;
 }
 
 .search-icon {
-  color: #800020;
+  color: #722f37;
   margin-right: 10px;
 }
 
@@ -234,7 +235,7 @@
 
 .categories-section {
   padding: 80px 0;
-  background: linear-gradient(135deg, #F5F5F5 0%, #FAFAFA 100%);
+  background: linear-gradient(135deg, #f5f0eb 0%, #ede8e1 100%);
 }
 
 .section-header {
@@ -257,17 +258,17 @@
 }
 
 .category-card {
-  background: white;
+  background: #FDFCFB;
   border-radius: 20px;
   padding: 40px 30px;
   text-align: center;
   cursor: pointer;
   transition: all 0.4s ease;
-  border: 1px solid rgba(197, 160, 89, 0.1);
+  border: 1px solid #E8E2DC;
 }
 
 .category-icon {
-  background: linear-gradient(135deg, #800020 0%, #A0002A 100%);
+  background: linear-gradient(135deg, #722f37 0%, #A0002A 100%);
   width: 80px;
   height: 80px;
   border-radius: 50%;
@@ -292,7 +293,7 @@
 
 .featured-products {
   padding: 80px 0;
-  background: white;
+  background: #FAF8F6;
 }
 
 .products-grid {
@@ -303,11 +304,12 @@
 }
 
 .product-card {
-  background: white;
+  background: #FDFCFB;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 25px rgba(45,42,38,0.08);
   transition: all 0.4s ease;
+  border: 1px solid #E8E2DC;
 }
 
 .product-image {
@@ -360,7 +362,7 @@
 
 .add-to-cart-btn {
   width: 100%;
-  background: linear-gradient(135deg, #800020 0%, #A0002A 100%);
+  background: linear-gradient(135deg, #722f37 0%, #A0002A 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -411,7 +413,7 @@
 
 .newsletter-section {
   padding: 60px 0;
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: white;
 }
 
@@ -426,9 +428,10 @@
 .email-input-group {
   display: flex;
   align-items: center;
-  background: white;
+  background: #FDFCFB;
   border-radius: 30px;
   padding: 8px 15px;
+  border: 1px solid rgba(255,255,255,0.5);
 }
 
 .email-input {
@@ -479,11 +482,11 @@
 /* Producto Especial */
 .special-product-section {
   padding: 80px 0;
-  background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+  background: linear-gradient(135deg, #f5f0eb 0%, #ede8e1 100%);
 }
 
 .special-product-card {
-  background: white;
+  background: #FDFCFB;
   border-radius: 25px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(128, 0, 32, 0.15);
@@ -493,6 +496,7 @@
   max-width: 1200px;
   margin: 0 auto;
   transition: all 0.4s ease;
+  border: 1px solid #E8E2DC;
 }
 
 .special-product-card:hover {
@@ -503,7 +507,7 @@
 .product-image-section {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #F5F5F5 0%, #E0E0E0 100%);
+  background: linear-gradient(135deg, #f5f0eb 0%, #ede8e1 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -589,7 +593,7 @@
   font-family: Montserrat, sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
 }
 
 .discount {
@@ -624,7 +628,7 @@
 }
 
 .btn-primary-special {
-  background: linear-gradient(135deg, #800020 0%, #A0002A 100%);
+  background: linear-gradient(135deg, #722f37 0%, #A0002A 100%);
   color: white;
   flex: 1;
   justify-content: center;
@@ -638,14 +642,14 @@
 
 .btn-secondary-special {
   background: transparent;
-  color: #800020;
-  border: 2px solid #800020;
+  color: #722f37;
+  border: 2px solid #722f37;
   min-width: 160px;
   justify-content: center;
 }
 
 .btn-secondary-special:hover {
-  background: #800020;
+  background: #722f37;
   color: white;
   transform: translateY(-2px);
 }
@@ -653,7 +657,7 @@
 /* Navegación Rápida */
 .quick-navigation {
   padding: 80px 0;
-  background: white;
+  background: #FAF8F6;
 }
 
 .navigation-grid {
@@ -664,8 +668,8 @@
 }
 
 .nav-card {
-  background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
-  border: 2px solid transparent;
+  background: linear-gradient(135deg, #f5f0eb 0%, #ede8e1 100%);
+  border: 2px solid #E8E2DC;
   border-radius: 20px;
   padding: 40px 30px;
   text-align: center;
@@ -693,12 +697,12 @@
 .nav-card:hover {
   transform: translateY(-10px);
   box-shadow: 0 20px 40px rgba(128, 0, 32, 0.15);
-  border-color: #800020;
-  background: white;
+  border-color: #722f37;
+  background: #FDFCFB;
 }
 
 .nav-icon {
-  background: linear-gradient(135deg, #800020 0%, #A0002A 100%);
+  background: linear-gradient(135deg, #722f37 0%, #A0002A 100%);
   width: 80px;
   height: 80px;
   border-radius: 50%;
@@ -799,12 +803,12 @@
 
 
 /* Estilos espec�ficos del login */
-.login-content { min-height: calc(100vh - 400px); padding: 4rem 0; background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%); }
+.login-content { min-height: calc(100vh - 400px); padding: 4rem 0; background: linear-gradient(135deg, #f5f0eb 0%, #ede8e1 100%); }
 .login-wrapper { display: flex; justify-content: center; align-items: center; }
-.login-card { background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); padding: 3rem; max-width: 480px; width: 100%; }
+.login-card { background: #FDFCFB; border-radius: 16px; box-shadow: 0 8px 32px rgba(45, 42, 38, 0.12); padding: 3rem; max-width: 480px; width: 100%; border: 1px solid #E8E2DC; }
 .login-header { text-align: center; margin-bottom: 2.5rem; }
 .login-icon { font-size: 72px; color: #C5A059; margin-bottom: 1rem; }
-.login-header h1 { font-family: 'Montserrat', sans-serif; font-size: 2rem; font-weight: 700; color: #800020; margin: 0 0 0.5rem 0; }
+.login-header h1 { font-family: 'Montserrat', sans-serif; font-size: 2rem; font-weight: 700; color: #722f37; margin: 0 0 0.5rem 0; }
 .login-header p { color: #666; margin: 0; font-size: 1rem; }
 .login-form { display: flex; flex-direction: column; gap: 1.5rem; }
 
@@ -882,10 +886,10 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(253, 252, 251, 0.9);
   border-radius: 8px;
   min-width: 70px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(45, 42, 38, 0.1);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -966,7 +970,7 @@
 
 .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
 .form-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #333; font-size: 0.95rem; }
-.form-group label .material-icons { font-size: 20px; color: #800020; }
+.form-group label .material-icons { font-size: 20px; color: #722f37; }
 
 /* Inputs con validación visual */
 .form-group input { 
@@ -1002,15 +1006,15 @@
 .password-wrapper { position: relative; }
 .password-wrapper input { padding-right: 3rem; }
 .toggle-password { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #666; padding: 0.25rem; display: flex; align-items: center; transition: color 0.3s ease; }
-.toggle-password:hover { color: #800020; }
+.toggle-password:hover { color: #722f37; }
 .toggle-password .material-icons { font-size: 22px; }
 .form-options { display: flex; justify-content: flex-end; margin-top: -0.5rem; }
 .forgot-link { color: #C5A059; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.3s ease; }
-.forgot-link:hover { color: #800020; text-decoration: underline; }
+.forgot-link:hover { color: #722f37; text-decoration: underline; }
 .btn-login { 
   width: 100%; 
   padding: 1rem; 
-  background: linear-gradient(135deg, #800020 0%, #600015 100%); 
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%); 
   color: white; 
   border: none; 
   border-radius: 8px; 
@@ -1059,7 +1063,7 @@
 }
 .register-section { text-align: center; margin-top: 1.5rem; color: #666; font-size: 0.95rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0; }
 .register-section a { color: #C5A059; text-decoration: none; font-weight: 600; margin-left: 0.25rem; transition: color 0.3s ease; }
-.register-section a:hover { color: #800020; text-decoration: underline; }
+.register-section a:hover { color: #722f37; text-decoration: underline; }
 
 /* ===== MODAL 2FA ===== */
 .modal-overlay {
@@ -1083,19 +1087,19 @@
 }
 
 .modal-2fa {
-  background: white;
+  background: #FDFCFB;
   border-radius: 16px;
   width: 90%;
   max-width: 550px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(45, 42, 38, 0.25);
   animation: slideUp 0.3s ease-out;
   position: relative;
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: white;
   padding: 2rem;
   text-align: center;
@@ -1173,7 +1177,7 @@
 }
 
 .methods-selection h3 .material-icons {
-  color: #800020;
+  color: #722f37;
 }
 
 .methods-grid {
@@ -1184,8 +1188,8 @@
 }
 
 .method-card {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 2px solid #dee2e6;
+  background: linear-gradient(135deg, #f5f0eb 0%, #ede8e1 100%);
+  border: 2px solid #E8E2DC;
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -1206,7 +1210,7 @@
 
 .method-card .material-icons {
   font-size: 48px;
-  color: #800020;
+  color: #722f37;
   margin-bottom: 0.75rem;
 }
 
@@ -1227,13 +1231,13 @@
 .backup-option {
   text-align: center;
   padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #E8E2DC;
 }
 
 .backup-link {
   background: none;
   border: none;
-  color: #800020;
+  color: #722f37;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -1269,12 +1273,12 @@
   gap: 0.75rem;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e9ecef;
+  border-bottom: 2px solid #E8E2DC;
 }
 
 .method-header .material-icons {
   font-size: 32px;
-  color: #800020;
+  color: #722f37;
 }
 
 .method-header h3 {
@@ -1307,19 +1311,20 @@
 
 .code-input-group label .material-icons {
   font-size: 20px;
-  color: #800020;
+  color: #722f37;
 }
 
 .code-input {
   width: 100%;
   padding: 1rem;
-  border: 2px solid #dee2e6;
+  border: 2px solid #E8E2DC;
   border-radius: 8px;
   font-size: 1.5rem;
   text-align: center;
   letter-spacing: 0.5rem;
   font-weight: 600;
   transition: all 0.3s ease;
+  background: #FDFCFB;
 }
 
 .code-input:focus {
@@ -1332,7 +1337,7 @@
 .btn-send-code {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1374,16 +1379,17 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: #f8f9fa;
+  background: #FAF8F6;
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #2D2A26;
+  border: 1px solid #E8E2DC;
 }
 
 .email-display .material-icons {
-  color: #800020;
+  color: #722f37;
   font-size: 24px;
 }
 
@@ -1411,13 +1417,13 @@
   gap: 0.75rem;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #E8E2DC;
 }
 
 .link-btn {
   background: none;
   border: none;
-  color: #800020;
+  color: #722f37;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;

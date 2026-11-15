@@ -1,0 +1,163 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "navigationRequestStrategy": "performance",
+  "assetGroups": [
+    {
+      "name": "app-shell",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/manifest.webmanifest",
+          "/favicon.ico",
+          "/*.css",
+          "/main-*.js",
+          "/polyfills-*.js",
+          "/scripts-*.js",
+          "/assets/css/*.css",
+          "/assets/fonts/*.woff2",
+          "/media/*.woff2",
+          "/assets/icons/icon-72x72.png",
+          "/assets/icons/icon-96x96.png",
+          "/assets/icons/icon-128x128.png",
+          "/assets/icons/icon-144x144.png",
+          "/assets/icons/icon-152x152.png",
+          "/assets/icons/icon-192x192.png",
+          "/assets/icons/icon-384x384.png",
+          "/assets/icons/icon-512x512.png",
+          "/assets/icons/maskable-icon-192x192.png",
+          "/assets/icons/maskable-icon-512x512.png",
+          "/assets/image.png",
+          "/assets/pdfjs/pdf.worker.min.mjs"
+        ],
+        "urls": [
+          "/index.html"
+        ]
+      }
+    },
+    {
+      "name": "app-chunks",
+      "installMode": "lazy",
+      "updateMode": "lazy",
+      "resources": {
+        "files": [
+          "/chunk-*.js"
+        ]
+      }
+    },
+    {
+      "name": "local-assets",
+      "installMode": "lazy",
+      "updateMode": "lazy",
+      "resources": {
+        "files": [
+          "/assets/icons/*icon-*.png",
+          "/assets/**/*.(svg|png|jpg|jpeg|webp|avif|gif)",
+          "/media/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
+          "!/assets/icons/.*",
+          "!**/.png",
+          "!**/.svg"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "public-home-products",
+      "urls": [
+        "https://casa-musica-castillo-backend-production.up.railway.app/api/public/products/latest**",
+        "https://casa-musica-castillo-backend-production.up.railway.app/api/public/products/featured**",
+        "http://localhost:8080/api/public/products/latest**",
+        "http://localhost:8080/api/public/products/featured**",
+        "/api/public/products/latest**",
+        "/api/public/products/featured**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 20,
+        "maxAge": "12h",
+        "timeout": "4s"
+      }
+    },
+    {
+      "name": "public-product-catalog",
+      "urls": [
+        "https://casa-musica-castillo-backend-production.up.railway.app/api/public/products/catalog**",
+        "http://localhost:8080/api/public/products/catalog**",
+        "/api/public/products/catalog**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 40,
+        "maxAge": "8h",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "public-product-detail",
+      "urls": [
+        "https://casa-musica-castillo-backend-production.up.railway.app/api/public/products/*",
+        "https://casa-musica-castillo-backend-production.up.railway.app/api/public/products/*/recommendations",
+        "http://localhost:8080/api/public/products/*",
+        "http://localhost:8080/api/public/products/*/recommendations",
+        "/api/public/products/*",
+        "/api/public/products/*/recommendations"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 80,
+        "maxAge": "24h",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "public-categories",
+      "urls": [
+        "https://casa-musica-castillo-backend-production.up.railway.app/api/public/categories/**",
+        "http://localhost:8080/api/public/categories/**",
+        "/api/public/categories/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 10,
+        "maxAge": "3d",
+        "timeout": "3s"
+      }
+    },
+    {
+      "name": "public-help-center",
+      "urls": [
+        "https://casa-musica-castillo-backend-production.up.railway.app/api/public/help/**",
+        "http://localhost:8080/api/public/help/**",
+        "/api/public/help/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 20,
+        "maxAge": "7d",
+        "timeout": "3s"
+      }
+    },
+    {
+      "name": "public-cloudinary-images",
+      "urls": [
+        "https://res.cloudinary.com/dy3ibnjl7/image/upload/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 100,
+        "maxAge": "7d",
+        "timeout": "5s",
+        "cacheOpaqueResponses": true
+      }
+    }
+  ],
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/__*",
+    "!/**/__*/**"
+  ]
+}

@@ -29,10 +29,17 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              "src/manifest.webmanifest",
+              {
+                "glob": "pdf.worker.min.mjs",
+                "input": "node_modules/pdfjs-dist/build",
+                "output": "assets/pdfjs"
               }
             ],
             "styles": [
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "node_modules/sweetalert2/dist/sweetalert2.min.css",
               "src/styles.css"
             ],
@@ -40,16 +47,17 @@
           },
           "configurations": {
             "production": {
+              "serviceWorker": "ngsw-config.json",
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2MB",
+                  "maximumWarning": "3MB",
                   "maximumError": "5MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "40kB",
-                  "maximumError": "60kB"
+                  "maximumWarning": "80kB",
+                  "maximumError": "120kB"
                 }
               ],
               "outputHashing": "all",
@@ -57,6 +65,24 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": {
+                  "inline": false
+                }
+              }
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
                 }
               ]
             },
@@ -101,6 +127,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              },
+              {
+                "glob": "pdf.worker.min.mjs",
+                "input": "node_modules/pdfjs-dist/build",
+                "output": "assets/pdfjs"
               }
             ],
             "styles": [
@@ -115,5 +151,31 @@
   },
   "cli": {
     "analytics": false
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
+    }
   }
 }

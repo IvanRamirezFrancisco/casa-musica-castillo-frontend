@@ -1,11 +1,11 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { SanitizationService } from '../../services/sanitization.service';
-import { CommonModule } from '@angular/common';
-import { AuthResponse, User } from '../../models/user.model';
+
+import { AuthResponse, User, AvailableLoginMethods, LoginFactorMethod } from '../../models/user.model';
 import { environment } from '../../../environments/environment';
 
 // Interface para métodos 2FA disponibles
@@ -20,8 +20,9 @@ interface TwoFactorMethod {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -32,11 +33,12 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   showTwoFactorForm = false;
-  pendingUser: any = null;
+  pendingUser: { email: string; googleAuthEnabled: boolean; emailEnabled: boolean; backupCodesEnabled: boolean } | null = null;
   twoFactorCode: string = '';
   showPassword = false;
   searchQuery = ''; // Para la barra de búsqueda del header
   rememberMe = false;
+  returnUrl: string | null = null;
   
   // Estados para 2FA
   selectedMethod: string = '';
@@ -55,6 +57,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   private countdownTimer: any;
 
   cancelTwoFactor(): void {
+    this.authService.clearPendingLogin();
     this.showTwoFactorForm = false;
     this.twoFactorCode = ''; // Reset como string vacío
     this.pendingUser = null;
@@ -86,6 +89,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       if (params['email']) {
         this.loginForm.patchValue({ email: params['email'] });
       }
+      if (params['returnUrl']) {
+        this.returnUrl = params['returnUrl'];
+      }
     });
   }
 
@@ -112,7 +118,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     const rawFormData = this.loginForm.value;
     const formData = {
       email: this.sanitizationService.sanitizeUserInput(rawFormData.email || ''),
-      password: this.sanitizationService.sanitizeUserInput(rawFormData.password || '')
+      password: rawFormData.password || ''
     };
     
     // Validación adicional de seguridad
@@ -131,7 +137,10 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         // Si el backend indica que se requiere 2FA
         if (response.data?.twoFactorRequired || response.twoFactorRequired) {
           this.showTwoFactorForm = true;
-          this.pendingUser = response.data?.user ?? response.user ?? response.pendingUser ?? null;
+          const methods = response.availableMethods;
+          this.pendingUser = methods ? { email: formData.email, googleAuthEnabled: methods.GOOGLE_AUTHENTICATOR,
+            emailEnabled: methods.EMAIL, backupCodesEnabled: methods.BACKUP_CODE } : null;
+          this.loginForm.patchValue({password: ''});
           this.setupTwoFactorMethods();
           return;
         }
@@ -142,19 +151,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         
         if (token && user) {
           this.authService.completeLogin(token, user);
-          
-          // Navegar según el rol del usuario (verificar ROLE_ADMIN primero)
-          const isAdmin = user.roles && Array.isArray(user.roles) && user.roles.some((role: string) => {
-            return role === 'ROLE_ADMIN' || role === 'ADMIN';
-          });
-          
-          const targetRoute = isAdmin ? '/admin/dashboard' : '/home';
-          
-          // Usar replaceUrl para evitar que el guestGuard interfiera
-          this.router.navigate([targetRoute], { 
-            replaceUrl: true,
-            skipLocationChange: false 
-          });
+          // Enrutamiento inteligente post-login validando el returnUrl seguro
+          this.authService.redirectAfterLogin(this.returnUrl);
         } else {
           this.errorMessage = 'Error al procesar la respuesta del servidor';
         }
@@ -163,26 +161,26 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isLoading = false;
         
         // Verificar si es un error de rate limiting (429)
-        if (error.status === 429 && error.error?.remainingTimeSeconds) {
+        if (error.status === 429) {
           // ✅ SOLO actualizar el bloqueo si NO estábamos previamente bloqueados
           // Esto evita que intentos adicionales reinicien el countdown
-          if (!this.isBlocked) {
+          if (!error.error?.remainingTimeSeconds) {
+            this.errorMessage = 'Demasiados intentos. Espera unos minutos antes de intentarlo nuevamente.';
+          } else if (!this.isBlocked) {
             this.handleRateLimitError(error.error);
           } else {
             // Ya estábamos bloqueados, solo mostrar mensaje sin reiniciar countdown
             this.errorMessage = `Ya tienes un bloqueo activo. Espera ${this.formatTimeLeft()}.`;
           }
         } else {
-          // Mensajes de error más específicos para otros tipos de error
-          if (error.status === 401) {
-            this.errorMessage = 'Email o contraseña incorrectos';
-          } else if (error.status === 403) {
-            this.errorMessage = 'Cuenta bloqueada. Contacta al administrador';
+          // ✅ Mensajes genéricos anti-enumeración: NO revelar si el email existe o la cuenta está bloqueada
+          if (error.status === 401 || error.status === 403) {
+            this.errorMessage = 'Credenciales incorrectas. Verifica tus datos e intenta nuevamente.';
           } else if (error.status === 0) {
             // ✅ Error de conexión - NO debe contar como intento de fuerza bruta
-            this.errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet';
+            this.errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
           } else {
-            this.errorMessage = error.error?.message || 'Error al iniciar sesión. Intenta nuevamente';
+            this.errorMessage = 'Ocurrió un error inesperado. Intenta nuevamente más tarde.';
           }
           // Limpiar countdown solo para errores que NO son rate limit
           if (error.status !== 429) {
@@ -288,8 +286,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const method = this.selectedMethod as 'EMAIL';
     
-    this.authService.sendTwoFactorCode(this.pendingUser.email, method).subscribe({
-      next: (response: any) => {
+    this.authService.sendTwoFactorCode(method).subscribe({
+      next: (response) => {
         this.isLoading = false;
         if (response.success) {
           this.codeSent = true;
@@ -306,7 +304,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (error: any) => {
         this.isLoading = false;
-        this.errorMessage = this.getErrorMessage(error);
+        this.cancelTwoFactor();
+        this.errorMessage = 'No se pudo completar la verificación. Inicia sesión nuevamente.';
       }
     });
   }
@@ -339,26 +338,27 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     this.errorMessage = '';
 
     const payload = {
-      email: String(this.pendingUser.email),
       code: codeString,
-      method: String(this.selectedMethod)
+      method: this.selectedMethod as LoginFactorMethod
     };
 
     this.authService.verifyTwoFactor(payload).subscribe({
-      next: (response: any) => {
+      next: (response) => {
         this.isLoading = false;
-        const token = response.data?.accessToken || response.accessToken;
-        const user = response.data?.user || response.user;
+        const token = response.data?.accessToken;
+        const user = response.data?.user;
         
         if (token && user) {
           this.authService.completeLogin(token, user);
-          this.router.navigate(['/']);
+          // Enrutamiento inteligente post-login con 2FA
+          this.authService.redirectAfterLogin(this.returnUrl);
         } else {
           this.errorMessage = 'Código inválido o expirado';
         }
       },
       error: (err: any) => {
-        this.errorMessage = this.getErrorMessage(err);
+        this.cancelTwoFactor();
+        this.errorMessage = 'No se pudo completar la verificación. Inicia sesión nuevamente.';
         this.isLoading = false;
       }
     });
@@ -407,16 +407,17 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     this.errorMessage = '';
 
     // Llamar al AuthService para verificar el código de respaldo
-    this.authService.verifyBackupCodeForLogin(this.pendingUser.email, cleanCode).subscribe({
-      next: (response: any) => {
+    this.authService.verifyBackupCodeForLogin(cleanCode).subscribe({
+      next: (response) => {
         this.isLoading = false;
         if (response.success) {
-          const token = response.data?.accessToken || response.accessToken;
-          const user = response.data?.user || response.user;
+          const token = response.data?.accessToken;
+          const user = response.data?.user;
           
           if (token && user) {
             this.authService.completeLogin(token, user);
-            this.router.navigate(['/']);
+            // Enrutamiento inteligente post-login con código de respaldo
+            this.authService.redirectAfterLogin(this.returnUrl);
           } else {
             this.errorMessage = 'Respuesta de login inválida';
           }
@@ -426,7 +427,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (error: any) => {
         this.isLoading = false;
-        this.errorMessage = this.getErrorMessage(error);
+        this.cancelTwoFactor();
+        this.errorMessage = 'No se pudo completar la verificación. Inicia sesión nuevamente.';
       }
     });
   }
@@ -642,6 +644,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
    * Cleanup al destruir el componente
    */
   ngOnDestroy(): void {
+    this.authService.clearPendingLogin();
     this.clearCountdown();
   }
 

@@ -1,12 +1,18 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
-import { CartService } from '../../services/cart.service';
+import Swal from 'sweetalert2';
+import { CartService, BackendCartItem } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
-import { CartItem } from '../../models/product.model';
+import { environment } from '../../../environments/environment';
+
+// FASE 1.2 - Carrito UX - 2026-05-15
+
+/** Estados del ciclo de vida de la vista del carrito. */
+type CartViewState = 'loading' | 'loaded-with-items' | 'loaded-empty' | 'error';
 
 @Component({
   selector: 'app-cart',
@@ -14,6 +20,7 @@ import { CartItem } from '../../models/product.model';
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [
     trigger('slideIn', [
       transition(':enter', [
@@ -27,16 +34,32 @@ import { CartItem } from '../../models/product.model';
   ]
 })
 export class CartComponent implements OnInit, OnDestroy {
-  cartItems: CartItem[] = [];
-  cartSubtotal = 0;
-  cartTaxes = 0;
-  cartShipping = 0;
-  cartTotal = 0;
-  freeShippingThreshold = 1000;
-  updating = false;
+
+  cartItems: BackendCartItem[] = [];
+  cartSubtotal  = 0;
+  cartTaxes     = 0;
+  cartShipping  = 0;
+  cartTotal     = 0;
+  unavailableItemsTotal = 0;
+  appliedCoupon: string | null = null;
+  
+  canCheckout = true;
+  cartWarningMessage: string | null = null;
+
+  readonly freeShippingThreshold = 1000;
+
+  /** Estado actual de la vista del carrito. */
+  viewState: CartViewState = 'loading';
+
+  /** Mensaje de error legible para el usuario. */
+  errorMessage = '';
+
   showClearConfirm = false;
-  showCouponInput = false;
-  couponCode = '';
+  showCouponInput  = false;
+  couponCode       = '';
+
+  /** IDs de items que están siendo actualizados en este momento. */
+  updatingItemIds = new Set<number>();
 
   private subscriptions: Subscription[] = [];
 
@@ -48,12 +71,15 @@ export class CartComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkAuthentication();
-    this.subscribeToCart();
+    this.subscribeToCartItems();
+    this.loadCartFromBackend();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
+
+  // ── Setup ────────────────────────────────────────────────────────────────
 
   private checkAuthentication(): void {
     const authSub = this.authService.isLoggedIn$.subscribe(isLoggedIn => {
@@ -66,118 +92,302 @@ export class CartComponent implements OnInit, OnDestroy {
     this.subscriptions.push(authSub);
   }
 
-  private subscribeToCart(): void {
+  private subscribeToCartItems(): void {
+    // Escucha cambios reactivos del servicio (actualizaciones de cantidad, cupones, etc.)
     const cartSub = this.cartService.cartItems$.subscribe(items => {
-      this.cartItems = items;
+      this.cartItems = items as BackendCartItem[];
+      this.appliedCoupon = this.cartService.getAppliedCouponCode();
       this.updateTotals();
+      // Solo actualizar el viewState si ya pasamos por la carga inicial
+      if (this.viewState !== 'loading') {
+        this.viewState = this.cartItems.length > 0 ? 'loaded-with-items' : 'loaded-empty';
+      }
     });
-    this.subscriptions.push(cartSub);
+    
+    const checkoutSub = this.cartService.canCheckout$.subscribe(val => this.canCheckout = val);
+    const warningSub = this.cartService.warningMessage$.subscribe(val => this.cartWarningMessage = val);
+    
+    this.subscriptions.push(cartSub, checkoutSub, warningSub);
+  }
+
+  /**
+   * FASE 1.2: Carga real desde el backend al inicializar la vista.
+   * Se ejecuta en ngOnInit y en cada F5 (el servicio es stateless entre navegaciones).
+   * En caso de 401, el interceptor redirige a /login automáticamente.
+   */
+  private loadCartFromBackend(): void {
+    this.viewState = 'loading';
+
+    this.cartService.loadCart().subscribe({
+      next: () => {
+        // cartItems$ ya fue actualizado por applyCartResponse dentro de loadCart()
+        this.viewState = this.cartItems.length > 0 ? 'loaded-with-items' : 'loaded-empty';
+      },
+      error: err => {
+        const status = err?.status;
+
+        if (status === 401) {
+          // El interceptor ya maneja la redirección; no hacemos nada aquí
+          this.viewState = 'error';
+          this.errorMessage = 'Tu sesión expiró. Redirigiendo al inicio de sesión...';
+        } else if (status >= 500 || status === 0) {
+          this.viewState = 'error';
+          this.errorMessage = 'No se pudo conectar con el servidor. Intenta más tarde.';
+        } else {
+          this.viewState = 'error';
+          this.errorMessage = 'Ocurrió un error al cargar tu carrito.';
+        }
+      }
+    });
+  }
+
+  /** Reintenta la carga si hubo error. */
+  retryLoad(): void {
+    this.loadCartFromBackend();
   }
 
   private updateTotals(): void {
     this.cartSubtotal = this.cartService.getSubtotal();
-    this.cartTaxes = this.cartService.getTaxes();
+    this.cartTaxes    = this.cartService.getTaxes();
     this.cartShipping = this.cartService.getShipping();
-    this.cartTotal = this.cartService.getFinalTotal();
+    this.cartTotal    = this.cartService.getFinalTotal();
+    this.unavailableItemsTotal = this.cartService.getUnavailableItemsTotal();
   }
 
-  // Obtener total de items
+  // ── Helpers de vista ─────────────────────────────────────────────────────
+
+  get isLoading(): boolean { return this.viewState === 'loading'; }
+  get hasItems():  boolean { return this.viewState === 'loaded-with-items'; }
+  get isEmpty():   boolean { return this.viewState === 'loaded-empty'; }
+  get hasError():  boolean { return this.viewState === 'error'; }
+
+  /** Expone el descuento actual para el template. */
+  get currentDiscount(): number { return this.cartService.getDiscount(); }
+
   getTotalItems(): number {
     return this.cartService.getCartCount();
   }
 
-  // Obtener total de un item específico
-  getItemTotal(item: CartItem): number {
-    return item.product.price * item.quantity;
+  getItemTotal(item: BackendCartItem): number {
+    return item.backendUnitPrice * item.quantity;
   }
 
-  // Aumentar cantidad
-  increaseQuantity(item: CartItem): void {
-    if (item.quantity < item.product.stockQuantity) {
-      this.updating = true;
-      setTimeout(() => {
-        this.cartService.updateQuantity(item.product.id, item.quantity + 1, item.selectedOptions);
-        this.updating = false;
-      }, 200);
-    }
+  /** true si el item con ese itemId está siendo procesado ahora. */
+  isItemUpdating(itemId: number): boolean {
+    return this.updatingItemIds.has(itemId);
   }
 
-  // Disminuir cantidad
-  decreaseQuantity(item: CartItem): void {
-    if (item.quantity > 1) {
-      this.updating = true;
-      setTimeout(() => {
-        this.cartService.updateQuantity(item.product.id, item.quantity - 1, item.selectedOptions);
-        this.updating = false;
-      }, 200);
-    }
+  // ── Helpers de Disponibilidad (FASE 3) ──────────────────────────────────
+  
+  isItemAvailable(item: BackendCartItem): boolean {
+    return item.available !== false && item.availabilityStatus === 'AVAILABLE';
   }
 
-  // Actualizar cantidad desde input
-  updateQuantityFromInput(item: CartItem, event: any): void {
-    const newQuantity = parseInt(event.target.value);
-    if (newQuantity && newQuantity > 0 && newQuantity <= item.product.stockQuantity) {
-      this.cartService.updateQuantity(item.product.id, newQuantity, item.selectedOptions);
-    } else {
-      // Restaurar valor anterior si es inválido
-      event.target.value = item.quantity;
-    }
+  getAvailabilityLabel(item: BackendCartItem): string {
+    if (this.isItemAvailable(item)) return '';
+    if (item.availabilityStatus === 'OUT_OF_STOCK') return 'Agotado';
+    return 'No disponible';
   }
 
-  // Remover item del carrito
-  removeItem(item: CartItem): void {
-    this.cartService.removeFromCart(item.product.id, item.selectedOptions);
+  getAvailabilityMessage(item: BackendCartItem): string {
+    return item.warningMessage || 'Este producto ya no está disponible para su compra.';
   }
 
-  // Vaciar carrito
+  canUpdateQuantity(item: BackendCartItem): boolean {
+    return this.isItemAvailable(item);
+  }
+
+  // ── Control de cantidad ──────────────────────────────────────────────────
+
+  /**
+   * FASE 1.2: Incrementa la cantidad usando directamente el backendItemId.
+   * No depende de backendItemId buscado por productId — es directo.
+   */
+  increaseQuantity(item: BackendCartItem): void {
+    if (!this.canUpdateQuantity(item)) return;
+    if (this.isItemUpdating(item.backendItemId)) return;
+    if (item.quantity >= (item.availableStock || item.product.stockQuantity || 99)) return;
+
+    this.setItemUpdating(item.backendItemId, true);
+
+    this.cartService.updateItemById(item.backendItemId, item.quantity + 1).subscribe({
+      next:  () => this.setItemUpdating(item.backendItemId, false),
+      error: err => {
+        this.setItemUpdating(item.backendItemId, false);
+        this.showItemError('No se pudo aumentar la cantidad', err);
+      }
+    });
+  }
+
+  /**
+   * FASE 1.2: Decrementa la cantidad. No baja de 1.
+   */
+  decreaseQuantity(item: BackendCartItem): void {
+    if (!this.canUpdateQuantity(item)) return;
+    if (this.isItemUpdating(item.backendItemId)) return;
+    if (item.quantity <= 1) return;
+
+    this.setItemUpdating(item.backendItemId, true);
+
+    this.cartService.updateItemById(item.backendItemId, item.quantity - 1).subscribe({
+      next:  () => this.setItemUpdating(item.backendItemId, false),
+      error: err => {
+        this.setItemUpdating(item.backendItemId, false);
+        this.showItemError('No se pudo disminuir la cantidad', err);
+      }
+    });
+  }
+
+  /** Actualiza cantidad desde el valor del span (si se usa input). Nunca < 1. */
+  updateQuantityDirect(item: BackendCartItem, rawValue: string): void {
+    if (!this.canUpdateQuantity(item)) return;
+    const newQty = parseInt(rawValue, 10);
+    if (isNaN(newQty) || newQty < 1) return;
+    if (newQty > (item.availableStock || item.product.stockQuantity || 99)) return;
+    if (newQty === item.quantity) return;
+
+    this.setItemUpdating(item.backendItemId, true);
+
+    this.cartService.updateItemById(item.backendItemId, newQty).subscribe({
+      next:  () => this.setItemUpdating(item.backendItemId, false),
+      error: err => {
+        this.setItemUpdating(item.backendItemId, false);
+        this.showItemError('No se pudo actualizar la cantidad', err);
+      }
+    });
+  }
+
+  // ── Acciones del carrito ─────────────────────────────────────────────────
+
+  removeItem(item: BackendCartItem): void {
+    if (this.isItemUpdating(item.backendItemId)) return;
+
+    this.setItemUpdating(item.backendItemId, true);
+
+    this.cartService.removeItemById(item.backendItemId).subscribe({
+      next:  () => this.setItemUpdating(item.backendItemId, false),
+      error: err => {
+        this.setItemUpdating(item.backendItemId, false);
+        this.showItemError('No se pudo eliminar el producto', err);
+      }
+    });
+  }
+
+  moveToWishlist(item: BackendCartItem): void {
+    if (this.isItemUpdating(item.backendItemId)) return;
+
+    this.setItemUpdating(item.backendItemId, true);
+
+    this.cartService.moveItemToWishlist(item.backendItemId).subscribe({
+      next: () => {
+        this.setItemUpdating(item.backendItemId, false);
+        Swal.fire({
+          icon: 'success',
+          title: 'Movido a Lista de Deseos',
+          text: `Se movió "${item.product.name}" a tu lista de deseos.`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      },
+      error: err => {
+        this.setItemUpdating(item.backendItemId, false);
+        this.showItemError('No se pudo mover a lista de deseos', err);
+      }
+    });
+  }
+
   clearCart(): void {
     this.showClearConfirm = true;
   }
 
-  // Confirmar vaciar carrito
   confirmClearCart(): void {
     this.cartService.clearCart();
     this.showClearConfirm = false;
   }
 
-  // Proceder al checkout
-  proceedToCheckout(): void {
-    if (this.cartItems.length > 0) {
-      this.router.navigate(['/checkout']);
-    }
-  }
+  // ── Cupón ────────────────────────────────────────────────────────────────
 
-  // Toggle cupón
   toggleCoupon(): void {
     this.showCouponInput = !this.showCouponInput;
+    if (!this.showCouponInput) { this.couponCode = ''; }
   }
 
-  // Aplicar cupón
   applyCoupon(): void {
-    if (this.couponCode.trim()) {
-      // TODO: Implementar validación de cupón en el backend
-      console.log('Aplicando cupón:', this.couponCode);
-      // Aquí se haría la petición al backend
-      // Por ahora solo mostramos un mensaje
-      alert('Funcionalidad de cupones próximamente disponible');
-      this.couponCode = '';
-      this.showCouponInput = false;
+    const code = this.couponCode.trim();
+    if (!code) {
+      Swal.fire({ icon: 'warning', title: 'Código vacío', text: 'Ingresa un código de cupón.', confirmButtonColor: '#722f37' });
+      return;
     }
+
+    this.cartService.applyCoupon(code).subscribe({
+      next: () => {
+        this.couponCode = '';
+        this.showCouponInput = false;
+        const applied = this.cartService.getAppliedCouponCode();
+        if (applied) {
+          Swal.fire({
+            icon: 'success', title: '¡Cupón aplicado!',
+            text: `Descuento del cupón "${applied}" aplicado.`,
+            timer: 2500, showConfirmButton: false
+          });
+        }
+      },
+      error: () => {
+        Swal.fire({ icon: 'error', title: 'Cupón inválido', text: 'El código no es válido o ha expirado.', confirmButtonColor: '#722f37' });
+      }
+    });
   }
 
-  // Obtener opciones seleccionadas como array
-  getSelectedOptionsArray(options: { [key: string]: string } | undefined): { key: string, value: string }[] {
+  removeCoupon(): void {
+    this.cartService.removeCoupon();
+    this.appliedCoupon = null;
+  }
+
+  // ── Checkout ─────────────────────────────────────────────────────────────
+
+  /**
+   * TODO Fase 2: conectar con el módulo real de checkout.
+   */
+  proceedToCheckout(): void {
+    if (this.cartItems.length === 0 || !this.canCheckout) return;
+    this.router.navigate(['/checkout']);
+  }
+
+  // ── Utilidades de vista ──────────────────────────────────────────────────
+
+  getSelectedOptionsArray(options: { [key: string]: string } | undefined): { key: string; value: string }[] {
     if (!options) return [];
     return Object.entries(options).map(([key, value]) => ({ key, value }));
   }
 
-  // Manejar error de imagen
-  onImageError(event: any): void {
-    event.target.src = '/assets/logoP.png';
+  onImageError(event: Event): void {
+    (event.target as HTMLImageElement).src = '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png';
   }
 
-  // TrackBy para optimizar *ngFor
-  trackByProductId(index: number, item: CartItem): string {
-    return item.product.id + JSON.stringify(item.selectedOptions || {});
+  trackByItemId(index: number, item: BackendCartItem): number {
+    return item.backendItemId;
+  }
+
+  // ── Internos ─────────────────────────────────────────────────────────────
+
+  private setItemUpdating(itemId: number, updating: boolean): void {
+    if (updating) {
+      this.updatingItemIds.add(itemId);
+    } else {
+      this.updatingItemIds.delete(itemId);
+    }
+  }
+
+  private showItemError(title: string, err: unknown): void {
+    const status = (err as any)?.status;
+    let text = 'Intenta de nuevo.';
+    if (status === 400 || status === 409) {
+      text = (err as any)?.error?.message || 'El producto está agotado o inactivo.';
+      // Refrescar carrito para obtener el estado real
+      this.loadCartFromBackend();
+    }
+    if (status >= 500)  text = 'Error del servidor. Intenta más tarde.';
+
+    Swal.fire({ icon: 'error', title, text, confirmButtonColor: '#722f37' });
   }
 }

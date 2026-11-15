@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { AuthService } from '../../services/auth.service';
 import { GoogleAuthService } from '../../google-auth.service';
 import { User } from '../../models/user.model';
@@ -16,8 +16,9 @@ interface SecurityMethod {
 
 @Component({
   selector: 'app-user-profile',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './user-profile.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './user-profile.component.css'
 })
 export class UserProfileComponent implements OnInit {

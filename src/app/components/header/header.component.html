@@ -14,7 +14,7 @@
 
       <!-- ── LOGO ──────────────────────────────────────────────────── -->
       <a routerLink="/" class="flex items-center gap-3 flex-shrink-0 group">
-        <img src="assets/logoP.png" alt="Castillo" class="h-9 lg:h-11 w-auto object-contain drop-shadow-sm">
+        <img src="https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png" alt="Castillo" class="h-9 lg:h-11 w-auto object-contain drop-shadow-sm">
         <div class="hidden sm:block leading-tight">
           <div class="text-xs font-bold tracking-[0.25em] uppercase transition-colors duration-300"
                [ngClass]="scrolled ? 'text-slate-900' : 'text-white'">
@@ -53,12 +53,7 @@
           Marcas
           <span class="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
         </a>
-        <a routerLink="/catalogo" [queryParams]="{descuento:'true'}"
-           class="relative text-sm font-medium tracking-wide transition-colors duration-200 group"
-           [ngClass]="scrolled ? 'text-red-600' : 'text-red-400 hover:text-red-300'">
-          Ofertas
-          <span class="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
-        </a>
+
       </nav>
 
       <!-- ── ÍCONOS DERECHA ────────────────────────────────────────── -->
@@ -219,10 +214,7 @@
          class="flex items-center gap-4 py-4 border-b border-white/10 text-white text-lg font-medium hover:text-red-400 transition-colors duration-200">
         <span class="material-symbols-outlined">sell</span> Marcas
       </a>
-      <a routerLink="/catalogo" [queryParams]="{descuento:'true'}" (click)="cerrarMenuMovil()"
-         class="flex items-center gap-4 py-4 border-b border-white/10 text-red-400 text-lg font-medium hover:text-red-300 transition-colors duration-200">
-        <span class="material-symbols-outlined">local_offer</span> Ofertas
-      </a>
+
     </nav>
 
     <!-- Acciones móvil -->

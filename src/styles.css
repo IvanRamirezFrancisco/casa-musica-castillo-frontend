@@ -1,43 +1,140 @@
-﻿/* ── Importaciones externas (deben ser siempre las primeras) ── */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;600;700&display=swap');
+/* -- Fuentes e Iconos Locales (Soporte 100% Offline sin dependencia de CDN externo) -- */
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/assets/fonts/MaterialIcons-Regular.woff2') format('woff2');
+}
 
-/* ── Tailwind CSS (used only by csv-import-export modal component) ── */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('/assets/fonts/MaterialSymbolsOutlined.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('/assets/fonts/Montserrat-Variable-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('/assets/fonts/Montserrat-Variable-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/assets/fonts/Roboto-Variable-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/assets/fonts/Roboto-Variable-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/assets/fonts/Roboto-Variable-latin.woff2') format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons', 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined', 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* -- Tailwind CSS -- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Estilos Globales - Casa de Música Castillo */
 :root {
-  /* Colores Principales */
-  --primary-color: #800020;    /* Vino Tinto/Bordó - Navegación, botones principales */
-  --secondary-color: #C5A059;  /* Dorado Antiguo - Detalles, iconos activos */
-  --dark-color: #1A1A1A;       /* Negro Noche - Texto principal, footer */
-  --bg-color: #F5F5F5;         /* Blanco Hueso - Fondo general */
-  --card-bg: #FFFFFF;          /* Blanco Puro - Tarjetas */
-  --success-color: #27AE60;    /* Verde Bosque - Stock disponible */
-  --error-color: #C0392B;      /* Rojo Ladrillo - Alertas, errores */
-  --text-light: #ffffff;       /* Texto blanco para botones */
-  
-  /* Tipografía */
-  --font-title: 'Montserrat', sans-serif;  /* Títulos y nombres de instrumentos */
-  --font-body: 'Roboto', sans-serif;       /* Cuerpo, tablas, formularios */
-  
+  /* Colores Principales (Mapeados a nuevos tokens de Fase 1A) */
+  --primary-color: #722F37;    /* Conservado para legacy/admin. Nuevo predominante es primary-500 (#A64D5B) */
+  --secondary-color: #C5A059;  /* Dorado Antiguo */
+  --dark-color: #292524;       /* Negro Noche -> Carbón cálido */
+  --bg-color: #FCFAF7;         /* Crema cálida -> Fondo principal cálido */
+  --card-bg: #FFFFFF;          /* Hueso cálido -> Tarjetas Blancas */
+  --card-alt: #F5EFE8;         /* Crema suave -> Superficie crema */
+  --card-hover: #F8E9EC;       /* Hover suave sobre filas/cards -> primary-100 */
+  --success-color: #27AE60;    /* Verde Bosque */
+  --error-color: #C0392B;      /* Rojo Ladrillo */
+  --text-light: #ffffff;       /* Texto blanco */
+
+  /* Tipografía con fallback métrico consistente */
+  --font-title: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-body: 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
   /* Variaciones de colores para estados */
-  --primary-hover: #66001a;    /* Vino más oscuro para hover */
-  --primary-light: #99002b;    /* Vino más claro */
-  --secondary-hover: #b8934f;  /* Dorado más oscuro */
-  --secondary-light: #d4b066;  /* Dorado más claro */
-  --text-main: var(--dark-color);  /* Texto principal */
-  --text-muted: #666666;       /* Texto secundario */
-  --border-color: #e0e0e0;     /* Bordes suaves */
-  
+  --primary-hover: #913F4D;    /* primary-600 */
+  --primary-light: #A64D5B;    /* primary-500 */
+  --secondary-hover: #B8934F;  /* secondary-700 */
+  --secondary-light: #D4B066;  /* secondary-500 */
+  --text-main: #292524;        /* texto-main */
+  --text-muted: #6B6560;       /* texto-muted */
+  --border-color: #E7DED5;     /* surface-border */  /* Beige medio - Bordes y separadores */
+  --surface-dark: #3B1F24;     /* Dark warm surface (burdeos muy oscuro) */
+
   /* Sombras profesionales */
   --shadow-light: rgba(128, 0, 32, 0.08);
   --shadow-medium: rgba(128, 0, 32, 0.15);
   --shadow-strong: rgba(128, 0, 32, 0.25);
   --card-shadow: 0 2px 8px rgba(26, 26, 26, 0.1);
   --card-shadow-hover: 0 8px 24px rgba(26, 26, 26, 0.15);
-  
+
   /* Medidas y transiciones */
   --border-radius: 8px;
   --border-radius-lg: 12px;
@@ -294,7 +391,7 @@ a:hover {
   font-size: 0.9rem;
 }
 
-/* Retroalimentación de formularios */
+/* Retroalimentaciï¿½n de formularios */
 .valid-feedback {
   display: block;
   color: var(--success-color);
@@ -534,7 +631,7 @@ a:hover {
   vertical-align: middle;
 }
 
-/* Tamaños de iconos */
+/* Tamaï¿½os de iconos */
 .material-icons.md-18,
 .material-symbols-outlined.md-18 { font-size: 18px; }
 
@@ -596,11 +693,11 @@ button .material-symbols-outlined:last-child,
 /* ==================== FIN MATERIAL ICONS ==================== */
 
 
-/* ══════════════════════════════════════════════════════════════
-   SWEETALERT2 — Restaurar estilos pisados por Tailwind Preflight
+/* --------------------------------------------------------------
+   SWEETALERT2 ï¿½ Restaurar estilos pisados por Tailwind Preflight
    @tailwind base incluye button { background: transparent; color: inherit }
    que sobrescribe los colores de Swal. Estos overrides los restauran.
-   ══════════════════════════════════════════════════════════════ */
+   -------------------------------------------------------------- */
 
 /* Contenedor de acciones */
 div.swal2-actions {
@@ -608,7 +705,7 @@ div.swal2-actions {
   gap: 12px;
 }
 
-/* Botón confirmar */
+/* Botï¿½n confirmar */
 button.swal2-confirm {
   color: #fff !important;
   border: 0 !important;
@@ -617,19 +714,19 @@ button.swal2-confirm {
   font-size: 1em !important;
   font-weight: 500 !important;
   cursor: pointer !important;
-  /* El color de fondo es inyectado inline por Swal vía confirmButtonColor,
+  /* El color de fondo es inyectado inline por Swal vï¿½a confirmButtonColor,
      pero si no hay color inline lo ponemos como fallback */
   background-color: #3085d6 !important;
 }
 
 /* Cuando Swal inyecta el color inline (confirmButtonColor), no pisarlo */
 button.swal2-confirm[style*="background"] {
-  /* Deja que el inline style gane — solo aseguramos text-color y cursor */
+  /* Deja que el inline style gane ï¿½ solo aseguramos text-color y cursor */
   color: #fff !important;
   cursor: pointer !important;
 }
 
-/* Botón cancelar */
+/* Botï¿½n cancelar */
 button.swal2-cancel {
   color: #fff !important;
   border: 0 !important;
@@ -646,30 +743,114 @@ button.swal2-cancel[style*="background"] {
   cursor: pointer !important;
 }
 
-/* Botón "deny" (por si se usa) */
+/* Botï¿½n "deny" (por si se usa) */
 button.swal2-deny {
   color: #fff !important;
   cursor: pointer !important;
 }
 
-/* Hover genérico para todos los botones Swal */
+/* Hover genï¿½rico para todos los botones Swal */
 button.swal2-confirm:hover,
 button.swal2-cancel:hover,
 button.swal2-deny:hover {
   filter: brightness(0.9);
 }
 
-/* Popup base — asegurar que no herede colores extraños */
+/* Popup base ï¿½ asegurar que no herede colores extraï¿½os */
 div.swal2-popup {
   font-family: var(--font-body, 'Roboto', sans-serif);
 }
 
-/* ── Bloquear scroll del fondo cuando un modal está abierto ──
-   Se activa automáticamente cuando .brand-modal-overlay existe en el DOM,
-   sin necesitar ningún código JS manual (add/remove class).
+/* -- Bloquear scroll del fondo cuando un modal estï¿½ abierto --
+   Se activa automï¿½ticamente cuando .brand-modal-overlay existe en el DOM,
+   sin necesitar ningï¿½n cï¿½digo JS manual (add/remove class).
    :has() tiene soporte en todos los navegadores modernos (Chrome 105+, Firefox 121+, Safari 15.4+).
-   La clase .modal-open se mantiene como fallback para navegadores antiguos. ── */
+   La clase .modal-open se mantiene como fallback para navegadores antiguos. -- */
 body:has(.brand-modal-overlay),
 body.modal-open {
   overflow: hidden;
+}
+
+/* -- Paleta cï¿½lida: override de clases Tailwind bg-white / bg-slate / bg-gray --
+   Sustituye los fondos frï¿½os blancos/grises por la crema cï¿½lida de la marca.
+   !important asegura prioridad sobre las utilidades de Tailwind generadas. -- */
+.bg-white         { background-color: #FDFCFB !important; }
+.bg-slate-50      { background-color: #f5f0eb !important; }
+.bg-slate-100     { background-color: #FAF8F6 !important; }
+.bg-gray-50       { background-color: #f5f0eb !important; }
+.bg-gray-100      { background-color: #FAF8F6 !important; }
+.bg-stone-50      { background-color: #FAF8F6 !important; }
+.bg-stone-100     { background-color: #f0ece6 !important; }
+
+/* -- Override global de fondos blancos heredados de componentes legacy --
+   Convierte cualquier uso de colores frï¿½os neutros a la paleta cï¿½lida. -- */
+.search-bar,
+.search-box       { background-color: #FDFCFB !important; }
+
+/* Fase 6: Solución global de z-index para alertas sobre modales */
+.toast-container,
+.toast-top-right,
+.app-toast-container,
+
+.swal2-container,
+.toast-container,
+.toast-top-right,
+.ngx-toastr,
+.cdk-overlay-container,
+.app-toast-container,
+.notification-container,
+.custom-toast-container,
+.pm-toast-wrapper {
+  z-index: 50000 !important;
+}
+
+
+.custom-tooltip {
+  background-color: #333333 !important;
+  color: #f9f9f9 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #444 !important;
+  font-size: 0.85rem !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  max-width: 280px !important;
+  line-height: 1.4 !important;
+  white-space: normal !important;
+}
+
+/* -- Migaja de pan móvil unificada (páginas informativas y legales) --
+   Garantiza alto contraste sobre hero burdeos (#722F37) anulando la regla global `a { color: var(--primary-color) }`. */
+.cmc-mobile-breadcrumb {
+  background-color: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 253, 252, 0.22);
+  color: rgba(255, 253, 252, 0.92);
+}
+
+.cmc-mobile-breadcrumb a,
+.cmc-mobile-breadcrumb a:visited,
+.cmc-mobile-breadcrumb .cmc-breadcrumb-home,
+.cmc-mobile-breadcrumb .cmc-breadcrumb-home .material-icons {
+  color: #FFFDFC !important;
+  text-decoration: none !important;
+}
+
+.cmc-mobile-breadcrumb a:hover,
+.cmc-mobile-breadcrumb a:focus-visible,
+.cmc-mobile-breadcrumb .cmc-breadcrumb-home:hover,
+.cmc-mobile-breadcrumb .cmc-breadcrumb-home:hover .material-icons {
+  color: #E2B84F !important;
+}
+
+.cmc-mobile-breadcrumb .cmc-breadcrumb-mid {
+  color: rgba(255, 253, 252, 0.92) !important;
+}
+
+.cmc-mobile-breadcrumb .cmc-breadcrumb-sep {
+  color: rgba(255, 253, 252, 0.65) !important;
+}
+
+.cmc-mobile-breadcrumb .cmc-breadcrumb-current,
+.cmc-mobile-breadcrumb [aria-current="page"] {
+  color: #E2B84F !important;
+  font-weight: 600;
 }

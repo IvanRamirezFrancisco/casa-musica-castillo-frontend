@@ -63,7 +63,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background-color: white;
+  background-color: #FDFCFB;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -89,7 +89,7 @@
   border-radius: 6px;
   font-size: 14px;
   color: #2d3748;
-  background-color: white;
+  background-color: #FDFCFB;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -133,7 +133,7 @@
 .loading-container {
   text-align: center;
   padding: 60px 20px;
-  background-color: white;
+  background-color: #FDFCFB;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -179,7 +179,7 @@
 
 /* Table */
 .table-container {
-  background-color: white;
+  background-color: #FDFCFB;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -438,7 +438,7 @@
 .empty-state {
   text-align: center;
   padding: 80px 20px;
-  background-color: white;
+  background-color: #FDFCFB;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -477,7 +477,7 @@
 }
 
 .modal-content {
-  background-color: white;
+  background-color: #FDFCFB;
   border-radius: 12px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   max-height: 90vh;

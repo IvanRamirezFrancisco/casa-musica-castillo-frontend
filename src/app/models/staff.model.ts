@@ -9,6 +9,9 @@ export interface Permission {
   category: string;
   resource: string;
   action: string;
+  assignable?: boolean;
+  critical?: boolean;
+  ownerOnly?: boolean;
 }
 
 export interface Role {
@@ -23,17 +26,49 @@ export interface Role {
   updatedAt?: string;
 }
 
+export interface AssignableRole {
+  id: number;
+  name: string;
+  description?: string;
+  systemRole?: boolean;
+  assignable?: boolean;
+  level?: number;
+  scope?: string;
+  displayName?: string;
+}
+
 export interface StaffUser {
   id: number;
   firstName: string;
   lastName: string;
   email: string;
+  displayEmail?: string;
+  maskedEmail?: string;
   enabled: boolean;
   accountNonLocked: boolean;
   roles: Role[];
+  rolesDetail?: Role[];
   createdAt?: string;
   lastLogin?: string;
   failedLoginAttempts?: number;
+  
+  // Security Context & Visibility
+  protectedOwner?: boolean;
+  currentUser?: boolean;
+  highestRoleLevel?: number;
+  technicalUser?: boolean;
+  operationalUser?: boolean;
+  storeManager?: boolean;
+
+  // Action Permissions for Current Actor
+  canManage?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canDisable?: boolean;
+  canChangeRoles?: boolean;
+  canResetTwoFactor?: boolean;
+  canChangePasswordAdmin?: boolean;
+  canViewSensitiveFields?: boolean;
 }
 
 export interface CreateStaffRequest {
@@ -110,4 +145,40 @@ export interface RoleUserDTO {
   accountNonLocked: boolean;
   roles: string;          // roles concatenados: "ROLE_ADMIN, ROLE_STAFF"
   createdAt?: string;
+}
+
+// ═══════════════════════════════════════════════════════
+// Interfaces para el flujo de invitaciones de empleados
+// ═══════════════════════════════════════════════════════
+
+export interface CreateStaffInvitationRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  roleIds: number[];
+}
+
+export interface AcceptInvitationRequest {
+  password: string;
+  confirmPassword: string;
+}
+
+export interface StaffInvitationDto {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED';
+  roleNames: string[];
+  invitedByName: string;
+  createdAt: string;
+  expiresAt: string;
+  acceptedAt?: string;
+}
+
+export interface InvitationInfoDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  roleNames: string[];
 }

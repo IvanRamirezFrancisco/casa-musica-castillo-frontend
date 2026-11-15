@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { OrderService } from '../../../services/order.service';
+import { NotificationCenterService } from '../../../core/services/notification-center.service';
 import { 
   Order, 
   OrderStatus, 
@@ -14,14 +15,16 @@ import {
   OrderStats
 } from '../../../models/order.model';
 import { OrderDetailModalComponent } from '../order-detail-modal/order-detail-modal.component';
+import { PaymentSettingsService } from '../../../services/payment-settings.service';
 
 declare const Swal: any;
 
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, OrderDetailModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, OrderDetailModalComponent],
   templateUrl: './admin-orders.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-orders.component.css']
 })
 export class AdminOrdersComponent implements OnInit, OnDestroy {
@@ -30,6 +33,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   stats: OrderStats | null = null;
   selectedOrder: Order | null = null;
   showDetailModal = false;
+  hasBankSettings = false;
 
   // ==================== PAGINACIÓN ====================
   currentPage = 0;
@@ -58,6 +62,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   OrderStatus = OrderStatus;
   PaymentStatus = PaymentStatus;
   ShippingStatus = ShippingStatus;
+
 
   // Opciones para selects
   orderStatusOptions = Object.values(OrderStatus);
@@ -153,9 +158,12 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   constructor(
     public orderService: OrderService,
+    private notifService: NotificationCenterService,
+    private paymentSettingsService: PaymentSettingsService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     // Configurar debounce para búsqueda (500ms)
@@ -172,6 +180,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     // Cargar datos iniciales
     this.loadOrders();
     this.loadStats();
+    this.checkBankSettings();
 
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
@@ -235,6 +244,21 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
       });
   }
 
+  checkBankSettings(): void {
+    this.paymentSettingsService.getBankTransferSettings()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.hasBankSettings = true;
+        },
+        error: (err) => {
+          if (err?.status === 404) {
+            this.hasBankSettings = false;
+          }
+        }
+      });
+  }
+
   // ==================== BÚSQUEDA Y FILTROS ====================
 
   onSearch(): void {
@@ -246,6 +270,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.loadOrders();
   }
 
+  /** Limpia filtros y recarga */
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedOrderStatus = null;
@@ -304,16 +329,18 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.loadOrders();
   }
 
-  // ==================== MODAL DETALLE ====================
+  // ==================== MODAL DE DETALLE ====================
 
   openDetailModal(order: Order): void {
     this.selectedOrder = order;
     this.showDetailModal = true;
+    document.body.classList.add('overflow-hidden');
   }
 
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.selectedOrder = null;
+    document.body.classList.remove('overflow-hidden');
   }
 
   onOrderUpdated(updatedOrder: Order): void {
@@ -340,7 +367,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
       showCancelButton: true,
       confirmButtonText: 'Cancelar Orden',
       cancelButtonText: 'Volver',
-      confirmButtonColor: '#800020',
+      confirmButtonColor: '#722f37',
       cancelButtonColor: '#6c757d',
       preConfirm: () => {
         const reason = (document.getElementById('cancelReason') as HTMLTextAreaElement)?.value?.trim();
@@ -365,11 +392,16 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
                 this.orders[index] = updatedOrder;
               }
               this.loadStats();
+              // Notificación de cancelación
+              this.notifService.orderCancelled(
+                order.orderNumber,
+                result.value || 'Sin motivo especificado'
+              );
               Swal.fire({
                 title: 'Orden Cancelada',
                 text: `La orden ${order.orderNumber} fue cancelada correctamente.`,
                 icon: 'success',
-                confirmButtonColor: '#800020',
+                confirmButtonColor: '#722f37',
                 timer: 3500,
                 timerProgressBar: true
               });
@@ -379,7 +411,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
                 title: 'Error',
                 text: err.error?.error || 'No se pudo cancelar la orden.',
                 icon: 'error',
-                confirmButtonColor: '#800020'
+                confirmButtonColor: '#722f37'
               });
             }
           });
@@ -404,7 +436,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
           title: 'Error',
           text: 'No se pudo exportar el archivo CSV.',
           icon: 'error',
-          confirmButtonColor: '#800020'
+          confirmButtonColor: '#722f37'
         });
       }
     });

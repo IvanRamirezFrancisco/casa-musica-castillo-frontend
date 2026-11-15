@@ -1,8 +1,10 @@
-import { HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
+
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -13,6 +15,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/public/',                // ← STOREFRONT: todas las rutas públicas del catálogo
     '/auth/check-username',        // Validación username - variante 1
     '/api/auth/check-username',    // Validación username - variante 2
+    '/api/2fa/verify',
+    '/api/2fa/send-login-code',
     '/login',                      // Login de usuario
     '/register',                   // Registro de usuario
     '/check-username',             // Validación username - variante 3
@@ -29,22 +33,43 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/reviews/product',        // Ver reseñas de producto (público)
     '/api/reviews/statistics'      // Estadísticas de reseñas (público)
   ];
-  
+
   const isPublicUrl = publicUrls.some(url => req.url.includes(url));
-  
+
+  // Rutas explícitamente públicas donde un 401 no debe forzar login si no hay token
+  const publicEndpoints = [
+    '/api/products',
+    '/api/categories',
+    '/api/brands',
+    '/api/public',
+    '/api/alexa',
+    '/api/reviews/product',
+    '/api/reviews/statistics',
+    '/actuator/health'
+  ];
+  const isPublicEndpoint = publicEndpoints.some(url => req.url.includes(url));
+
   // También detectar peticiones marcadas como públicas por headers
   const isMarkedAsPublic = req.headers.has('X-Public-Request');
-  
-  const isPublicRequest = isPublicUrl || isMarkedAsPublic;
 
-  if (isPublicRequest) {
-    return next(req);
-  }
+  const isPublicRequest = isPublicUrl || isMarkedAsPublic || isPublicEndpoint;
+
+  // Rutas del frontend (UI) donde no se debe interrumpir la navegación por un 401 sin token
+  const publicFrontendRoutes = ['/catalogo', '/producto', '/inicio', '/home', '/busqueda', '/ayuda', '/informacion', '/terminos', '/privacidad', '/login', '/register', '/'];
+  const isPublicFrontendRoute = publicFrontendRoutes.some(route => router.url.startsWith(route) && router.url !== '/');
+  const isRootRoute = router.url === '/';
 
   const token = localStorage.getItem('token');
 
   let authReq = req;
-  if (token) {
+  // NO enviar el JWT a dominios externos ni a endpoints públicos de solo lectura (/api/public/, /actuator/health)
+  // Esto evita consultas innecesarias de sesión en BD y permite caché limpio en el Service Worker.
+  const isExternalApi = req.url.includes('api.iconify.design');
+  const isAnonymousPublicReadOnly =
+    (req.method === 'GET' || req.method === 'HEAD') &&
+    (req.url.includes('/api/public/') || req.url.includes('/actuator/health'));
+  
+  if (token && !isExternalApi && !isAnonymousPublicReadOnly && !isPublicUrl) {
     authReq = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -54,11 +79,37 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError(error => {
-      if (error.status === 401 && !isPublicRequest) {
-        authService.logout();
-        router.navigate(['/login']);
+      if (error.status === 401) {
+        // Nunca cerrar sesión ni redirigir a login si el fallo ocurre en un endpoint público (ej. reseñas públicas)
+        if (!isPublicRequest && !req.url.endsWith('/auth/logout')) {
+          const shouldRedirect = token || !(isPublicFrontendRoute || isRootRoute);
+
+          if (shouldRedirect) {
+            authService.logout();
+            router.navigate(['/login'], {
+              queryParams: { reason: 'session_expired' }
+            });
+          }
+        }
       }
-      
+
+      if (error.status === 403 && !isPublicRequest) {
+        if (error.error?.code === 'SECURITY_HIERARCHY_VIOLATION') {
+          import('sweetalert2').then(module => {
+            const Swal = module.default;
+            Swal.fire({
+              icon: 'warning',
+              title: 'Acción restringida',
+              text: 'Esta acción está protegida por la jerarquía de seguridad del sistema.',
+              footer: '<small>Si necesitas realizar este cambio, solicita autorización al propietario técnico.</small>',
+              confirmButtonColor: '#722f37'
+            });
+          });
+        } else if (!environment.production) {
+          console.warn('[AuthInterceptor] 403 Forbidden:', req.url);
+        }
+      }
+
       return throwError(() => error);
     })
   );

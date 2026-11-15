@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
@@ -18,8 +18,9 @@ interface SiteMapLink {
 @Component({
   selector: 'app-site-map',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './site-map.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './site-map.component.css'
 })
 export class SiteMapComponent {
@@ -29,8 +30,7 @@ export class SiteMapComponent {
       icon: 'home',
       links: [
         { name: 'Inicio', path: '/home', description: 'Página principal de Casa de Música Castillo' },
-        { name: 'Catálogo', path: '/catalogo', description: 'Explora nuestra colección completa de instrumentos musicales' },
-        { name: 'Ofertas', path: '/ofertas', description: 'Descubre las mejores ofertas y promociones especiales' }
+        { name: 'Catálogo', path: '/catalogo', description: 'Explora nuestra colección completa de instrumentos musicales' }
       ]
     },
     {

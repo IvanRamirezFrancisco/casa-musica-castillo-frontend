@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -20,8 +20,9 @@ import {
 @Component({
   selector: 'app-admin-coupons',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './admin-coupons.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-coupons.component.css']
 })
 export class AdminCouponsComponent implements OnInit, OnDestroy {

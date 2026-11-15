@@ -12,7 +12,8 @@ import {
   ReviewsResponse,
   MyReviewsResponse,
   ReviewFilterParams,
-  ReviewSortType
+  ReviewSortType,
+  EligibilityResponse
 } from '../models/review.model';
 
 /**
@@ -100,13 +101,12 @@ export class ProductReviewService {
   }
 
   /**
-   * Verificar si el usuario puede reseñar un producto
-   * GET /api/reviews/can-review/{productId}
-   * Requiere: USER role
+   * Verificar la elegibilidad de reseñar un producto
+   * GET /api/reviews/product/{productId}/eligibility
    */
-  canReviewProduct(productId: number): Observable<{ canReview: boolean; reason?: string }> {
-    return this.http.get<{ canReview: boolean; reason?: string }>(
-      `${this.API_URL}/can-review/${productId}`
+  checkEligibility(productId: number): Observable<EligibilityResponse> {
+    return this.http.get<EligibilityResponse>(
+      `${this.API_URL}/product/${productId}/eligibility`
     );
   }
 

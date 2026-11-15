@@ -117,4 +117,24 @@ export class BrandService {
   updateProductCount(id: number): Observable<{message: string}> {
     return this.http.patch<{message: string}>(`${this.ADMIN_API_URL}/${id}/update-count`, {});
   }
+
+  // ==================== LOGO ====================
+
+  /**
+   * Subir logo a marca
+   * POST /api/admin/brands/{id}/logo
+   */
+  uploadBrandLogo(brandId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.ADMIN_API_URL}/${brandId}/logo`, formData);
+  }
+
+  /**
+   * Eliminar logo de marca
+   * DELETE /api/admin/brands/{id}/logo
+   */
+  deleteBrandLogo(brandId: number): Observable<any> {
+    return this.http.delete<any>(`${this.ADMIN_API_URL}/${brandId}/logo`);
+  }
 }

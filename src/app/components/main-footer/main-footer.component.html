@@ -1,128 +1,97 @@
-<footer class="footer">
-  <div class="container">
-    <div class="footer-content">
+<footer class="bg-[#050505] text-gray-300 pt-16 border-t border-gray-800" style="margin-top: 80px;">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
+      
       <!-- Sección 1: Acerca de -->
-      <div class="footer-section">
-        <div class="footer-logo">
-          <img src="assets/logoP.png" alt="Casa de Música Castillo">
-          <span class="footer-logo-text">CASTILLO</span>
+      <div class="flex flex-col">
+        <div class="flex items-center gap-3 mb-6">
+          <img src="https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png" alt="Casa de Música Castillo" class="h-12 brightness-125">
+          <span class="text-2xl font-bold tracking-wider text-[#C5A059]" style="font-family: Montserrat, sans-serif;">CASTILLO</span>
         </div>
-        <p class="footer-description">
-          Tu destino para los mejores instrumentos musicales. Calidad, pasión y excelencia desde 1995.
+        <p class="text-sm leading-relaxed text-gray-400 mb-6" style="font-family: Roboto, sans-serif;">
+          Tienda de instrumentos musicales en Huejutla de Reyes, especializada en instrumentos tradicionales, accesorios y equipo musical.
         </p>
-        <div class="social-links">
-          <a href="javascript:void(0)" class="social-link" title="Facebook">
-            <span class="material-icons">facebook</span>
+        <div class="flex gap-4">
+          <a href="https://www.facebook.com/100094724658538" target="_blank" rel="noopener noreferrer" 
+             class="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center text-[#C5A059] border border-[#1A1A1A] hover:bg-[#C5A059] hover:text-black transition-all duration-300 transform hover:-translate-y-1 shadow-lg">
+            <span class="material-icons text-xl">facebook</span>
           </a>
-          <a href="javascript:void(0)" class="social-link" title="Instagram">
-            <span class="material-icons">photo_camera</span>
-          </a>
-          <a href="javascript:void(0)" class="social-link" title="Twitter">
-            <span class="material-icons">tag</span>
-          </a>
-          <a href="javascript:void(0)" class="social-link" title="YouTube">
-            <span class="material-icons">play_circle</span>
+          <a href="https://wa.me/527711258792" target="_blank" rel="noopener noreferrer" 
+             class="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center text-[#C5A059] border border-[#1A1A1A] hover:bg-[#C5A059] hover:text-black transition-all duration-300 transform hover:-translate-y-1 shadow-lg">
+            <span class="material-icons text-xl">chat</span>
           </a>
         </div>
       </div>
 
-      <!-- Sección 2: Enlaces Rápidos -->
-      <div class="footer-section">
-        <h3>
-          <span class="material-icons">menu</span>
-          Enlaces Rápidos
-        </h3>
-        <ul class="footer-links">
-          <li>
-            <a routerLink="/home">
-              <span class="material-icons">home</span>
-              Inicio
-            </a>
-          </li>
-          <li>
-            <a routerLink="/ofertas">
-              <span class="material-icons">local_offer</span>
-              Ofertas
-            </a>
-          </li>
-          <li>
-            <a routerLink="/catalogo">
-              <span class="material-icons">inventory_2</span>
-              Catálogo
-            </a>
-          </li>
-          <li>
-            <a routerLink="/servicios">
-              <span class="material-icons">build</span>
-              Servicios
-            </a>
-          </li>
-          <li>
-            <a routerLink="/ayuda">
-              <span class="material-icons">help</span>
-              Ayuda
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Sección 3: Contacto -->
-      <div class="footer-section">
-        <h3>
+      <!-- Sección 2: Contacto & Horarios -->
+      <div class="flex flex-col">
+        <h3 class="text-lg font-bold text-[#C5A059] flex items-center gap-2 mb-6" style="font-family: Montserrat, sans-serif;">
           <span class="material-icons">contact_mail</span>
-          Contacto
+          Contacto y Horarios
         </h3>
-        <ul class="contact-info">
-          <li>
-            <span class="material-icons">location_on</span>
-            <span>Av. Principal #123, Ciudad de México</span>
+        <ul class="space-y-4 text-sm text-gray-400" style="font-family: Roboto, sans-serif;">
+          <li class="flex items-start gap-3">
+            <span class="material-icons text-[#C5A059] mt-0.5 text-lg">location_on</span>
+            <span>C. Morelos 18, Centro, 43000 Huejutla de Reyes, Hgo.</span>
           </li>
-          <li>
-            <span class="material-icons">phone</span>
-            <span>+52 55 1234 5678</span>
+          <li class="flex items-start gap-3">
+            <span class="material-icons text-[#C5A059] mt-0.5 text-lg">phone</span>
+            <a href="tel:7711258792" class="hover:text-[#C5A059] transition-colors">771 125 8792</a>
           </li>
-          <li>
-            <span class="material-icons">email</span>
-            <span>info&#64;castillo.com</span>
+          <li class="flex items-start gap-3">
+            <span class="material-icons text-[#C5A059] mt-0.5 text-lg">chat</span>
+            <a href="https://wa.me/527711258792" target="_blank" rel="noopener noreferrer" class="hover:text-[#C5A059] transition-colors">+52 771 125 8792</a>
           </li>
-          <li>
-            <span class="material-icons">schedule</span>
-            <span>Lun - Sáb: 9:00 AM - 8:00 PM</span>
+          <li class="flex items-start gap-3">
+            <span class="material-icons text-[#C5A059] mt-0.5 text-lg">schedule</span>
+            <div class="flex flex-col">
+              <span>Lunes a sábado de 9:00 a.m. a 7:00 p.m.</span>
+              <span>Domingo de 10:00 a.m. a 3:00 p.m.</span>
+            </div>
           </li>
         </ul>
       </div>
 
-      <!-- Sección 4: Newsletter -->
-      <div class="footer-section">
-        <h3>
-          <span class="material-icons">mail</span>
-          Newsletter
+      <!-- Sección 3: Ubicación (Mapa embebido) -->
+      <div class="flex flex-col">
+        <h3 class="text-lg font-bold text-[#C5A059] flex items-center gap-2 mb-6" style="font-family: Montserrat, sans-serif;">
+          <span class="material-icons animate-pulse">place</span>
+          Ubicación
         </h3>
-        <p>Suscríbete para recibir ofertas exclusivas y novedades</p>
-        <div class="newsletter-form">
-          <input type="email" placeholder="Tu correo electrónico" class="newsletter-input">
-          <button class="newsletter-btn">
-            <span class="material-icons">send</span>
-            Suscribirse
-          </button>
+        
+        <div class="rounded-xl overflow-hidden shadow-lg border border-gray-800 transition-transform duration-300 hover:scale-105 hover:shadow-2xl mb-4 bg-gray-900 group">
+          <iframe 
+            title="Mapa de ubicación de Casa de Música Castillo"
+            src="https://www.google.com/maps?q=C.%20Morelos%2018,%20Centro,%2043000%20Huejutla%20de%20Reyes,%20Hgo.&output=embed" 
+            width="100%" 
+            height="180" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade"
+            class="filter grayscale-[50%] contrast-125 group-hover:grayscale-0 transition-all duration-500">
+          </iframe>
         </div>
-        <div class="payment-methods">
-          <span class="material-icons" title="Visa">credit_card</span>
-          <span class="material-icons" title="PayPal">account_balance</span>
-          <span class="material-icons" title="Efectivo">payments</span>
-        </div>
+        
+        <a href="https://www.google.com/maps/search/?api=1&query=C.%20Morelos%2018,%20Centro,%2043000%20Huejutla%20de%20Reyes,%20Hgo." 
+           target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#C5A059] to-[#D4AF6A] text-black font-bold py-2.5 px-4 rounded-lg hover:-translate-y-1 hover:shadow-[0_5px_15px_rgba(197,160,89,0.4)] transition-all duration-300 w-full text-sm"
+           style="font-family: Montserrat, sans-serif;">
+          <span class="material-icons text-lg">directions</span>
+          Cómo llegar
+        </a>
       </div>
+      
     </div>
-
-    <!-- Footer Bottom -->
-    <div class="footer-bottom">
-      <div class="footer-bottom-content">
-        <p>&copy; 2024 Casa de Música Castillo. Todos los derechos reservados.</p>
-        <div class="footer-bottom-links">
-          <a href="javascript:void(0)">Términos y Condiciones</a>
-          <a href="javascript:void(0)">Política de Privacidad</a>
-          <a href="javascript:void(0)">Política de Cookies</a>
-        </div>
+  </div>
+  
+  <!-- Footer Bottom -->
+  <div class="border-t border-[#222] py-6 text-xs text-gray-500 mt-6" style="font-family: Roboto, sans-serif; background-color: #0A0A0A;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p>&copy; 2024 Casa de Música Castillo. Todos los derechos reservados.</p>
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-sm">payments</span>
+        <span>Efectivo, tarjeta, transferencia y Mercado Pago</span>
       </div>
     </div>
   </div>

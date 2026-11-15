@@ -18,6 +18,22 @@ export interface Product {
   dimensions?: string;
   views?: number;
   salesCount?: number;
+  images?: ProductImageResponse[];
+}
+
+export interface ProductImageResponse {
+  id: number;
+  productId: number;
+  imageUrl: string;
+  publicId?: string;
+  contentType?: string;
+  fileSizeBytes?: number;
+  provider?: string;
+  isPrimary: boolean;
+  displayOrder: number;
+  altText?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Category {

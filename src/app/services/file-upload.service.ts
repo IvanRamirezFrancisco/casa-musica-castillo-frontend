@@ -19,6 +19,10 @@ export interface MultipleUploadResponse {
   errors?: string[];
 }
 
+/**
+ * @deprecated Este servicio está siendo reemplazado por los endpoints específicos de imágenes en AdminProductService y BrandService integrados con Cloudinary.
+ * No utilizar para productos ni marcas. Se mantiene temporalmente por compatibilidad residual.
+ */
 @Injectable({
   providedIn: 'root'
 })

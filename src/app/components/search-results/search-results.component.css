@@ -23,8 +23,8 @@
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
   background: transparent;
-  border: 2px solid #800020;
-  color: #800020;
+  border: 2px solid #722f37;
+  color: #722f37;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -34,7 +34,7 @@
 }
 
 .back-button:hover {
-  background: #800020;
+  background: #722f37;
   color: white;
   transform: translateX(-4px);
 }
@@ -64,7 +64,7 @@
 
 .query-text {
   font-size: 1.1rem;
-  color: #800020;
+  color: #722f37;
   font-weight: 600;
 }
 
@@ -102,7 +102,7 @@
   width: 50px;
   height: 50px;
   border: 4px solid #f0f0f0;
-  border-top: 4px solid #800020;
+  border-top: 4px solid #722f37;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -149,7 +149,7 @@
 
 .suggestions {
   text-align: left;
-  background: #f8f9fa;
+  background: #FAF8F6;
   padding: 1.5rem;
   border-radius: 12px;
   margin-bottom: 2rem;
@@ -180,7 +180,7 @@
   content: '•';
   position: absolute;
   left: 0;
-  color: #800020;
+  color: #722f37;
   font-weight: bold;
   font-size: 1.2rem;
 }
@@ -207,7 +207,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #800020, #a0002a);
+  background: linear-gradient(135deg, #722f37, #a0002a);
   color: white;
   box-shadow: 0 4px 15px rgba(128, 0, 32, 0.3);
 }
@@ -218,13 +218,13 @@
 }
 
 .btn-secondary {
-  background: white;
-  color: #800020;
-  border: 2px solid #800020;
+  background: #FDFCFB;
+  color: #722f37;
+  border: 2px solid #722f37;
 }
 
 .btn-secondary:hover {
-  background: #800020;
+  background: #722f37;
   color: white;
 }
 
@@ -247,7 +247,7 @@
    PRODUCT CARD
    =================================== */
 .product-card {
-  background: white;
+  background: #FDFCFB;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -283,7 +283,7 @@
   width: 100%;
   height: 220px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: #FAF8F6;
   cursor: pointer;
   position: relative;
 }
@@ -333,7 +333,7 @@
 }
 
 .product-name:hover {
-  color: #800020;
+  color: #722f37;
 }
 
 /* Product Meta */
@@ -444,7 +444,7 @@
 
 .price-current {
   font-size: 2rem;
-  color: #800020;
+  color: #722f37;
   font-weight: 800;
   line-height: 1;
 }
@@ -489,7 +489,7 @@
 .btn-view-detail {
   width: 100%;
   padding: 0.8rem;
-  background: linear-gradient(135deg, #800020, #a0002a);
+  background: linear-gradient(135deg, #722f37, #a0002a);
   color: white;
   border: none;
   border-radius: 8px;

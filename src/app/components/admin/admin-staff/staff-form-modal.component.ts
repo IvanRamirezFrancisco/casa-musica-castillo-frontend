@@ -1,22 +1,26 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, OnChanges, OnInit, OnDestroy, Output, SimpleChanges, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { StaffService } from '../../../services/staff.service';
-import { StaffUser, Role, CreateStaffRequest, UpdateStaffRequest } from '../../../models/staff.model';
+import { SecurityConfirmationService } from '../../../services/security-confirmation.service';
+import { StaffUser, Role, AssignableRole, CreateStaffRequest, UpdateStaffRequest } from '../../../models/staff.model';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-staff-form-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './staff-form-modal.component.html',
   styleUrls: ['./staff-form-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   encapsulation: ViewEncapsulation.None
 })
-export class StaffFormModalComponent implements OnInit, OnChanges {
+export class StaffFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isEditMode = false;
   @Input() user: StaffUser | null = null;
-  @Input() roles: Role[] = [];
+  @Input() roles: AssignableRole[] = [];
   
   @Output() close = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
@@ -27,11 +31,14 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
   selectedRoleIds: number[] = [];
   
   // Roles filtrados (sin ROLE_USER)
-  filteredRoles: Role[] = [];
+  filteredRoles: AssignableRole[] = [];
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
-    private staffService: StaffService
+    private staffService: StaffService,
+    private securityConfirmation: SecurityConfirmationService
   ) { }
 
   /** True si el usuario que está operando tiene el rol SUPER_ADMIN */
@@ -50,6 +57,65 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
     }
   }
 
+  /**
+   * True si el usuario que se está editando es el mismo que el usuario logueado.
+   * En ese caso, la asignación de roles se deshabilita (prevención de auto-edición).
+   */
+  get rolesDisabled(): boolean {
+    if (!this.isEditMode || !this.user) return false;
+    if (this.user.canChangeRoles === false) return true;
+    try {
+      const raw = localStorage.getItem('user');
+      if (!raw) return false;
+      const currentUser = JSON.parse(raw);
+      return currentUser?.id === this.user.id || currentUser?.email === this.user.email;
+    } catch {
+      return false;
+    }
+  }
+
+  get rolesDisabledReason(): string {
+    if (!this.isEditMode || !this.user) return '';
+    if (this.user.currentUser) {
+      return 'Por seguridad, no puedes modificar tus propios roles desde este formulario.';
+    }
+    if (this.user.canChangeRoles === false) {
+      return 'No tienes jerarquía suficiente para modificar los roles de este usuario.';
+    }
+    return 'Operación restringida.';
+  }
+
+  /** True si el usuario es protegido y no somos nosotros (Modo solo lectura total) */
+  get isProtectedViewOnly(): boolean {
+    if (!this.isEditMode || !this.user) return false;
+    return !!this.user.protectedOwner && !this.user.currentUser;
+  }
+
+  /** True si no se puede editar ni datos ni roles */
+  get isCompletelyReadOnly(): boolean {
+    if (!this.isEditMode || !this.user) return false;
+    return this.isProtectedViewOnly || (this.user.canEdit === false && this.user.canChangeRoles === false);
+  }
+
+  /** Verifica si ha habido cambios en el formulario para habilitar el botón */
+  hasChanges(): boolean {
+    if (!this.isEditMode) return true;
+    if (this.staffForm.dirty) return true;
+    
+    // Comparar roles si están permitidos
+    if (!this.rolesDisabled && this.user) {
+      const originalRoles = this.user.rolesDetail?.map(r => r.id) || 
+                            (this.user.roles ? this.roles.filter(r => this.user!.roles!.some(ur => ur.name === r.name)).map(r => r.id) : []);
+      if (originalRoles.length !== this.selectedRoleIds.length) return true;
+      const sortedOriginal = [...originalRoles].sort();
+      const sortedSelected = [...this.selectedRoleIds].sort();
+      for (let i = 0; i < sortedOriginal.length; i++) {
+        if (sortedOriginal[i] !== sortedSelected[i]) return true;
+      }
+    }
+    return false;
+  }
+
   ngOnInit(): void {
     this.filterRoles();
     this.initializeForm();
@@ -65,10 +131,7 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
       this.filterRoles();
       // Re-cargar selección de roles si estamos en modo edición
       if (this.isEditMode && this.user) {
-        const userRoleNames = this.user.roles.map(r => r.name);
-        this.selectedRoleIds = this.roles
-          .filter(r => userRoleNames.includes(r.name))
-          .map(r => r.id);
+        this.populateSelectedRoles();
       }
     }
   }
@@ -90,8 +153,8 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
    */
   private initializeForm(): void {
     this.staffForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
-      lastName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
+      firstName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/)]],
+      lastName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', this.isEditMode ? [] : [
         Validators.required,
@@ -113,12 +176,22 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
         email: this.user.email
       });
 
-      // Mapear los roles del usuario a IDs reales usando el catálogo de roles
-      // (los roles del usuario pueden tener id=0 si vinieron como string del backend)
+      this.populateSelectedRoles();
+    }
+  }
+
+  private populateSelectedRoles(): void {
+    if (!this.user) return;
+
+    if (this.user.rolesDetail && this.user.rolesDetail.length > 0) {
+      this.selectedRoleIds = this.user.rolesDetail.map(r => r.id);
+    } else if (this.user.roles && this.user.roles.length > 0) {
       const userRoleNames = this.user.roles.map(r => r.name);
       this.selectedRoleIds = this.roles
         .filter(r => userRoleNames.includes(r.name))
         .map(r => r.id);
+    } else {
+      this.selectedRoleIds = [];
     }
   }
 
@@ -137,9 +210,12 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Toggle selección de rol
+   * Toggle selección de rol.
+   * Bloqueado si se está editando a sí mismo (prevención de auto-edición de roles).
    */
   toggleRole(roleId: number): void {
+    if (this.rolesDisabled) return; // Protección contra edición de roles
+
     const index = this.selectedRoleIds.indexOf(roleId);
     
     if (index > -1) {
@@ -214,16 +290,43 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
   /**
    * Guardar (crear o actualizar)
    */
-  onSubmit(): void {
-    if (this.staffForm.invalid) {
+  async onSubmit(): Promise<void> {
+    if (this.staffForm.invalid && !this.isCompletelyReadOnly) {
       this.markFormGroupTouched(this.staffForm);
       return;
     }
 
-    if (this.selectedRoleIds.length === 0) {
+    if (!this.rolesDisabled && this.selectedRoleIds.length === 0) {
       this.errorMessage = 'Debe seleccionar al menos un rol';
       return;
     }
+
+    // --- Validación de Seguridad Extra para PROTECTED_OWNER ---
+    if (!this.rolesDisabled) {
+      const originalRoleIds = this.isEditMode && this.user ? 
+        (this.user.rolesDetail?.map(r => r.id) || 
+         this.roles.filter(r => this.user!.roles?.some(ur => ur.name === r.name)).map(r => r.id)) : 
+        [];
+      
+      const changes = this.securityConfirmation.detectCriticalRoleChanges(
+        originalRoleIds,
+        this.selectedRoleIds,
+        this.roles
+      );
+
+      if (changes.isCritical) {
+        const formValue = this.staffForm.value;
+        const userAffected = {
+          fullName: `${formValue.firstName} ${formValue.lastName}`,
+          email: formValue.email
+        };
+        const confirmed = await this.securityConfirmation.confirmCriticalRoleAction(userAffected, changes);
+        if (!confirmed) {
+          return; // Detener guardado si se cancela
+        }
+      }
+    }
+    // ------------------------------------------------------------
 
     this.loading = true;
     this.errorMessage = '';
@@ -249,7 +352,7 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
       roleIds: this.selectedRoleIds
     };
 
-    this.staffService.createStaff(request).subscribe({
+    this.staffService.createStaff(request).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.loading = false;
         Swal.fire({
@@ -280,16 +383,22 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
     const request: UpdateStaffRequest = {
       firstName: formValue.firstName,
       lastName: formValue.lastName,
-      email: formValue.email,
-      roleIds: this.selectedRoleIds
+      email: formValue.email
     };
+
+    // Solo enviar roles si no somos currentUser, tenemos canChangeRoles y no es protectedOwner (al menos no ajeno)
+    if (this.user.canChangeRoles === true && !this.user.currentUser && !this.isProtectedViewOnly) {
+      // Filtrar y enviar SOLO roles que existen en assignableRoles
+      const validIds = this.roles.map(r => r.id);
+      request.roleIds = this.selectedRoleIds.filter(id => validIds.includes(id));
+    }
 
     // Solo incluir password si fue ingresado
     if (formValue.password) {
       request.password = formValue.password;
     }
 
-    this.staffService.updateStaff(this.user.id, request).subscribe({
+    this.staffService.updateStaff(this.user.id, request).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.loading = false;
         Swal.fire({
@@ -332,6 +441,11 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
     this.close.emit();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   /**
    * Obtener mensaje de error para un campo
    */
@@ -360,7 +474,7 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
         return 'Debe tener mayúscula, minúscula, número y carácter especial (@$!%*?&#...)';
       }
       if (fieldName === 'firstName' || fieldName === 'lastName') {
-        return 'Solo se permiten letras y espacios';
+        return 'Solo se permiten letras, números y espacios';
       }
     }
 

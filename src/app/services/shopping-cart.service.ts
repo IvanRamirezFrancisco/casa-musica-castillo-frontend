@@ -12,9 +12,21 @@ import {
   ApiResponse
 } from '../models/cart.model';
 
+// FASE 1 - Carrito - 2026-05-15
+// Este servicio ha sido reemplazado por CartService (cart.service.ts).
+// Se mantiene temporalmente para evitar romper imports legacy.
+
 /**
- * Servicio para gestionar el carrito de compras
- * Consume los 13 endpoints de ShoppingCartController del backend
+ * @deprecated Use CartService from cart.service.ts.
+ *
+ * Este servicio no está conectado a ningún componente activo de usuario.
+ * Contiene métodos que apuntan a endpoints no existentes en el backend:
+ *   - getCartById()  → GET  /api/cart/{cartId}       ❌
+ *   - getAbandonedCarts() → GET /api/cart/abandoned   ❌
+ *   - checkout()     → POST /api/cart/{cartId}/checkout ❌
+ *
+ * La migración de admin-abandoned-carts a un endpoint real queda pendiente.
+ * TODO Fase futura: implementar endpoint backend GET /api/admin/carts/abandoned.
  */
 @Injectable({
   providedIn: 'root'
@@ -61,11 +73,12 @@ export class ShoppingCartService {
   }
 
   /**
-   * Agregar producto al carrito
-   * POST /api/cart/{cartId}/items
+   * Agregar producto al carrito del usuario autenticado
+   * POST /api/cart/items
+   * SEGURIDAD: El backend deriva el carrito del JWT, no se envía cartId
    */
-  addToCart(cartId: number, request: AddToCartRequest): Observable<ShoppingCartDTO> {
-    return this.http.post<ShoppingCartDTO>(`${this.API_URL}/${cartId}/items`, request).pipe(
+  addToCart(request: AddToCartRequest): Observable<ShoppingCartDTO> {
+    return this.http.post<ShoppingCartDTO>(`${this.API_URL}/items`, request).pipe(
       tap(cart => {
         this.cartSubject.next(cart);
         this.cartCountSubject.next(cart.itemCount);
@@ -100,11 +113,12 @@ export class ShoppingCartService {
   }
 
   /**
-   * Vaciar el carrito completamente
-   * DELETE /api/cart/{cartId}/clear
+   * Vaciar el carrito del usuario autenticado
+   * DELETE /api/cart
+   * SEGURIDAD: El backend deriva el carrito del JWT
    */
-  clearCart(cartId: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/${cartId}/clear`).pipe(
+  clearCart(): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}`).pipe(
       tap(() => {
         this.cartSubject.next(null);
         this.cartCountSubject.next(0);
@@ -113,11 +127,12 @@ export class ShoppingCartService {
   }
 
   /**
-   * Aplicar cupón de descuento
-   * POST /api/cart/{cartId}/coupon
+   * Aplicar cupón de descuento al carrito del usuario autenticado
+   * POST /api/cart/coupon
+   * SEGURIDAD: El backend deriva el carrito del JWT
    */
-  applyCoupon(cartId: number, request: ApplyCouponRequest): Observable<ShoppingCartDTO> {
-    return this.http.post<ShoppingCartDTO>(`${this.API_URL}/${cartId}/coupon`, request).pipe(
+  applyCoupon(request: ApplyCouponRequest): Observable<ShoppingCartDTO> {
+    return this.http.post<ShoppingCartDTO>(`${this.API_URL}/coupon`, request).pipe(
       tap(cart => {
         this.cartSubject.next(cart);
       })
@@ -125,11 +140,12 @@ export class ShoppingCartService {
   }
 
   /**
-   * Remover cupón aplicado
-   * DELETE /api/cart/{cartId}/coupon
+   * Remover cupón aplicado del carrito del usuario autenticado
+   * DELETE /api/cart/coupon
+   * SEGURIDAD: El backend deriva el carrito del JWT
    */
-  removeCoupon(cartId: number): Observable<ShoppingCartDTO> {
-    return this.http.delete<ShoppingCartDTO>(`${this.API_URL}/${cartId}/coupon`).pipe(
+  removeCoupon(): Observable<ShoppingCartDTO> {
+    return this.http.delete<ShoppingCartDTO>(`${this.API_URL}/coupon`).pipe(
       tap(cart => {
         this.cartSubject.next(cart);
       })
@@ -138,10 +154,11 @@ export class ShoppingCartService {
 
   /**
    * Validar carrito antes del checkout
-   * GET /api/cart/{cartId}/validate
+   * GET /api/cart/validate
+   * SEGURIDAD: El backend deriva el carrito del JWT
    */
-  validateCart(cartId: number): Observable<CartValidationResponse> {
-    return this.http.get<CartValidationResponse>(`${this.API_URL}/${cartId}/validate`);
+  validateCart(): Observable<CartValidationResponse> {
+    return this.http.get<CartValidationResponse>(`${this.API_URL}/validate`);
   }
 
   /**

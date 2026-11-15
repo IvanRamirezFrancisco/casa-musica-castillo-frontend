@@ -1,8 +1,8 @@
 import { Router } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { GoogleAuthService } from '../google-auth.service';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 
 
@@ -11,7 +11,8 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './google-auth-setup.component.html',
   styleUrls: ['./google-auth-setup.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [FormsModule]
 })
 
 export class GoogleAuthSetupComponent implements OnInit {

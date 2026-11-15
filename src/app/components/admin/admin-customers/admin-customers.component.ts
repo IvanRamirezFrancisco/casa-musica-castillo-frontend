@@ -1,13 +1,15 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 import { CustomerService } from '../../../services/customer.service';
 import { CustomerUser, CustomerFilters } from '../../../models/customer.model';
 import { PageResponse } from '../../../models/staff.model';
 import { OrderService } from '../../../services/order.service';
+import { AuthService } from '../../../services/auth.service';
 import { Order } from '../../../models/order.model';
-import { catchError } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import Swal from 'sweetalert2';
 
@@ -31,11 +33,13 @@ const ErrorToast = Swal.mixin({
   imports: [CommonModule, FormsModule, CurrencyPipe],
   templateUrl: './admin-customers.component.html',
   styleUrls: ['./admin-customers.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   encapsulation: ViewEncapsulation.Emulated
 })
-export class AdminCustomersComponent implements OnInit {
+export class AdminCustomersComponent implements OnInit, OnDestroy {
 
   Math = Math;
+  private destroy$ = new Subject<void>();
 
   // ── Estado del listado ────────────────────────────────────────────────────
   private _customerList: CustomerUser[] = [];
@@ -75,6 +79,7 @@ export class AdminCustomersComponent implements OnInit {
     this.loadingPedidos      = true;
 
     this.orderService.getOrdersByCustomer(cliente.id, 0, 5).pipe(
+      takeUntil(this.destroy$),
       catchError((err) => {
         ErrorToast.fire({ title: err?.error?.message ?? 'No se pudieron cargar los pedidos.' });
         this.pedidosDelCliente = [];
@@ -92,6 +97,7 @@ export class AdminCustomersComponent implements OnInit {
   constructor(
     private customerService: CustomerService,
     private orderService: OrderService,
+    public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) { }
@@ -99,7 +105,7 @@ export class AdminCustomersComponent implements OnInit {
   ngOnInit(): void {
     this.loadCustomers();
 
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const action = params['action'];
       if (action === 'export') {
         this.exportToCsv();
@@ -117,6 +123,11 @@ export class AdminCustomersComponent implements OnInit {
       queryParams: { action: null },
       queryParamsHandling: 'merge'
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // ── Carga de datos ────────────────────────────────────────────────────────
@@ -137,7 +148,7 @@ export class AdminCustomersComponent implements OnInit {
       sortDir: 'desc'
     };
 
-    this.customerService.getAllCustomers(filters).subscribe({
+    this.customerService.getAllCustomers(filters).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response: PageResponse<CustomerUser>) => {
         this.customerList = response.content ?? [];
         this.totalElements = response.totalElements ?? 0;
@@ -152,7 +163,7 @@ export class AdminCustomersComponent implements OnInit {
           icon: 'error',
           title: 'Error',
           text: 'No se pudo cargar la lista de clientes',
-          confirmButtonColor: '#800020'
+          confirmButtonColor: '#722f37'
         });
       }
     });
@@ -222,7 +233,7 @@ export class AdminCustomersComponent implements OnInit {
     const newState = !customer.enabled;
     const action = newState ? 'activar' : 'desactivar';
     const actionPP = newState ? 'activado' : 'desactivado';
-    const iconColor = newState ? '#28a745' : '#800020';
+    const iconColor = newState ? '#28a745' : '#722f37';
 
     Swal.fire({
       title: `¿${action.charAt(0).toUpperCase() + action.slice(1)} cliente?`,
@@ -236,7 +247,7 @@ export class AdminCustomersComponent implements OnInit {
     }).then(result => {
       if (!result.isConfirmed) return;
 
-      this.customerService.toggleEnabled(customer.id).subscribe({
+      this.customerService.toggleEnabled(customer.id).pipe(takeUntil(this.destroy$)).subscribe({
         next: (res) => {
           // Actualizar el objeto local directamente
           const idx = this.customerList.findIndex(c => c.id === customer.id);
@@ -247,7 +258,7 @@ export class AdminCustomersComponent implements OnInit {
             icon: 'success',
             title: `Cliente ${actionPP}`,
             text: `La cuenta de ${customer.firstName} ${customer.lastName} ha sido ${actionPP} exitosamente.`,
-            confirmButtonColor: '#800020',
+            confirmButtonColor: '#722f37',
             timer: 2500,
             timerProgressBar: true
           });
@@ -258,7 +269,7 @@ export class AdminCustomersComponent implements OnInit {
             icon: 'error',
             title: 'Error',
             text: err?.error?.message ?? 'No se pudo cambiar el estado del cliente.',
-            confirmButtonColor: '#800020'
+            confirmButtonColor: '#722f37'
           });
         }
       });
@@ -286,7 +297,7 @@ export class AdminCustomersComponent implements OnInit {
     }).then(result => {
       if (!result.isConfirmed) return;
 
-      this.customerService.toggleLocked(customer.id).subscribe({
+      this.customerService.toggleLocked(customer.id).pipe(takeUntil(this.destroy$)).subscribe({
         next: (res) => {
           const idx = this.customerList.findIndex(c => c.id === customer.id);
           if (idx !== -1) {
@@ -296,7 +307,7 @@ export class AdminCustomersComponent implements OnInit {
             icon: 'success',
             title: `Cuenta ${actionPP}`,
             text: `La cuenta de ${customer.firstName} ${customer.lastName} ha sido ${actionPP} exitosamente.`,
-            confirmButtonColor: '#800020',
+            confirmButtonColor: '#722f37',
             timer: 2500,
             timerProgressBar: true
           });
@@ -307,7 +318,7 @@ export class AdminCustomersComponent implements OnInit {
             icon: 'error',
             title: 'Error',
             text: err?.error?.message ?? 'No se pudo cambiar el estado de la cuenta.',
-            confirmButtonColor: '#800020'
+            confirmButtonColor: '#722f37'
           });
         }
       });
@@ -323,14 +334,14 @@ export class AdminCustomersComponent implements OnInit {
       html: `Se desbloquearán los intentos fallidos de <strong>${customer.firstName} ${customer.lastName}</strong> y su cuenta será desbloqueada.`,
       icon: 'info',
       showCancelButton: true,
-      confirmButtonColor: '#800020',
+      confirmButtonColor: '#722f37',
       cancelButtonColor: '#6c757d',
       confirmButtonText: 'Sí, resetear',
       cancelButtonText: 'Cancelar'
     }).then(result => {
       if (!result.isConfirmed) return;
 
-      this.customerService.resetFailedAttempts(customer.id).subscribe({
+      this.customerService.resetFailedAttempts(customer.id).pipe(takeUntil(this.destroy$)).subscribe({
         next: (res) => {
           const idx = this.customerList.findIndex(c => c.id === customer.id);
           if (idx !== -1) {
@@ -341,7 +352,7 @@ export class AdminCustomersComponent implements OnInit {
             icon: 'success',
             title: 'Intentos reseteados',
             text: 'Los intentos fallidos han sido reseteados y la cuenta desbloqueada.',
-            confirmButtonColor: '#800020',
+            confirmButtonColor: '#722f37',
             timer: 2500,
             timerProgressBar: true
           });
@@ -370,6 +381,7 @@ export class AdminCustomersComponent implements OnInit {
       if (!result.isConfirmed) return;
 
       this.customerService.sendPasswordReset(customer.email).pipe(
+        takeUntil(this.destroy$),
         catchError((err) => {
           ErrorToast.fire({ title: err?.error?.message ?? 'No se pudo enviar el correo de recuperación.' });
           return EMPTY;
@@ -379,7 +391,7 @@ export class AdminCustomersComponent implements OnInit {
           icon: 'success',
           title: 'Correo enviado',
           html: `Se envió el enlace de recuperación a <strong>${customer.email}</strong>.`,
-          confirmButtonColor: '#800020',
+          confirmButtonColor: '#722f37',
           timer: 3000,
           timerProgressBar: true
         });
@@ -409,7 +421,7 @@ export class AdminCustomersComponent implements OnInit {
       didOpen: () => Swal.showLoading()
     });
 
-    this.customerService.exportToCsv(this.searchTerm || undefined).subscribe({
+    this.customerService.exportToCsv(this.searchTerm || undefined).pipe(takeUntil(this.destroy$)).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -421,7 +433,7 @@ export class AdminCustomersComponent implements OnInit {
           icon: 'success',
           title: 'Exportado',
           text: 'El archivo CSV fue generado exitosamente.',
-          confirmButtonColor: '#800020',
+          confirmButtonColor: '#722f37',
           timer: 2000,
           timerProgressBar: true
         });
@@ -431,7 +443,7 @@ export class AdminCustomersComponent implements OnInit {
           icon: 'error',
           title: 'Error',
           text: 'No se pudo generar el archivo CSV.',
-          confirmButtonColor: '#800020'
+          confirmButtonColor: '#722f37'
         });
       }
     });
@@ -453,7 +465,7 @@ export class AdminCustomersComponent implements OnInit {
    */
   getAvatarColor(id: number): string {
     const colors = [
-      '#800020', '#9B2335', '#B5442A', '#7B3F00',
+      '#722f37', '#9B2335', '#B5442A', '#7B3F00',
       '#5C4033', '#4A235A', '#1A5276', '#0E6655'
     ];
     return colors[id % colors.length];

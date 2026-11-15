@@ -4,14 +4,14 @@
    con encapsulación Emulated.
    ═══════════════════════════════════════════════════════════════ */
 :root {
-  --wine:      #800020;
+  --wine:      #722f37;
   --wine-dark: #600018;
   --wine-deep: #4a0012;
   --gold:      #D4A347;
   --gold-dark: #B8903D;
 }
 :host {
-  --wine:      #800020;
+  --wine:      #722f37;
   --wine-dark: #600018;
   --wine-deep: #4a0012;
   --gold:      #D4A347;
@@ -42,7 +42,7 @@
 :host .btn-tinto,
 button.btn-wine,
 button.btn-tinto {
-  background: linear-gradient(135deg, #800020 0%, #600018 100%) !important;
+  background: linear-gradient(135deg, #722f37 0%, #600018 100%) !important;
   border-color: transparent !important;
   color: #ffffff !important;
 }
@@ -160,7 +160,7 @@ button.btn-tinto {
   height: 32px;
   min-width: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #800020 0%, #D4A347 100%);
+  background: linear-gradient(135deg, #722f37 0%, #D4A347 100%);
   color: #ffffff !important;
   display: flex;
   align-items: center;
@@ -260,11 +260,11 @@ button.btn-tinto {
   box-shadow: 0 3px 8px rgba(0,0,0,0.12);
 }
 .accion-edit {
-  color: #800020;
-  border-color: #800020;
+  color: #722f37;
+  border-color: #722f37;
 }
 .accion-edit:hover {
-  background-color: #800020;
+  background-color: #722f37;
   color: #fff;
 }
 .accion-delete {
@@ -308,7 +308,7 @@ button.btn-tinto {
   letter-spacing: 0.2px;
 }
 .footer-count strong {
-  color: #800020;
+  color: #722f37;
   font-weight: 700;
 }
 
@@ -321,7 +321,7 @@ button.btn-tinto {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #ffffff;
+  background: #FDFCFB;
   border: 1px solid #dee2e6;
   border-radius: 10px;
   padding: 4px;
@@ -347,14 +347,14 @@ button.btn-tinto {
 }
 .page-btn:hover:not(:disabled) {
   background-color: rgba(128, 0, 32, 0.08);
-  color: #800020;
+  color: #722f37;
   transform: translateY(-1px);
 }
 .page-btn:active:not(:disabled) {
   transform: translateY(0);
 }
 .page-btn-active {
-  background: linear-gradient(135deg, #800020 0%, #600018 100%) !important;
+  background: linear-gradient(135deg, #722f37 0%, #600018 100%) !important;
   color: #ffffff !important;
   box-shadow: 0 3px 10px rgba(128, 0, 32, 0.35);
 }
@@ -364,7 +364,7 @@ button.btn-tinto {
   transform: translateY(-1px);
 }
 .page-btn-nav {
-  color: #800020;
+  color: #722f37;
 }
 .page-btn-nav:disabled {
   color: #ced4da;
@@ -403,6 +403,231 @@ button.btn-tinto {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   TABS: Empleados / Invitaciones
+   ═══════════════════════════════════════════════════════════════ */
+.staff-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #FDFCFB;
+  border: 1px solid #E8E2DC;
+  border-radius: 12px;
+  padding: 5px;
+  box-shadow: 0 2px 8px rgba(128, 0, 32, 0.06);
+}
+
+.staff-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.45rem 1.1rem;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #6c757d;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.staff-tab:hover:not(.active) {
+  background: rgba(128, 0, 32, 0.06);
+  color: #722f37;
+}
+
+.staff-tab.active {
+  background: linear-gradient(135deg, #722f37 0%, #600018 100%);
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(128, 0, 32, 0.3);
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.staff-tab:not(.active) .tab-badge {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.staff-tab.active .tab-badge {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.tab-spacer {
+  flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Invitation status badges
+   ═══════════════════════════════════════════════════════════════ */
+.badge-inv-pending {
+  background-color: #fff3cd;
+  color: #664d03;
+  border: 1px solid #ffda6a;
+}
+
+.badge-inv-accepted {
+  background-color: #d1e7dd;
+  color: #0a3622;
+  border: 1px solid #a3cfbb;
+}
+
+.badge-inv-expired {
+  background-color: #e2e3e5;
+  color: #41464b;
+  border: 1px solid #c4c8cb;
+}
+
+.badge-inv-cancelled {
+  background-color: #f8d7da;
+  color: #58151c;
+  border: 1px solid #f1aeb5;
+}
+
+/* ── Avatar pendiente (más tenue) ── */
+.avatar-circle--pending {
+  background: linear-gradient(135deg, #999 0%, #bbb 100%) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ── Botón de reenviar ── */
+.accion-resend {
+  color: #C5A059;
+  border-color: #C5A059;
+}
+.accion-resend:hover {
+  background-color: #C5A059;
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Modal de INVITACIÓN
+   ═══════════════════════════════════════════════════════════════ */
+.invite-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: staffOverlayIn 0.2s ease;
+}
+
+.invite-modal-panel {
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  background: #FDFCFB;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: staffPanelIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.invite-modal-header {
+  background: linear-gradient(135deg, #722f37 0%, #600018 100%);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.invite-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.invite-modal-footer {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #E8E2DC;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* ── Info banner ── */
+.invite-info-banner {
+  background: linear-gradient(135deg, rgba(197, 160, 89, 0.12) 0%, rgba(114, 47, 55, 0.06) 100%);
+  border: 1px solid #E8E2DC;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  color: #495057;
+}
+
+.invite-info-banner i {
+  color: #C5A059;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+/* ── Roles grid ── */
+.invite-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.invite-role-card {
+  border: 1.5px solid #E8E2DC;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  background: #FDFCFB;
+}
+
+.invite-role-card:hover:not(.locked) {
+  border-color: #722f37;
+  background: rgba(114, 47, 55, 0.03);
+}
+
+.invite-role-card.selected {
+  border-color: #722f37;
+  background: rgba(114, 47, 55, 0.08);
+  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.15);
+}
+
+.invite-role-card.selected .form-check-input {
+  background-color: #722f37;
+  border-color: #722f37;
+}
+
+.invite-role-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Email status ── */
+.email-status {
+  min-height: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    Modal Staff — brand-modal-* overlay + panel personalizado
    ═══════════════════════════════════════════════════════════════ */
 
@@ -432,7 +657,7 @@ button.btn-tinto {
   width: 100%;
   max-width: 720px;
   max-height: 90vh;
-  background: #ffffff;
+  background: #FDFCFB;
   border-radius: 20px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
   display: flex;
@@ -479,4 +704,107 @@ button.btn-tinto {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FILTER BAR  (glassmorphism, per-tab)
+   ═══════════════════════════════════════════════════════════════ */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  background: rgba(253, 252, 251, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(232, 226, 220, 0.9);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(114, 47, 55, 0.06), 0 1px 3px rgba(0,0,0,0.03);
+}
+
+/* Search field wrapper */
+.filter-search-wrap {
+  position: relative;
+  flex: 1 1 220px;
+}
+
+.filter-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 0.52rem 0.9rem 0.52rem 2.2rem;
+  background: #fff;
+  border: 1.5px solid #E8E2DC;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #212529;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.filter-input::placeholder { color: #b0b0b0; }
+
+.filter-input:focus {
+  border-color: #722f37;
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.09);
+}
+
+/* Flat custom select */
+.filter-select {
+  flex: 0 1 auto;
+  min-width: 148px;
+  padding: 0.52rem 2rem 0.52rem 0.85rem;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239ca3af' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 0.7rem center;
+  background-size: 12px;
+  border: 1.5px solid #E8E2DC;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #374151;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.filter-select:focus {
+  border-color: #722f37;
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.09);
+}
+
+/* Circular reset button */
+.filter-reset-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid #E8E2DC;
+  background: #fff;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.filter-reset-btn svg { width: 16px; height: 16px; }
+
+.filter-reset-btn:hover {
+  background: #722f37;
+  border-color: #722f37;
+  color: #fff;
+  transform: rotate(-30deg);
+  box-shadow: 0 3px 10px rgba(114, 47, 55, 0.28);
 }

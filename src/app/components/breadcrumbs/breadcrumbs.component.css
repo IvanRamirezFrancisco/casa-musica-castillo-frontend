@@ -59,23 +59,23 @@
 
 .breadcrumb-link:hover {
   background: rgba(128, 0, 32, 0.08);
-  color: #800020;
+  color: #722f37;
   transform: translateY(-1px);
 }
 
 .breadcrumb-link:hover .material-icons {
-  color: #800020;
+  color: #722f37;
   transform: scale(1.1);
 }
 
 /* Estilo especial para Home */
 .home-link {
   background: rgba(128, 0, 32, 0.05);
-  color: #800020;
+  color: #722f37;
 }
 
 .home-link:hover {
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: #F5F5F5;
   box-shadow: 0 4px 12px rgba(128, 0, 32, 0.2);
 }
@@ -86,7 +86,7 @@
 
 /* Breadcrumb actual (último) */
 .breadcrumb-item.active .breadcrumb-current {
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: #F5F5F5;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(128, 0, 32, 0.3);
@@ -121,7 +121,7 @@
 }
 
 .breadcrumb-item:hover + .breadcrumb-item .breadcrumb-separator {
-  color: #800020;
+  color: #722f37;
   transform: translateX(2px);
 }
 
@@ -203,7 +203,7 @@
 
 /* Focus para navegación con teclado */
 .breadcrumb-link:focus {
-  outline: 2px solid #800020;
+  outline: 2px solid #722f37;
   outline-offset: 2px;
   border-radius: 8px;
 }

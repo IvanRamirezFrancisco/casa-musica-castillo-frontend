@@ -13,9 +13,21 @@ export const sanitizationInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     map(response => {
       // Solo sanitizar respuestas HTTP con cuerpo de datos
-      if (response instanceof HttpResponse && response.body && typeof response.body === 'object') {
-        const sanitizedBody = sanitizeObject(response.body, sanitizationService);
-        return response.clone({ body: sanitizedBody });
+      if (response instanceof HttpResponse && response.body) {
+        // Ignorar descargas de archivos y contenido binario
+        if (
+          response.body instanceof Blob ||
+          response.body instanceof File ||
+          response.body instanceof ArrayBuffer ||
+          response.body instanceof FormData
+        ) {
+          return response;
+        }
+
+        if (typeof response.body === 'object') {
+          const sanitizedBody = sanitizeObject(response.body, sanitizationService);
+          return response.clone({ body: sanitizedBody });
+        }
       }
       return response;
     }),
@@ -54,8 +66,8 @@ function sanitizeObject(obj: any, sanitizationService: SanitizationService): any
     Object.keys(obj).forEach(key => {
       // No sanitizar campos sensibles como tokens, passwords, etc.
       const skipSanitization = [
-        'accessToken', 'refreshToken', 'token', 'password', 'hash',
-        'signature', 'secret', 'key', 'id', 'uuid', 'timestamp'
+        'accesstoken', 'refreshtoken', 'token', 'password', 'hash',
+        'preauthchallenge', 'signature', 'secret', 'key', 'id', 'uuid', 'timestamp'
       ];
       
       if (skipSanitization.includes(key.toLowerCase())) {

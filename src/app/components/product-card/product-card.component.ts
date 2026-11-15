@@ -1,9 +1,18 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnDestroy
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { Product } from '../../models/product.model';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
+import { WishlistService } from '../../services/wishlist.service';
 
 @Component({
   selector: 'app-product-card',
@@ -12,64 +21,107 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './product-card.component.html',
   styleUrls: ['./product-card.component.css']
 })
-export class ProductCardComponent implements OnInit {
+export class ProductCardComponent implements OnInit, OnDestroy {
+
   @Input() product!: Product;
   @Input() showStockQuantity = false;
-  @Output() productClick = new EventEmitter<Product>();
-  @Output() quickViewClick = new EventEmitter<Product>();
-  @Output() favoriteToggle = new EventEmitter<{ product: Product, isFavorite: boolean }>();
+  @Output() productClick    = new EventEmitter<Product>();
+  @Output() quickViewClick  = new EventEmitter<Product>();
+  @Output() favoriteToggle  = new EventEmitter<{ product: Product; isFavorite: boolean }>();
 
-  isInCart = false;
-  cartQuantity = 0;
-  addingToCart = false;
-  isFavorite = false;
+  isInCart      = false;
+  cartQuantity  = 0;
+  addingToCart  = false;
+
+  // ── Wishlist state ─────────────────────────────────────────────────────────
+  isFavorite      = false;
+  togglingFav     = false;  // previene doble click
+  showFavAlert    = false;  // alerta "inicia sesión"
+  private favSub?: Subscription;
+  private cartSub?: Subscription;
 
   constructor(
-    private cartService: CartService,
-    private authService: AuthService,
-    private router: Router
+    private cartService:     CartService,
+    private authService:     AuthService,
+    private wishlistService: WishlistService,
+    private router:          Router
   ) {}
 
   ngOnInit(): void {
     this.updateCartStatus();
-    this.loadFavoriteStatus();
-    
+
+    // Suscribirse al estado de la wishlist (reactivo desde el BehaviorSubject)
+    this.favSub = this.wishlistService.isInWishlist$(this.product.id)
+      .subscribe(inWishlist => {
+        this.isFavorite = inWishlist;
+      });
+
     // Suscribirse a cambios en el carrito
-    this.cartService.cartItems$.subscribe(() => {
+    this.cartSub = this.cartService.cartItems$.subscribe(() => {
       this.updateCartStatus();
     });
   }
 
-  // Ver producto completo
+  ngOnDestroy(): void {
+    this.favSub?.unsubscribe();
+    this.cartSub?.unsubscribe();
+  }
+
+  // ── Ver producto ───────────────────────────────────────────────────────────
+
   viewProduct(): void {
     this.productClick.emit(this.product);
   }
 
-  // Vista rápida del producto
   quickView(event: Event): void {
     event.stopPropagation();
     this.quickViewClick.emit(this.product);
   }
 
-  // Toggle favorito
+  // ── Toggle favorito ────────────────────────────────────────────────────────
+
   toggleFavorite(event: Event): void {
     event.stopPropagation();
-    this.isFavorite = !this.isFavorite;
-    this.saveFavoriteStatus();
-    this.favoriteToggle.emit({ 
-      product: this.product, 
-      isFavorite: this.isFavorite 
+
+    // Verificar autenticación
+    if (!this.authService.isAuthenticated()) {
+      this.showLoginAlert();
+      return;
+    }
+
+    if (this.togglingFav) return;
+    this.togglingFav = true;
+
+    this.wishlistService.toggle(this.product.id).subscribe({
+      next: (inWishlist) => {
+        this.favoriteToggle.emit({ product: this.product, isFavorite: inWishlist });
+        this.togglingFav = false;
+      },
+      error: (err) => {
+        console.error('[ProductCard] Error en toggle wishlist:', err);
+        this.togglingFav = false;
+      }
     });
   }
 
-  // Agregar/Quitar del carrito
+  /** Muestra alerta amigable y redirige al login */
+  private showLoginAlert(): void {
+    this.showFavAlert = true;
+    setTimeout(() => {
+      this.showFavAlert = false;
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url }
+      });
+    }, 2000);
+  }
+
+  // ── Carrito ────────────────────────────────────────────────────────────────
+
   toggleCart(): void {
     if (this.addingToCart || !this.product.inStock) return;
 
-    // Verificar si el usuario está logueado
     this.authService.isLoggedIn$.subscribe(isLoggedIn => {
       if (!isLoggedIn) {
-        // Redirigir al login si no está autenticado
         this.router.navigate(['/login'], {
           queryParams: { returnUrl: this.router.url }
         });
@@ -78,7 +130,6 @@ export class ProductCardComponent implements OnInit {
 
       this.addingToCart = true;
 
-      // Simular tiempo de carga
       setTimeout(() => {
         if (this.isInCart) {
           this.cartService.removeFromCart(this.product.id);
@@ -87,111 +138,53 @@ export class ProductCardComponent implements OnInit {
         }
         this.addingToCart = false;
       }, 300);
-    }).unsubscribe(); // Unsubscribe inmediatamente ya que solo necesitamos el valor actual
+    }).unsubscribe();
   }
 
-  // Aumentar cantidad
   increaseQuantity(): void {
     if (this.cartQuantity < this.product.stockQuantity) {
       this.cartService.updateQuantity(this.product.id, this.cartQuantity + 1);
     }
   }
 
-  // Disminuir cantidad
   decreaseQuantity(): void {
     if (this.cartQuantity > 1) {
       this.cartService.updateQuantity(this.product.id, this.cartQuantity - 1);
     }
   }
 
-  // Obtener estrellas para el rating
+  // ── Helpers de vista ───────────────────────────────────────────────────────
+
   getStars(): boolean[] {
     const stars: boolean[] = [];
     const fullStars = Math.floor(this.product.rating);
     const hasHalfStar = this.product.rating % 1 !== 0;
 
-    // Agregar estrellas llenas
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(true);
-    }
-
-    // Agregar media estrella si es necesario
-    if (hasHalfStar && stars.length < 5) {
-      stars.push(true);
-    }
-
-    // Completar con estrellas vacías
-    while (stars.length < 5) {
-      stars.push(false);
-    }
+    for (let i = 0; i < fullStars; i++) stars.push(true);
+    if (hasHalfStar && stars.length < 5) stars.push(true);
+    while (stars.length < 5) stars.push(false);
 
     return stars;
   }
 
-  // Obtener texto del stock
   getStockText(): string {
-    if (!this.product.inStock) {
-      return 'Agotado';
-    }
-    
-    if (this.product.stockQuantity <= 5) {
-      return 'Pocas unidades';
-    }
-    
+    if (!this.product.inStock) return 'Agotado';
+    if (this.product.stockQuantity <= 5) return 'Pocas unidades';
     return 'En stock';
   }
 
-  // Obtener texto del botón
   getBtnText(): string {
-    if (this.addingToCart) {
-      return 'Agregando...';
-    }
-    
-    if (!this.product.inStock) {
-      return 'Agotado';
-    }
-    
+    if (this.addingToCart) return 'Agregando...';
+    if (!this.product.inStock) return 'Agotado';
     return this.isInCart ? 'En carrito' : 'Agregar al carrito';
   }
 
-  // Manejar error de imagen
   onImageError(event: any): void {
-    event.target.src = '/assets/logoP.png';
+    event.target.src = '/https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_400/v1782840424/Dise%C3%B1o_sin_t%C3%ADtulo_4_xruh6t.png';
   }
 
   private updateCartStatus(): void {
-    this.isInCart = this.cartService.isInCart(this.product.id);
+    this.isInCart     = this.cartService.isInCart(this.product.id);
     this.cartQuantity = this.cartService.getProductQuantityInCart(this.product.id);
-  }
-
-  private loadFavoriteStatus(): void {
-    try {
-      const favorites = JSON.parse(localStorage.getItem('music-store-favorites') || '[]');
-      this.isFavorite = favorites.includes(this.product.id);
-    } catch (error) {
-      console.error('Error loading favorite status:', error);
-      this.isFavorite = false;
-    }
-  }
-
-  private saveFavoriteStatus(): void {
-    try {
-      const favorites = JSON.parse(localStorage.getItem('music-store-favorites') || '[]');
-      
-      if (this.isFavorite) {
-        if (!favorites.includes(this.product.id)) {
-          favorites.push(this.product.id);
-        }
-      } else {
-        const index = favorites.indexOf(this.product.id);
-        if (index > -1) {
-          favorites.splice(index, 1);
-        }
-      }
-      
-      localStorage.setItem('music-store-favorites', JSON.stringify(favorites));
-    } catch (error) {
-      console.error('Error saving favorite status:', error);
-    }
   }
 }

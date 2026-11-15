@@ -1,0 +1,275 @@
+﻿<section class="inv-pred-wrapper">
+
+  <!-- BLOQUE A - Encabezado de seccion -->
+  <div class="section-header">
+    <div class="section-header__left">
+      <h2 class="section-title">
+        <span class="section-title__icon material-icons">insights</span>
+        Prediccion de Agotamiento de Inventario
+      </h2>
+      <p class="section-sub">
+        Modelo&nbsp;<code>I(t) = I<sub>0</sub> &middot; e<sup>&minus;kt</sup></code>
+        &nbsp;&middot;&nbsp;
+        <span class="section-sub__updated">
+          Actualizado hace {{ lastUpdatedHours() }} horas
+        </span>
+      </p>
+    </div>
+    <div class="section-header__actions">
+      <button
+        class="btn-refresh"
+        [disabled]="isLoading"
+        (click)="loadPredictions()"
+        title="Recargar datos"
+        aria-label="Recargar predicciones">
+        <span class="material-icons" [class.spinning]="isLoading">refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  @if (isLoading) {
+    <div class="state-panel state-panel--loading" role="status" aria-live="polite">
+      <span class="loader" aria-hidden="true"></span>
+      <span>Calculando proyecciones&hellip;</span>
+    </div>
+  }
+
+  @if (loadError && !isLoading) {
+    <div class="state-panel state-panel--error" role="alert">
+      <span class="material-icons">warning_amber</span>
+      <span>No se pudieron cargar las predicciones.</span>
+      <button class="btn-retry" (click)="loadPredictions()">Reintentar</button>
+    </div>
+  }
+
+  @if (!isLoading && !loadError && predictions.length > 0) {
+
+    <!-- BLOQUE B - Grid de 4 tarjetas de resumen -->
+    <div class="cards-grid" role="list">
+      @for (pred of predictions; track trackByKey($index, pred); let i = $index) {
+        <button
+          class="pred-card"
+          [ngClass]="[cardClass(pred), i === selectedSection ? 'pred-card--active' : '']"
+          [style.--accent-color]="sectionColor(pred.sectionKey)"
+          (click)="selectSection(i)"
+          role="listitem"
+          [attr.aria-pressed]="i === selectedSection"
+          [attr.aria-label]="pred.sectionName + ': ' + pred.daysToAlert + ' dias'">
+
+          <span class="card-section-label">{{ pred.sectionName }}</span>
+
+          <div class="card-main">
+            <span class="card-days">{{ pred.daysToAlert | number:'1.0-0' }}</span>
+            <span class="card-days-label">dias</span>
+          </div>
+          <p class="card-days-hint">dias hasta necesitar reabastecimiento</p>
+
+          <p class="card-stock-info">
+            Stock:&nbsp;<strong>{{ pred.currentStock }}</strong>
+            &nbsp;/&nbsp;Critico:&nbsp;<strong>{{ pred.iCrit | number:'1.0-0' }}</strong>&nbsp;uds.
+          </p>
+
+          @if (isBadgeCritical(pred)) {
+            <span class="badge badge-crit" role="status">&#9888; Critico</span>
+          } @else if (pred.status === 'WARNING') {
+            <span class="badge badge-warn" role="status">Atencion</span>
+          } @else {
+            <span class="badge badge-ok" role="status">Estable</span>
+          }
+
+          <div class="card-glow" aria-hidden="true"></div>
+
+          <div class="pred-tooltip" role="tooltip">
+            <div class="tooltip-title">{{ pred.sectionName }}</div>
+            <div class="tooltip-row">
+              <span class="lbl">I<sub>0</sub> (ultimo reabastecimiento)</span>
+              <span class="val">{{ pred.i0 | number:'1.0-0' }} uds.</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="lbl">Stock actual</span>
+              <span class="val">{{ pred.currentStock }} uds.</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="lbl">Nivel critico I<sub>crit</sub></span>
+              <span class="val">{{ pred.iCrit | number:'1.0-0' }} uds.</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="lbl">k (tasa de agotamiento)</span>
+              <span class="val">{{ pred.k | number:'1.4-6' }}</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="lbl">Dias hasta I<sub>crit</sub></span>
+              <span class="val"
+                [class.val-danger]="isBadgeCritical(pred)"
+                [class.val-ok]="pred.status === 'STABLE'">
+                {{ pred.daysToAlert | number:'1.0-0' }} dias
+              </span>
+            </div>
+          </div>
+        </button>
+      }
+    </div>
+
+    <!-- BLOQUE C - Selector de seccion -->
+    <div class="section-selector" role="group" aria-label="Seccion a graficar">
+      <span class="section-selector__label">Ver curva de:</span>
+      @for (pred of predictions; track trackByKey($index, pred); let i = $index) {
+        <button
+          class="sec-btn"
+          [class.active]="i === selectedSection"
+          [style.--sec-color]="sectionColor(pred.sectionKey)"
+          (click)="selectSection(i)"
+          [attr.aria-pressed]="i === selectedSection">
+          <span class="sec-btn__dot" aria-hidden="true"></span>
+          {{ pred.sectionName }}
+        </button>
+      }
+    </div>
+
+    <!-- BLOQUE D - Grafica de barras Chart.js -->
+    <div class="chart-container" role="region"
+         [attr.aria-label]="'Curva de decaimiento \u2014 ' + activePrediction.sectionName">
+
+      <!-- Bug #4: Selector de horizonte temporal -->
+      <div class="horizon-selector" role="group" aria-label="Horizonte temporal">
+        <span class="horizon-selector__label">Horizonte:</span>
+        @for (opt of horizonOptions; track opt.value) {
+          <button
+            class="hor-btn"
+            [class.active]="selectedHorizon === opt.value"
+            [disabled]="opt.value === 'tcrit' && isTCritDisabled()"
+            (click)="setHorizon(opt.value)"
+            [attr.title]="opt.value === 'tcrit' && isTCritDisabled() ? 'Sin datos validos para calcular agotamiento' : null">
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+
+      <div class="chart-header">
+        <div class="chart-header__left">
+          <h3 class="chart-title">
+            Curva de decaimiento &mdash; {{ activePrediction.sectionName }}
+          </h3>
+          <p class="chart-subtitle">
+            Horizonte dinamico &middot; Barras coloreadas por nivel de stock
+          </p>
+          <!-- Bug #3: Leyenda semantica debajo del titulo -->
+          <div class="semantic-legend" aria-label="Leyenda de colores">
+            <span class="sem-item sem-green">
+              <span class="sem-dot" aria-hidden="true"></span>
+              Normal (&gt;&nbsp;2&times;&nbsp;I<sub>crit</sub>)
+            </span>
+            <span class="sem-item sem-amber">
+              <span class="sem-dot" aria-hidden="true"></span>
+              Advertencia (&le;&nbsp;2&times;&nbsp;I<sub>crit</sub>)
+            </span>
+            <span class="sem-item sem-red">
+              <span class="sem-dot" aria-hidden="true"></span>
+              Critico (&le;&nbsp;I<sub>crit</sub>)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bug #1: Estado vacio cuando datos son invalidos -->
+      @if (chartInvalidReason === 'no-stock') {
+        <div class="chart-empty-state chart-empty-state--critical" role="alert">
+          <span class="material-icons">inventory_2</span>
+          <span class="badge badge-crit">Sin stock</span>
+          <p>No hay inventario actual registrado para esta seccion. Reabastecimiento necesario de inmediato.</p>
+        </div>
+      } @else if (chartInvalidReason === 'invalid-data') {
+        <div class="chart-empty-state chart-empty-state--warn" role="alert">
+          <span class="material-icons">warning_amber</span>
+          <span class="badge badge-warn">Dato invalido</span>
+          <p>El stock actual es mayor o igual al inicial (I<sub>actual</sub> &ge; I<sub>0</sub>). Verifica el registro en la base de datos.</p>
+        </div>
+      } @else {
+        <div class="chart-canvas-wrap" aria-hidden="true">
+          <canvas #predChart></canvas>
+        </div>
+      }
+
+    </div>
+
+    <!-- BLOQUE E - Panel de formulas visibles -->
+    @if (formulaInfo) {
+      <div class="formula-panel" role="note"
+           [attr.aria-label]="'Formulas de ' + formulaInfo.sectionName">
+
+        <div class="formula-panel__header">
+          <span class="material-icons fp-icon">functions</span>
+          <span class="fp-title">Parametros del modelo &mdash; {{ formulaInfo.sectionName }}</span>
+        </div>
+
+        <div class="fp-grid">
+
+          <div class="fp-item">
+            <span class="fp-label">Funcion de decaimiento</span>
+            <code class="fp-value fp-value--main">
+              I(t) = {{ formulaInfo.i0 }} &middot; e<sup>&minus;{{ formulaInfo.kFormatted }}&middot;t</sup>
+            </code>
+          </div>
+
+          <div class="fp-item">
+            <span class="fp-label">Constante k (tasa de agotamiento)</span>
+            <code class="fp-value">
+              k = &minus;ln({{ formulaInfo.iCurrent }} / {{ formulaInfo.i0 }}) / t
+              = {{ formulaInfo.kFormatted }}
+            </code>
+          </div>
+
+          <div class="fp-item">
+            <span class="fp-label">Dias estimados hasta agotamiento</span>
+            <code class="fp-value">
+              Dias hasta agotamiento = &minus;ln({{ formulaInfo.iCrit }} / {{ formulaInfo.i0 }}) / {{ formulaInfo.kFormatted }}
+              = {{ formulaInfo.tCritFormatted }}
+            </code>
+          </div>
+
+          <div class="fp-item">
+            <span class="fp-label">Nivel critico I<sub>crit</sub></span>
+            <code class="fp-value">I<sub>crit</sub> = {{ formulaInfo.iCrit }} uds.</code>
+          </div>
+
+        </div>
+
+      </div>
+    }
+
+    <!-- BLOQUE F - 4 pasos del algoritmo -->
+    <div class="algo-steps" role="list" aria-label="Pasos del algoritmo de prediccion">
+      <div class="algo-step" role="listitem">
+        <div class="step-header">
+          <span class="step-circle" aria-hidden="true">1</span>
+          <span class="step-num">PASO 01</span>
+        </div>
+        <p class="step-text">Consulta historial PostgreSQL para I<sub>0</sub> e I<sub>actual</sub></p>
+      </div>
+      <div class="algo-step" role="listitem">
+        <div class="step-header">
+          <span class="step-circle" aria-hidden="true">2</span>
+          <span class="step-num">PASO 02</span>
+        </div>
+        <p class="step-text">Calcula k = &minus;ln(I<sub>actual</sub>&nbsp;/&nbsp;I<sub>0</sub>) / t por seccion</p>
+      </div>
+      <div class="algo-step" role="listitem">
+        <div class="step-header">
+          <span class="step-circle" aria-hidden="true">3</span>
+          <span class="step-num">PASO 03</span>
+        </div>
+        <p class="step-text">Proyecta dias hasta agotamiento = &minus;ln(I<sub>crit</sub>&nbsp;/&nbsp;I<sub>0</sub>) / k</p>
+      </div>
+      <div class="algo-step" role="listitem">
+        <div class="step-header">
+          <span class="step-circle" aria-hidden="true">4</span>
+          <span class="step-num">PASO 04</span>
+        </div>
+        <p class="step-text">Genera alerta si dias hasta agotamiento &lt; 15 dias de umbral</p>
+      </div>
+    </div>
+
+  }
+
+</section>

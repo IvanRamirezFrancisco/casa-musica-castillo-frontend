@@ -106,7 +106,7 @@
 .code-digit {
   font-size: 120px;
   font-weight: 900;
-  color: #800020;
+  color: #722f37;
   text-shadow: 
     4px 4px 0 rgba(128, 0, 32, 0.2),
     8px 8px 20px rgba(128, 0, 32, 0.3);
@@ -194,7 +194,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: #F5F5F5;
   box-shadow: 0 4px 15px rgba(128, 0, 32, 0.3);
 }
@@ -202,19 +202,19 @@
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(128, 0, 32, 0.4);
-  background: linear-gradient(135deg, #600015 0%, #800020 100%);
+  background: linear-gradient(135deg, #600015 0%, #722f37 100%);
 }
 
 .btn-secondary {
-  background: #F5F5F5;
-  color: #800020;
-  border: 2px solid #800020;
+  background: #FAF8F6;
+  color: #722f37;
+  border: 2px solid #722f37;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  background: #800020;
+  background: #722f37;
   color: #F5F5F5;
   box-shadow: 0 6px 25px rgba(128, 0, 32, 0.3);
 }
@@ -249,9 +249,9 @@
   align-items: center;
   gap: 8px;
   padding: 20px;
-  background: white;
+  background: #FDFCFB;
   border-radius: 12px;
-  color: #800020;
+  color: #722f37;
   text-decoration: none;
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -261,7 +261,7 @@
 .helpful-link:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(128, 0, 32, 0.15);
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: #F5F5F5;
 }
 

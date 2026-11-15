@@ -1,0 +1,876 @@
+﻿// =============================================================================
+//  AdminInventoryPredictionComponent — Estilos
+//  Diseño: tarjetas blancas con borde superior coloreado, grafica limpia,
+//  pasos con circulo numerado, tema claro integrado al admin dashboard.
+// =============================================================================
+
+// -- Variables ----------------------------------------------------------------
+$bg-card:        #ffffff;
+$bg-section:     #f8f9fa;
+$border:         #e8e8e8;
+$accent:         #800020;
+$accent-light:   rgba(128, 0, 32, 0.08);
+$text-primary:   #2C3E50;
+$text-secondary: #6c757d;
+$text-muted:     #adb5bd;
+$red:            #c0392b;
+
+$shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.07);
+$shadow-md:  0 8px 24px rgba(0, 0, 0, 0.11);
+$radius-lg:  16px;
+$radius-md:  10px;
+$radius-sm:  6px;
+$transition: 0.2s ease;
+
+// -- Wrapper ------------------------------------------------------------------
+.inv-pred-wrapper {
+  width: 100%;
+  background: transparent;
+  margin-bottom: 2rem;
+  animation: fadeSlideIn 0.3s ease;
+}
+
+// =============================================================================
+// BLOQUE A - Encabezado
+// =============================================================================
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1.25rem;
+
+  &__left  { flex: 1; min-width: 0; }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0;
+
+  &__icon {
+    font-size: 20px;
+    color: $accent;
+  }
+}
+
+.section-sub {
+  font-size: 12.5px;
+  color: $text-secondary;
+  margin: 3px 0 0;
+
+  sup { font-size: 9px; }
+
+  &__updated {
+    color: $text-muted;
+    font-style: italic;
+  }
+}
+
+.btn-refresh {
+  background: #fff;
+  border: 1.5px solid $border;
+  border-radius: $radius-sm;
+  color: $text-secondary;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: $shadow-sm;
+  transition: border-color $transition, color $transition;
+
+  .material-icons { font-size: 17px; }
+  .spinning       { animation: spin 0.8s linear infinite; }
+
+  &:hover:not(:disabled) {
+    border-color: $accent;
+    color: $accent;
+  }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.btn-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: $accent;
+  text-decoration: none;
+  padding: 6px 13px;
+  border: 1.5px solid rgba($accent, 0.3);
+  border-radius: $radius-sm;
+  background: #fff;
+  box-shadow: $shadow-sm;
+  transition: background $transition, border-color $transition;
+
+  .material-icons { font-size: 13px; }
+
+  &:hover {
+    background: $accent-light;
+    border-color: $accent;
+  }
+}
+
+// =============================================================================
+// Paneles de estado (loading / error)
+// =============================================================================
+
+.state-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: $radius-md;
+  font-size: 13px;
+  margin-bottom: 1.25rem;
+
+  &--loading {
+    background: $bg-section;
+    border: 1px dashed $border;
+    color: $text-secondary;
+  }
+
+  &--error {
+    background: #fdf1f1;
+    border: 1px solid rgba($red, 0.3);
+    color: $red;
+
+    .material-icons { font-size: 18px; }
+  }
+}
+
+.loader {
+  width: 15px;
+  height: 15px;
+  border: 2px solid $border;
+  border-top-color: $accent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.btn-retry {
+  margin-left: 8px;
+  background: transparent;
+  border: 1px solid rgba($red, 0.4);
+  border-radius: 5px;
+  color: $red;
+  font-size: 12px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background $transition;
+
+  &:hover { background: rgba($red, 0.07); }
+}
+
+// =============================================================================
+// BLOQUE B - Grid de tarjetas
+// =============================================================================
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 560px)  { grid-template-columns: 1fr; }
+}
+
+.pred-card {
+  --card-top: #{$accent};
+
+  position: relative;
+  background: #ffffff;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 1.1rem 1.2rem 1rem;
+  box-shadow: $shadow-sm;
+  overflow: visible;   // permite que el tooltip sobresalga
+  transition: transform $transition, box-shadow $transition;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: $shadow-md;
+  }
+
+  &:hover .pred-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  // Borde superior coloreado de 3px
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-top);
+    border-radius: $radius-lg $radius-lg 0 0;
+  }
+
+  .card-glow {
+    position: absolute;
+    top: -24px; right: -24px;
+    width: 90px; height: 90px;
+    background: radial-gradient(circle, var(--card-top) 0%, transparent 65%);
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  &.ok   { --card-top: #27ae60; }
+  &.warn { --card-top: #f39c12; }
+  &.crit { --card-top: #c0392b; }
+}
+
+// ── Tooltip de la tarjeta ─────────────────────────────────────────────────────
+.pred-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 11px;
+  line-height: 1.7;
+  white-space: nowrap;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+
+  // Flecha apuntando hacia abajo
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+
+  .tooltip-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+
+    .lbl      { color: #aaa; }
+    .val      { color: #fff; font-weight: 600; }
+    .val-danger { color: #fc8181; }
+    .val-ok     { color: #6fcf97; }
+  }
+}
+
+.card-section-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: $text-secondary;
+  margin-bottom: 0.55rem;
+  padding-right: 28px;
+}
+
+.card-main {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-bottom: 0.35rem;
+}
+
+.card-days {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text-primary;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-days-label {
+  font-size: 13px;
+  color: $text-secondary;
+  font-weight: 400;
+}
+
+.card-days-hint {
+  font-size: 10px;
+  color: $text-muted;
+  margin: 2px 0 0.4rem;
+  line-height: 1.3;
+  font-style: italic;
+}
+
+.card-stock-info {
+  font-size: 12px;
+  color: $text-secondary;
+  margin: 0 0 0.6rem;
+
+  strong { color: $text-primary; font-weight: 600; }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  line-height: 1.4;
+
+  &-ok   { background: #f0faf4; color: #1a7740; }
+  &-warn { background: #fef9ec; color: #92580a; }
+  &-crit { background: #fdf1f1; color: #c0392b; }
+}
+
+// =============================================================================
+// BLOQUE C - Grafica
+// =============================================================================
+
+.chart-container {
+  background: #ffffff;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 1.2rem 1.4rem 1rem;
+  box-shadow: $shadow-sm;
+  margin-bottom: 1rem;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 0.9rem;
+
+  &__left { flex: 1; min-width: 0; }
+}
+
+.chart-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0;
+}
+
+.chart-subtitle {
+  font-size: 12px;
+  color: $text-secondary;
+  margin: 2px 0 0;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.tog-btn {
+  background: #fff;
+  border: 1.5px solid $border;
+  border-radius: $radius-sm;
+  color: $text-secondary;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 13px;
+  cursor: pointer;
+  transition: background $transition, border-color $transition, color $transition, box-shadow $transition;
+
+  &.active {
+    background: linear-gradient(135deg, #800020, #600015);
+    color: #fff;
+    border-color: $accent;
+    box-shadow: 0 3px 8px rgba(128, 0, 32, 0.22);
+  }
+
+  &:not(.active):hover {
+    border-color: rgba($accent, 0.4);
+    color: $accent;
+  }
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid $border;
+}
+
+.leg-item {
+  --leg-color: #{$accent};
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: $text-secondary;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: opacity $transition, background $transition, color $transition;
+
+  &.inactive { opacity: 0.35; }
+
+  &:not(.inactive):hover {
+    background: $bg-section;
+    color: $text-primary;
+  }
+}
+
+.leg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--leg-color);
+  flex-shrink: 0;
+}
+
+.leg-name { color: inherit; }
+
+.leg-k {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: $text-muted;
+}
+
+.chart-canvas-wrap {
+  position: relative;
+  height: 260px;
+  width: 100%;
+}
+
+.formula-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 10px;
+  margin-top: 0.7rem;
+  padding: 7px 11px;
+  background: $bg-section;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 11px;
+  color: $text-secondary;
+
+  code {
+    font-family: 'Courier New', monospace;
+    color: $accent;
+    font-weight: 600;
+
+    sup, sub { font-size: 8px; }
+  }
+}
+
+.formula-sep {
+  color: $text-muted;
+  user-select: none;
+}
+
+// =============================================================================
+// BLOQUE D - Pasos del algoritmo
+// =============================================================================
+
+.algo-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.algo-step {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  padding: 0.85rem 1rem;
+  box-shadow: $shadow-sm;
+  transition: border-color $transition, transform $transition, box-shadow $transition;
+
+  &:hover {
+    border-color: rgba($accent, 0.3);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 6px;
+}
+
+.step-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #800020, #600015);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(128, 0, 32, 0.25);
+}
+
+.step-num {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: #7b1a1a;
+  text-transform: uppercase;
+  background: #fdf1f1;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.step-text {
+  font-size: 12px;
+  color: $text-primary;
+  line-height: 1.45;
+  margin: 0;
+
+  sub, sup { font-size: 9px; }
+}
+
+// =============================================================================
+// BLOQUE — pred-card como botón (selector de sección)
+// =============================================================================
+
+.pred-card {
+  // La tarjeta actúa como botón clickeable — resetear estilos de botón
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+
+  &--active {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(128, 0, 32, 0.08), $shadow-md;
+
+    &::before {
+      height: 4px;   // borde superior más grueso para la sección activa
+    }
+  }
+}
+
+// =============================================================================
+// BLOQUE — Selector de sección (botones de filtro)
+// =============================================================================
+
+.section-selector {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 1rem;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $text-secondary;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+}
+
+.sec-btn {
+  --sec-color: #{$accent};
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid $border;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: $text-secondary;
+  cursor: pointer;
+  transition: background $transition, border-color $transition,
+              color $transition, box-shadow $transition;
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sec-color);
+    flex-shrink: 0;
+    transition: transform $transition;
+  }
+
+  &:hover:not(.active) {
+    border-color: var(--sec-color);
+    color: $text-primary;
+
+    .sec-btn__dot { transform: scale(1.3); }
+  }
+
+  &.active {
+    background: var(--sec-color);
+    border-color: var(--sec-color);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+
+    .sec-btn__dot { background: rgba(255,255,255,0.7); }
+  }
+}
+
+// =============================================================================
+// BLOQUE — Leyenda semántica de colores de barras
+// =============================================================================
+
+.semantic-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sem-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: $text-secondary;
+
+  .sem-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+}
+
+.sem-green .sem-dot { background: #27ae60; }
+.sem-amber .sem-dot { background: #f39c12; }
+.sem-red   .sem-dot { background: #e74c3c; }
+
+// =============================================================================
+// BLOQUE — Panel de fórmulas visibles
+// =============================================================================
+
+.formula-panel {
+  background: #fafbff;
+  border: 1px solid #dde3f0;
+  border-radius: $radius-lg;
+  padding: 1rem 1.3rem;
+  margin-bottom: 1rem;
+  box-shadow: $shadow-sm;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #dde3f0;
+  }
+}
+
+.fp-icon {
+  font-size: 18px;
+  color: $accent;
+}
+
+.fp-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.fp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem 1.5rem;
+
+  @media (max-width: 700px) { grid-template-columns: 1fr; }
+}
+
+.fp-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fp-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $text-secondary;
+}
+
+.fp-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12.5px;
+  color: #2d3748;
+  background: #fff;
+  border: 1px solid #dde3f0;
+  border-radius: 5px;
+  padding: 5px 9px;
+  line-height: 1.5;
+
+  sup, sub { font-size: 9px; }
+
+  &--main {
+    font-size: 14px;
+    font-weight: 700;
+    color: $accent;
+    border-color: rgba($accent, 0.3);
+    background: rgba($accent, 0.03);
+  }
+}
+
+// =============================================================================
+// BLOQUE — Selector de horizonte temporal (Bug #4)
+// =============================================================================
+
+.horizon-selector {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0.6rem 0 0.5rem;
+  margin-bottom: 0.5rem;
+
+  &__label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: $text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-right: 2px;
+  }
+}
+
+.hor-btn {
+  padding: 4px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1.5px solid $border;
+  border-radius: 20px;
+  background: #fff;
+  color: $text-secondary;
+  cursor: pointer;
+  transition: background $transition, border-color $transition, color $transition, box-shadow $transition;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: $accent;
+    color: $accent;
+    background: rgba($accent, 0.06);
+  }
+
+  &.active {
+    background: $accent;
+    border-color: $accent;
+    color: #fff;
+    box-shadow: 0 2px 7px rgba($accent, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// =============================================================================
+// BLOQUE — Estado vacío del gráfico (Bug #1)
+// =============================================================================
+
+.chart-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 220px;
+  border-radius: $radius-md;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  border: 2px dashed;
+
+  .material-icons {
+    font-size: 40px;
+    opacity: 0.55;
+  }
+
+  p {
+    font-size: 13px;
+    color: $text-secondary;
+    max-width: 340px;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  &--critical {
+    background: rgba(#e74c3c, 0.04);
+    border-color: rgba(#e74c3c, 0.3);
+
+    .material-icons { color: #e74c3c; }
+  }
+
+  &--warn {
+    background: rgba(#f39c12, 0.04);
+    border-color: rgba(#f39c12, 0.3);
+
+    .material-icons { color: #f39c12; }
+  }
+}
+
+// =============================================================================
+// Animaciones
+// =============================================================================
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

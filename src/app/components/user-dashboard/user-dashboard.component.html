@@ -195,7 +195,7 @@
                   </div>
                   <div class="product-info">
                     <h4 class="product-name">{{ product.name }}</h4>
-                    <p class="product-category">{{ product.category }}</p>
+                    <p class="product-category">{{ product.category?.name || product.category }}</p>
                     <div class="product-price">{{ formatPrice(product.price) }}</div>
                   </div>
                 </div>

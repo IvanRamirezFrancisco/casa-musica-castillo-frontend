@@ -1,22 +1,28 @@
 <div class="google-auth-setup-bg">
-<div class="google-auth-setup-container">
-  <h2>Activar Google Authenticator</h2>
-  <div *ngIf="qrCodeUrl && !successMessage" class="qr-section">
-    <img [src]="qrCodeUrl" alt="QR Google Authenticator" class="qr-image" />
-    <p>Escanea el código QR con la app de Google Authenticator.</p>
-    <p>O ingresa este código manualmente:</p>
-    <div class="secret-box">{{ secret }}</div>
-    <form (ngSubmit)="confirmActivation()" class="code-form">
-      <label for="code">Código de 6 dígitos:</label>
-      <input id="code" [(ngModel)]="code" name="code" required maxlength="6" class="code-input" />
-      <button type="submit" class="btn btn-success">Confirmar activación</button>
-      <button type="button" class="btn btn-secondary" (click)="cancelActivation()">Cancelar</button>
-    </form>
-    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+  <div class="google-auth-setup-container">
+    <h2>Activar Google Authenticator</h2>
+    @if (qrCodeUrl && !successMessage) {
+      <div class="qr-section">
+        <img [src]="qrCodeUrl" alt="QR Google Authenticator" class="qr-image" />
+        <p>Escanea el código QR con la app de Google Authenticator.</p>
+        <p>O ingresa este código manualmente:</p>
+        <div class="secret-box">{{ secret }}</div>
+        <form (ngSubmit)="confirmActivation()" class="code-form">
+          <label for="code">Código de 6 dígitos:</label>
+          <input id="code" [(ngModel)]="code" name="code" required maxlength="6" class="code-input" />
+          <button type="submit" class="btn btn-success">Confirmar activación</button>
+          <button type="button" class="btn btn-secondary" (click)="cancelActivation()">Cancelar</button>
+        </form>
+        @if (errorMessage) {
+          <div class="error-message">{{ errorMessage }}</div>
+        }
+      </div>
+    }
+    @if (successMessage) {
+      <div class="success-message">
+        {{ successMessage }}
+        <button class="btn btn-primary" (click)="goBack()">Regresar al Dashboard</button>
+      </div>
+    }
   </div>
-  <div *ngIf="successMessage" class="success-message">
-    {{ successMessage }}
-    <button class="btn btn-primary" (click)="goBack()">Regresar al Dashboard</button>
-  </div>
-</div>
 </div>

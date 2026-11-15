@@ -374,6 +374,17 @@
   color: #333;
 }
 
+.quantity-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* ===== ACTION BUTTONS ===== */
 .action-buttons {
   display: flex;
@@ -887,3 +898,113 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
+
+/* ===== LIGHTBOX OVERLAY (MODAL PRO MAX) ===== */
+.cmc-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 11000;
+  background-color: transparent; /* El backdrop se maneja en el propio host para transicionar opacidad */
+  display: block;
+}
+
+/* Animación de entrada. Aislada del Pan/Zoom */
+.lightbox-entrance-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: lightboxFadeIn 200ms ease-out forwards;
+}
+
+@keyframes lightboxFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-entrance-wrapper {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.lightbox-toolbar {
+  flex: 0 0 auto;
+  padding-top: env(safe-area-inset-top, 0px);
+  z-index: 2;
+}
+
+.lightbox-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  /* Espaciado del stage (desktop) */
+  padding: clamp(16px, 3vw, 40px);
+}
+
+.lightbox-image-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-bottom-area {
+  flex: 0 0 auto;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 2;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+
+.lightbox-thumbnails-scroll {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  justify-content: center;
+}
+
+.lightbox-thumbnails-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+@media (max-width: 768px) {
+  .lightbox-thumbnails-scroll {
+    justify-content: flex-start;
+  }
+  .lightbox-viewport {
+    padding: clamp(12px, 2vw, 20px);
+  }
+}
+
+/* En Móvil Landscape limitamos la barra base para maximizar el canvas */
+@media (max-width: 900px) and (orientation: landscape) {
+  .lightbox-thumbnails-scroll {
+    padding: 8px;
+    gap: 8px;
+  }
+  .lightbox-thumbnails-scroll img {
+    height: 48px !important;
+    width: 48px !important;
+  }
+}
+

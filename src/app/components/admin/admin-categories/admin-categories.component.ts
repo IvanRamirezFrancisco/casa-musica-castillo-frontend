@@ -1,52 +1,49 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, finalize } from 'rxjs';
 import { CategoryService } from '../../../services/category.service';
+import { AuthService } from '../../../services/auth.service';
 import { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../../../models/category.model';
+import Swal from 'sweetalert2';
 
-/**
- * Componente para gestión completa de categorías (CRUD)
- */
 @Component({
   selector: 'app-admin-categories',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-categories.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-categories.component.css']
 })
 export class AdminCategoriesComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  // Lista de categorías
+  // Data
   categories: Category[] = [];
   filteredCategories: Category[] = [];
+  
+  // Tree Grid State
+  expandedCategories: Set<number> = new Set<number>();
+  visibleCategories: Category[] = [];
 
-  // Estados de UI
+  // UI State
   loading = false;
   successMessage = '';
   errorMessage = '';
 
-  // Filtros y búsqueda
+  // Smart Filters
   searchTerm = '';
-  filterActive: boolean | null = null;
-  
-  // Vista (tabla o tarjetas)
-  viewMode: 'table' | 'cards' = 'table';
+  statusFilter: 'ALL' | 'ACTIVE' | 'INACTIVE' = 'ALL';
+  typeFilter: 'ALL' | 'MAIN' | 'SUBCATEGORY' = 'ALL';
+  childrenFilter: 'ALL' | 'WITH_CHILDREN' | 'NO_CHILDREN' = 'ALL';
 
-  // Paginación
-  currentPage = 0;
-  pageSize = 10;
-  totalPages = 0;
-  totalCategories = 0;
-
-  // Modales
+  // Modals
   showCreateModal = false;
   showEditModal = false;
   showDeleteModal = false;
 
-  // Formulario de categoría
+  // Form
   categoryForm: CreateCategoryRequest = {
     name: '',
     description: '',
@@ -54,22 +51,28 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
     active: true,
     parentId: null
   };
-
-  // Categoría seleccionada
+  initialCategoryFormState = '';
   selectedCategory: Category | null = null;
 
-  // Estadísticas
+  // Image Upload
+  @ViewChild('fileInput') fileInput!: ElementRef;
+  selectedFile: File | null = null;
+  previewUrl: string | ArrayBuffer | null = null;
+  isUploadingImage = false;
+  imageUploadError = '';
+
+  // Stats
   activeCategoriesCount = 0;
   totalProductsCount = 0;
 
   constructor(
     private categoryService: CategoryService,
+    public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    console.log('🎨 Iniciando AdminCategoriesComponent');
     this.loadCategories();
 
     this.route.queryParams
@@ -87,34 +90,28 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ==================== CARGA DE DATOS ====================
-
+  // ==================== LOAD ====================
   loadCategories(): void {
     this.loading = true;
     this.errorMessage = '';
-
-    console.log('📂 Cargando todas las categorías...');
 
     this.categoryService.getAllCategories()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (categories) => {
-          console.log('✅ Categorías cargadas:', categories);
-          this.categories = categories;
-          // Ordenar jerárquicamente: primero padres, luego hijas
-          this.filteredCategories = this.sortCategoriesHierarchically(categories);
-          this.totalCategories = categories.length;
+          this.categories = categories.map(cat => {
+            // Asegurar que subcategoryCount esté inicializado
+            return {
+              ...cat,
+              hasChildren: (cat.subcategoryCount ?? 0) > 0,
+              level: cat.parentId ? 1 : 0
+            };
+          });
           this.calculateStatistics();
+          this.applyFilters();
           this.loading = false;
         },
         error: (error) => {
-          console.error('❌ Error al cargar categorías:', error);
-          console.error('📊 Detalles del error:', {
-            status: error.status,
-            statusText: error.statusText,
-            message: error.message,
-            errorBody: error.error
-          });
           this.errorMessage = `Error al cargar categorías: ${error.error?.message || error.message}`;
           this.loading = false;
         }
@@ -126,36 +123,106 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
     this.totalProductsCount = this.categories.reduce((sum, c) => sum + (c.productCount || 0), 0);
   }
 
-  // ==================== BÚSQUEDA Y FILTROS ====================
-
+  // ==================== SMART SEARCH & FILTERS ====================
   onSearch(): void {
     this.applyFilters();
   }
 
   applyFilters(): void {
-    console.log('🔍 Aplicando filtros...');
-    
-    this.filteredCategories = this.categories.filter(category => {
-      // Filtro de búsqueda
-      const matchesSearch = !this.searchTerm || 
-        category.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        (category.description && category.description.toLowerCase().includes(this.searchTerm.toLowerCase()));
+    let results = [...this.categories];
 
-      // Filtro de estado
-      const matchesActive = this.filterActive === null || category.active === this.filterActive;
+    // Status Filter
+    if (this.statusFilter === 'ACTIVE') results = results.filter(c => c.active);
+    else if (this.statusFilter === 'INACTIVE') results = results.filter(c => !c.active);
 
-      return matchesSearch && matchesActive;
-    });
+    // Type Filter
+    if (this.typeFilter === 'MAIN') results = results.filter(c => !c.parentId);
+    else if (this.typeFilter === 'SUBCATEGORY') results = results.filter(c => c.parentId);
 
-    console.log(`✅ Categorías filtradas: ${this.filteredCategories.length} de ${this.categories.length}`);
+    // Children Filter
+    if (this.childrenFilter === 'WITH_CHILDREN') results = results.filter(c => c.hasChildren);
+    else if (this.childrenFilter === 'NO_CHILDREN') results = results.filter(c => !c.hasChildren);
+
+    // Search Term Filter
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase().trim();
+      results = results.filter(category => {
+        const matchName = category.name.toLowerCase().includes(term);
+        const matchDesc = category.description?.toLowerCase().includes(term);
+        const matchParent = category.parentName?.toLowerCase().includes(term);
+        return matchName || matchDesc || matchParent;
+      });
+
+      // Auto-expand parents if children match search
+      results.forEach(c => {
+        if (c.parentId) {
+          this.expandedCategories.add(c.parentId);
+        }
+      });
+    } else {
+      // Si limpiamos la búsqueda, contraemos todo
+      this.expandedCategories.clear();
+    }
+
+    this.filteredCategories = results;
+    this.buildTreeGrid();
   }
 
   clearFilters(): void {
     this.searchTerm = '';
-    this.filterActive = null;
-    this.filteredCategories = this.categories;
+    this.statusFilter = 'ALL';
+    this.typeFilter = 'ALL';
+    this.childrenFilter = 'ALL';
+    this.expandedCategories.clear();
+    this.applyFilters();
   }
 
+  // ==================== TREE GRID BUILDER ====================
+  buildTreeGrid(): void {
+    // Si hay búsqueda o filtros fuertes, mostramos los filtrados directamente (pero respetando jerarquía)
+    const isFiltered = this.searchTerm.trim() !== '' || this.typeFilter !== 'ALL' || this.childrenFilter !== 'ALL';
+    
+    if (isFiltered) {
+      // Mostramos la lista plana con contexto si está filtrada intensamente
+      this.visibleCategories = this.filteredCategories.sort((a, b) => {
+        const nameA = a.parentName ? `${a.parentName} ${a.name}` : a.name;
+        const nameB = b.parentName ? `${b.parentName} ${b.name}` : b.name;
+        return nameA.localeCompare(nameB);
+      });
+      return;
+    }
+
+    // Si es vista normal (sin filtros complejos), mostramos el árbol interactivo
+    const roots = this.filteredCategories.filter(c => !c.parentId).sort((a, b) => a.name.localeCompare(b.name));
+    const tree: Category[] = [];
+
+    for (const root of roots) {
+      tree.push(root);
+      if (this.expandedCategories.has(root.id)) {
+        const children = this.filteredCategories
+          .filter(c => c.parentId === root.id)
+          .sort((a, b) => a.name.localeCompare(b.name));
+        tree.push(...children);
+      }
+    }
+    
+    this.visibleCategories = tree;
+  }
+
+  toggleExpand(categoryId: number): void {
+    if (this.expandedCategories.has(categoryId)) {
+      this.expandedCategories.delete(categoryId);
+    } else {
+      this.expandedCategories.add(categoryId);
+    }
+    this.buildTreeGrid();
+  }
+
+  isExpanded(categoryId: number): boolean {
+    return this.expandedCategories.has(categoryId);
+  }
+
+  // ==================== UI STATE ====================
   private clearActionParam(): void {
     this.router.navigate([], {
       queryParams: { action: null },
@@ -163,76 +230,111 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== CRUD OPERATIONS ====================
-
+  // ==================== MODALS ====================
   openCreateModal(): void {
-    console.log('➕ Abriendo modal de crear categoría');
     this.resetForm();
+    this.saveInitialFormState();
     this.showCreateModal = true;
     this.errorMessage = '';
   }
 
   openEditModal(category: Category): void {
-    console.log('✏️ Abriendo modal de editar categoría:', category.name);
     this.selectedCategory = category;
     this.categoryForm = {
       name: category.name,
       description: category.description || '',
       imageUrl: category.imageUrl || '',
-      active: category.active
+      active: category.active,
+      parentId: category.parentId || null
     };
+    this.previewUrl = category.imageUrl || null;
+    this.saveInitialFormState();
     this.showEditModal = true;
     this.errorMessage = '';
   }
 
-  openDeleteModal(category: Category): void {
-    console.log('🗑️ Abriendo modal de confirmar eliminación:', category.name);
-    this.selectedCategory = category;
-    this.showDeleteModal = true;
-    this.errorMessage = '';
+  // ==================== IMAGE UPLOAD ====================
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.imageUploadError = '';
+      
+      // Validate Type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.imageUploadError = 'Formato no soportado. Usa JPG, PNG o WEBP.';
+        return;
+      }
+      
+      // Validate Size (2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        this.imageUploadError = 'La imagen excede el límite de 2MB.';
+        return;
+      }
+
+      this.selectedFile = file;
+
+      // Preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewUrl = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
-  saveCategory(): void {
-    if (!this.validateForm()) {
-      return;
+  triggerFileInput(): void {
+    if (this.fileInput) {
+      this.fileInput.nativeElement.click();
     }
+  }
 
+  removeImage(): void {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
+    this.categoryForm.imageUrl = '';
+  }
+
+  // ==================== SAVE ====================
+  saveCategory(): void {
+    if (!this.validateForm()) return;
     this.loading = true;
     this.errorMessage = '';
 
     if (this.showCreateModal) {
-      // Crear nueva categoría
       this.categoryService.createCategory(this.categoryForm)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: () => {
-            this.successMessage = 'Categoría creada exitosamente';
-            this.showCreateModal = false;
-            this.resetForm();
-            this.loadCategories();
-            setTimeout(() => this.successMessage = '', 3000);
+          next: (created) => {
+            if (this.selectedFile) {
+              this.uploadImageAndFinish(created.id, 'Categoría creada exitosamente');
+            } else {
+              this.finishSave('Categoría creada exitosamente');
+            }
           },
           error: (error) => {
-            console.error('Error al crear categoría:', error);
             this.errorMessage = error.error?.message || 'Error al crear la categoría';
             this.loading = false;
           }
         });
     } else if (this.showEditModal && this.selectedCategory) {
-      // Actualizar categoría existente
       this.categoryService.updateCategory(this.selectedCategory.id, this.categoryForm)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: () => {
-            this.successMessage = 'Categoría actualizada exitosamente';
-            this.showEditModal = false;
-            this.selectedCategory = null;
-            this.resetForm();
-            this.loadCategories();
-            setTimeout(() => this.successMessage = '', 3000);
+          next: (updated) => {
+            if (this.selectedFile) {
+              this.uploadImageAndFinish(updated.id, 'Categoría actualizada exitosamente');
+            } else if (!this.previewUrl && this.selectedCategory?.imagePublicId) {
+              // El usuario borró la imagen existente
+              this.deleteImageAndFinish(updated.id, 'Categoría actualizada exitosamente');
+            } else {
+              this.finishSave('Categoría actualizada exitosamente');
+            }
           },
           error: (error) => {
-            console.error('Error al actualizar categoría:', error);
             this.errorMessage = error.error?.message || 'Error al actualizar la categoría';
             this.loading = false;
           }
@@ -240,7 +342,49 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
     }
   }
 
-  confirmDelete(category: Category): void {
+  private uploadImageAndFinish(categoryId: number, successMsg: string): void {
+    if (!this.selectedFile) return;
+    this.isUploadingImage = true;
+    this.categoryService.uploadCategoryImage(categoryId, this.selectedFile)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isUploadingImage = false)
+      )
+      .subscribe({
+        next: () => this.finishSave(successMsg),
+        error: (error) => {
+          console.error('Error uploading image', error);
+          this.errorMessage = 'La categoría fue guardada, pero no se pudo subir la imagen. Puedes intentarlo nuevamente al editarla.';
+          this.loadCategories();
+          this.loading = false;
+        }
+      });
+  }
+
+  private deleteImageAndFinish(categoryId: number, successMsg: string): void {
+    this.categoryService.deleteCategoryImage(categoryId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.finishSave(successMsg),
+        error: (error) => {
+          console.error('Error deleting image', error);
+          this.finishSave(successMsg); // De todas formas terminamos
+        }
+      });
+  }
+
+  private finishSave(message: string): void {
+    this.successMessage = message;
+    this.showCreateModal = false;
+    this.showEditModal = false;
+    this.resetForm();
+    this.loadCategories();
+    this.loading = false;
+    setTimeout(() => this.successMessage = '', 4000);
+  }
+
+  // ==================== DELETE ====================
+  openDeleteModal(category: Category): void {
     this.selectedCategory = category;
     this.showDeleteModal = true;
     this.errorMessage = '';
@@ -248,7 +392,6 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
 
   deleteCategory(): void {
     if (!this.selectedCategory) return;
-
     this.loading = true;
     this.errorMessage = '';
 
@@ -256,59 +399,51 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.successMessage = '🗑️ Categoría eliminada permanentemente de la base de datos';
+          this.successMessage = '🗑️ Categoría eliminada exitosamente';
           this.showDeleteModal = false;
           this.selectedCategory = null;
           this.loadCategories();
           setTimeout(() => this.successMessage = '', 4000);
         },
         error: (error) => {
-          console.error('Error al eliminar categoría:', error);
-          // El backend devuelve mensajes claros de validación
           this.errorMessage = error.error?.message || error.error || 'Error al eliminar la categoría';
           this.loading = false;
-          // NO cerramos el modal para que el usuario vea el mensaje de error
         }
       });
   }
 
   toggleStatus(category: Category): void {
-    const updateRequest: UpdateCategoryRequest = {
-      active: !category.active
-    };
-
-    this.categoryService.updateCategory(category.id, updateRequest)
+    const req: UpdateCategoryRequest = { active: !category.active };
+    this.categoryService.updateCategory(category.id, req)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.successMessage = `Categoría ${updateRequest.active ? 'activada' : 'desactivada'} exitosamente`;
+          this.successMessage = `Categoría ${req.active ? 'activada' : 'desactivada'} exitosamente`;
           this.loadCategories();
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
-          console.error('Error al cambiar estado:', error);
-          this.errorMessage = error.error?.message || 'Error al cambiar el estado';
+          this.errorMessage = error.error?.message || 'Error al cambiar estado';
         }
       });
   }
 
-  // ==================== VALIDACIÓN ====================
-
+  // ==================== VALIDATION & UTILS ====================
   validateForm(): boolean {
     if (!this.categoryForm.name || this.categoryForm.name.trim().length < 2) {
       this.errorMessage = 'El nombre de la categoría debe tener al menos 2 caracteres';
       return false;
     }
-
     if (this.categoryForm.name.length > 100) {
       this.errorMessage = 'El nombre no puede exceder los 100 caracteres';
       return false;
     }
-
+    if (this.selectedCategory && this.categoryForm.parentId === this.selectedCategory.id) {
+      this.errorMessage = 'Una categoría no puede ser padre de sí misma';
+      return false;
+    }
     return true;
   }
-
-  // ==================== UTILIDADES ====================
 
   resetForm(): void {
     this.categoryForm = {
@@ -319,6 +454,12 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
       parentId: null
     };
     this.selectedCategory = null;
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.imageUploadError = '';
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
   }
 
   closeModal(): void {
@@ -329,97 +470,68 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
   }
 
+  saveInitialFormState(): void {
+    const state = { ...this.categoryForm };
+    this.initialCategoryFormState = JSON.stringify(state);
+  }
+
+  hasUnsavedCategoryChanges(): boolean {
+    if (this.selectedFile) return true; // Si hay imagen nueva, hay cambios
+    const currentState = { ...this.categoryForm };
+    return JSON.stringify(currentState) !== this.initialCategoryFormState;
+  }
+
+  confirmCloseCategoryModal(): void {
+    if (this.loading) {
+      Swal.fire({
+        title: 'Operación en proceso',
+        text: 'Espera a que termine antes de cerrar.',
+        icon: 'warning',
+        confirmButtonColor: '#800020'
+      });
+      return;
+    }
+    if (this.hasUnsavedCategoryChanges()) {
+      Swal.fire({
+        title: 'Cambios sin guardar',
+        text: 'Si cierras ahora, se perderán los cambios realizados.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Cerrar sin guardar',
+        cancelButtonText: 'Seguir editando'
+      }).then((result) => {
+        if (result.isConfirmed) this.closeModal();
+      });
+    } else {
+      this.closeModal();
+    }
+  }
+
   navigateToProducts(categoryId: number): void {
-    this.router.navigate(['/admin/products'], { 
-      queryParams: { categoryId } 
-    });
+    this.router.navigate(['/admin/products'], { queryParams: { categoryId } });
   }
 
-  // ==================== PAGINACIÓN ====================
-
-  previousPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.loadCategories();
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.currentPage++;
-      this.loadCategories();
-    }
-  }
-
-  goToPage(page: number): void {
-    this.currentPage = page;
-    this.loadCategories();
-  }
-  
-  // ==================== CAMBIO DE VISTA ====================
-  
   /**
-   * Cambiar entre vista de tabla y tarjetas
+   * Selector para jerarquía en el modal de edición/creación
+   * Excluye a sí misma y a sus hijos en caso de edición para evitar ciclos
    */
-  toggleViewMode(): void {
-    this.viewMode = this.viewMode === 'table' ? 'cards' : 'table';
-    console.log('👁️ Vista cambiada a:', this.viewMode);
-  }
-
-  // ==================== JERARQUÍA ====================
-
-  /**
-   * Obtener solo las categorías raíz (sin padre)
-   */
-  getRootCategories(): Category[] {
-    return this.categories.filter(cat => !cat.parentId);
-  }
-  
-  /**
-   * Obtener categorías raíz ACTIVAS para el selector (excluye inactivas)
-   */
-  getRootCategoriesForSelect(): Category[] {
-    return this.categories.filter(cat => !cat.parentId && cat.active);
+  getValidParentOptions(): Category[] {
+    const roots = this.categories.filter(c => !c.parentId && c.active);
+    if (!this.selectedCategory) return roots;
+    // Si estamos editando, excluirse a sí misma. 
+    // Como la jerarquía actual es de 2 niveles (raíz -> hijo), solo evitamos asignarla a sí misma.
+    // Si existieran más niveles, habría que filtrar descendientes también.
+    return roots.filter(c => c.id !== this.selectedCategory!.id);
   }
 
   /**
-   * Obtener subcategorías de una categoría padre
-   */
-  getSubcategories(parentId: number): Category[] {
-    return this.categories.filter(cat => cat.parentId === parentId);
-  }
-
-  /**
-   * Obtener el nombre de la categoría padre por ID
+   * Obtener el nombre de la categoría padre
    */
   getParentCategoryName(parentId: number | null | undefined): string {
     if (!parentId) return '';
-    const parent = this.categories.find(cat => cat.id === parentId);
+    const parent = this.categories.find(c => c.id === parentId);
     return parent ? parent.name : '';
-  }
-
-  /**
-   * Verificar si una categoría tiene subcategorías
-   */
-  hasSubcategories(categoryId: number): boolean {
-    return this.categories.some(cat => cat.parentId === categoryId);
-  }
-
-  /**
-   * Ordenar categorías para mostrar padres primero, luego hijas
-   */
-  sortCategoriesHierarchically(categories: Category[]): Category[] {
-    const sorted: Category[] = [];
-    
-    // Primero las categorías raíz
-    const roots = categories.filter(cat => !cat.parentId);
-    roots.forEach(root => {
-      sorted.push(root);
-      // Luego sus subcategorías
-      const children = categories.filter(cat => cat.parentId === root.id);
-      sorted.push(...children);
-    });
-    
-    return sorted;
   }
 }

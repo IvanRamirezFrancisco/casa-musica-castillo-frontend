@@ -1,15 +1,30 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { BrandService } from '../../../services/brand.service';
 import { FileUploadService } from '../../../services/file-upload.service';
+import { AuthService } from '../../../services/auth.service';
 import {
   BrandDTO,
   CreateBrandRequest,
   BrandListResponse
 } from '../../../models/brand.model';
+import { FileValidators } from '../../../utils/file-validators';
+import Swal from 'sweetalert2';
+
+export type UploadStatus = 'PENDING' | 'UPLOADING' | 'UPLOADED' | 'FAILED';
+
+export interface PendingBrandLogo {
+  file: File;
+  previewUrl: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadStatus: UploadStatus;
+  errorMessage?: string;
+}
 
 /**
  * Componente para gestión completa de marcas (CRUD)
@@ -20,6 +35,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-brands.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-brands.component.css']
 })
 export class AdminBrandsComponent implements OnInit, OnDestroy {
@@ -31,6 +47,11 @@ export class AdminBrandsComponent implements OnInit, OnDestroy {
   showCreateModal = false;
   showEditModal = false;
   showDeleteModal = false;
+
+  // ── ESTADO DE SUBIDA PROFESIONAL (OVERLAY) ──
+  isProcessingUploads = false;
+  uploadProgressMessage = '';
+  partialErrorState = false;
 
   // Paginación
   currentPage = 0;
@@ -77,10 +98,15 @@ export class AdminBrandsComponent implements OnInit, OnDestroy {
     active: true
   };
 
-  logoPreviewUrl = '';
-  logoUploadInProgress = false;
+  initialBrandFormState: string = '';
 
+  pendingBrandLogo: PendingBrandLogo | null = null;
+  
   selectedBrand: BrandDTO | null = null;
+
+  // Variables Lightbox (Vista Ampliada)
+  showLightbox = false;
+  lightboxImage: { url: string; name: string; size?: number; type?: string } | null = null;
 
   // Mensajes
   successMessage = '';
@@ -99,7 +125,8 @@ export class AdminBrandsComponent implements OnInit, OnDestroy {
     private brandService: BrandService,
     private router: Router,
     private route: ActivatedRoute,
-    private fileUploadService: FileUploadService
+    private fileUploadService: FileUploadService,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -118,6 +145,11 @@ export class AdminBrandsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    // Limpiar URLs de preview en memoria
+    if (this.pendingBrandLogo) {
+      FileValidators.revokePreviewUrl(this.pendingBrandLogo.previewUrl);
+    }
+    this.closeLightbox();
   }
 
   // ==================== CRUD OPERATIONS ====================
@@ -178,10 +210,15 @@ export class AdminBrandsComponent implements OnInit, OnDestroy {
       countryOrigin: '',
       active: true
     };
-    this.logoPreviewUrl = '';
-    this.logoUploadInProgress = false;
+    this.saveInitialFormState();
+    if (this.pendingBrandLogo) {
+      FileValidators.revokePreviewUrl(this.pendingBrandLogo.previewUrl);
+    }
+    this.pendingBrandLogo = null;
     this.showCreateModal = true;
     this.errorMessage = '';
+    this.isProcessingUploads = false;
+    this.partialErrorState = false;
   }
 
   openEditModal(brand: BrandDTO): void {
@@ -194,10 +231,15 @@ export class AdminBrandsComponent implements OnInit, OnDestroy {
       countryOrigin: brand.countryOrigin || '',
       active: brand.active
     };
-    this.logoPreviewUrl = brand.logoUrl || '';
-    this.logoUploadInProgress = false;
+    this.saveInitialFormState();
+    if (this.pendingBrandLogo) {
+      FileValidators.revokePreviewUrl(this.pendingBrandLogo.previewUrl);
+    }
+    this.pendingBrandLogo = null;
     this.showEditModal = true;
     this.errorMessage = '';
+    this.isProcessingUploads = false;
+    this.partialErrorState = false;
   }
 
   openDeleteModal(brand: BrandDTO): void {
@@ -215,86 +257,223 @@ export class AdminBrandsComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = '';
 
+    const payload = { ...this.brandForm };
+
     if (this.showCreateModal) {
       // Crear nueva marca
-      this.brandService.createBrand(this.brandForm)
+      this.isProcessingUploads = true;
+      this.uploadProgressMessage = 'Creando marca...';
+
+      this.brandService.createBrand(payload)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: () => {
-            this.successMessage = 'Marca creada exitosamente';
-            this.showCreateModal = false;
-            this.loadBrands();
-            setTimeout(() => this.successMessage = '', 3000);
+          next: (createdBrand) => {
+            if (this.pendingBrandLogo) {
+              // Hay logo pendiente: subirlo ahora
+              this.uploadProgressMessage = 'Subiendo logo...';
+              this.brandService.uploadBrandLogo(createdBrand.id, this.pendingBrandLogo.file)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: (logoResponse: any) => {
+                      this.successMessage = 'Marca y logo creados exitosamente.';
+                      this.showCreateModal = false;
+                      this.selectedBrand = createdBrand;
+                      this.selectedBrand.logoUrl = logoResponse.data?.secureUrl || '';
+                      this.selectedBrand.logoProvider = logoResponse.data?.provider || '';
+                      this.brandForm.logoUrl = this.selectedBrand.logoUrl;
+                      FileValidators.revokePreviewUrl(this.pendingBrandLogo!.previewUrl);
+                      this.pendingBrandLogo = null;
+                      this.loading = false;
+                      this.isProcessingUploads = false;
+                      this.loadBrands();
+                      setTimeout(() => this.successMessage = '', 4000);
+                  },
+                    error: (logoError) => {
+                      // Falló el logo, pero la marca se creó
+                      console.error('Error al subir logo inicial:', logoError);
+                      this.partialErrorState = true;
+                      this.errorMessage = 'La marca se creó, pero hubo un error al subir el logo. Puedes reintentar.';
+                      this.showCreateModal = false;
+                      this.selectedBrand = createdBrand;
+                      this.showEditModal = true;
+                      
+                      // Mantener estado FAILED en logo pendiente
+                      if (this.pendingBrandLogo) {
+                        this.pendingBrandLogo.uploadStatus = 'FAILED';
+                        this.pendingBrandLogo.errorMessage = logoError.error?.error || logoError.error?.message || 'Error al subir';
+                      }
+                      
+                      this.loading = false;
+                      this.isProcessingUploads = false;
+                      this.loadBrands();
+                    }
+                });
+            } else {
+              // No hay logo pendiente, solo transicionar a edición (o cerrar)
+              this.successMessage = 'Marca creada exitosamente.';
+              this.showCreateModal = false;
+              this.loading = false;
+              this.isProcessingUploads = false;
+              this.loadBrands();
+              setTimeout(() => this.successMessage = '', 3000);
+            }
           },
           error: (error) => {
             console.error('Error al crear marca:', error);
             this.errorMessage = error.error?.message || 'Error al crear la marca';
             this.loading = false;
+            this.isProcessingUploads = false;
           }
         });
     } else if (this.showEditModal && this.selectedBrand) {
       // Actualizar marca existente
-      this.brandService.updateBrand(this.selectedBrand.id, this.brandForm)
+      this.brandService.updateBrand(this.selectedBrand.id, payload)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: () => {
+          next: (updatedBrand) => {
             this.successMessage = 'Marca actualizada exitosamente';
             this.showEditModal = false;
             this.selectedBrand = null;
             this.loadBrands();
+            this.loading = false;
             setTimeout(() => this.successMessage = '', 3000);
           },
           error: (error) => {
-            console.error('Error al actualizar marca:', error);
-            this.errorMessage = error.error?.message || 'Error al actualizar la marca';
-            this.loading = false;
-          }
-        });
+          console.error('Error al actualizar marca:', error);
+          this.errorMessage = error.error?.message || 'Error al actualizar la marca';
+          this.loading = false;
+        }
+      });
     }
   }
 
-  onLogoFileSelected(event: Event): void {
+  // --- MÉTODOS PARA LIGHTBOX ---
+
+  openPendingLightbox(): void {
+    if (this.pendingBrandLogo) {
+      this.lightboxImage = {
+        url: this.pendingBrandLogo.previewUrl,
+        name: this.pendingBrandLogo.name,
+        size: this.pendingBrandLogo.size,
+        type: this.pendingBrandLogo.type
+      };
+      this.showLightbox = true;
+    }
+  }
+
+  openExistingLightbox(url: string, name: string): void {
+    this.lightboxImage = {
+      url: url,
+      name: name || 'Logo de marca'
+    };
+    this.showLightbox = true;
+  }
+
+  closeLightbox(): void {
+    this.showLightbox = false;
+    this.lightboxImage = null;
+  }
+
+  // ==================== IMAGE HANDLING ====================
+
+  onLogoFileSelected(event: any): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
     if (!file) {
       return;
     }
-
-    const allowedTypes = ['image/png', 'image/jpeg'];
-    if (!allowedTypes.includes(file.type)) {
-      this.errorMessage = 'Formato no permitido. Solo PNG o JPG.';
-      input.value = '';
+    const validation = FileValidators.validateImageFile(file);
+    if (!validation.isValid) {
+      this.errorMessage = validation.errorMessage || 'Error de archivo';
       return;
     }
 
-    const maxSizeBytes = 10 * 1024 * 1024;
-    if (file.size > maxSizeBytes) {
-      this.errorMessage = 'El archivo supera el tamaño máximo de 10MB.';
-      input.value = '';
-      return;
+    if (this.pendingBrandLogo) {
+      FileValidators.revokePreviewUrl(this.pendingBrandLogo.previewUrl);
     }
-
+    
+    this.pendingBrandLogo = {
+      file: file,
+      previewUrl: FileValidators.createPreviewUrl(file),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      uploadStatus: 'PENDING'
+    };
     this.errorMessage = '';
-    this.logoUploadInProgress = true;
-    this.logoPreviewUrl = URL.createObjectURL(file);
+  }
 
-    this.fileUploadService.uploadSingle(file)
+  clearLogoSelection(): void {
+    if (this.pendingBrandLogo) {
+      FileValidators.revokePreviewUrl(this.pendingBrandLogo.previewUrl);
+      this.pendingBrandLogo = null;
+    }
+  }
+
+  uploadSelectedLogo(): void {
+    if (!this.selectedBrand || !this.pendingBrandLogo) return;
+
+    this.pendingBrandLogo.uploadStatus = 'UPLOADING';
+    this.brandService.uploadBrandLogo(this.selectedBrand.id, this.pendingBrandLogo.file)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          if (response?.url) {
-            this.brandForm.logoUrl = response.url;
-            this.logoPreviewUrl = response.url;
+          this.pendingBrandLogo!.uploadStatus = 'UPLOADED';
+          FileValidators.revokePreviewUrl(this.pendingBrandLogo!.previewUrl);
+          this.pendingBrandLogo = null;
+          
+          if (this.selectedBrand) {
+            this.selectedBrand.logoUrl = response.data?.secureUrl || '';
+            this.selectedBrand.logoProvider = response.data?.provider;
+            this.brandForm.logoUrl = this.selectedBrand.logoUrl;
           }
-          this.logoUploadInProgress = false;
+          this.successMessage = 'El logo se guardó correctamente.';
+          setTimeout(() => this.successMessage = '', 4000);
         },
-        error: (error) => {
-          console.error('Error al subir logo:', error);
-          this.errorMessage = error.error?.error || 'Error al subir el logo';
-          this.logoUploadInProgress = false;
+        error: (err) => {
+          if (this.pendingBrandLogo) {
+            this.pendingBrandLogo.uploadStatus = 'FAILED';
+            this.pendingBrandLogo.errorMessage = err.error?.error || err.error?.message || 'Error al subir el logo.';
+          }
+          this.errorMessage = 'No se pudo guardar la imagen.';
+          setTimeout(() => this.errorMessage = '', 7000);
         }
       });
+  }
+
+  cancelLogoUpload(): void {
+    if (this.pendingBrandLogo) {
+      FileValidators.revokePreviewUrl(this.pendingBrandLogo.previewUrl);
+      this.pendingBrandLogo = null;
+    }
+  }
+
+  removeLogo(): void {
+    if (!this.selectedBrand || !this.brandForm.logoUrl) return;
+
+    if (confirm('¿Estás seguro de que deseas eliminar este logo? Esta acción no se puede deshacer.')) {
+      this.loading = true;
+      this.brandService.deleteBrandLogo(this.selectedBrand.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.successMessage = 'Logo eliminado exitosamente';
+            this.brandForm.logoUrl = '';
+            if (this.selectedBrand) {
+              this.selectedBrand.logoUrl = '';
+            }
+            this.loading = false;
+            this.loadBrands();
+            setTimeout(() => this.successMessage = '', 3000);
+          },
+          error: (error) => {
+            console.error('Error al eliminar logo:', error);
+            this.errorMessage = error.error?.message || 'Error al eliminar el logo';
+            this.loading = false;
+          }
+        });
+    }
   }
 
   deleteBrand(): void {
@@ -377,14 +556,80 @@ export class AdminBrandsComponent implements OnInit, OnDestroy {
 
   // ==================== UTILIDADES ====================
 
+  saveInitialFormState(): void {
+    const state = {
+      name: this.brandForm.name || '',
+      description: this.brandForm.description || '',
+      logoUrl: this.brandForm.logoUrl || '',
+      websiteUrl: this.brandForm.websiteUrl || '',
+      countryOrigin: this.brandForm.countryOrigin || '',
+      active: !!this.brandForm.active
+    };
+    this.initialBrandFormState = JSON.stringify(state);
+  }
+
+  hasUnsavedBrandChanges(): boolean {
+    if (this.pendingBrandLogo) {
+      return true;
+    }
+    const currentState = {
+      name: this.brandForm.name || '',
+      description: this.brandForm.description || '',
+      logoUrl: this.brandForm.logoUrl || '',
+      websiteUrl: this.brandForm.websiteUrl || '',
+      countryOrigin: this.brandForm.countryOrigin || '',
+      active: !!this.brandForm.active
+    };
+    return JSON.stringify(currentState) !== this.initialBrandFormState;
+  }
+
+  confirmCloseBrandModal(): void {
+    if (this.loading || this.isProcessingUploads || (this.pendingBrandLogo && this.pendingBrandLogo.uploadStatus === 'UPLOADING')) {
+      Swal.fire({
+        title: 'Operación en proceso',
+        text: 'Hay una operación en proceso. Espera a que termine antes de cerrar.',
+        icon: 'warning',
+        confirmButtonColor: '#800020',
+        confirmButtonText: 'Entendido',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      });
+      return;
+    }
+
+    if (this.hasUnsavedBrandChanges()) {
+      Swal.fire({
+        title: 'Cambios sin guardar',
+        text: 'Tienes cambios sin guardar. Si cierras ahora, se perderán los cambios realizados.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Cerrar sin guardar',
+        cancelButtonText: 'Seguir editando',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.closeModal();
+        }
+      });
+    } else {
+      this.closeModal();
+    }
+  }
+
   closeModal(): void {
     this.showCreateModal = false;
     this.showEditModal = false;
     this.showDeleteModal = false;
     this.selectedBrand = null;
     this.errorMessage = '';
-    this.logoPreviewUrl = '';
-    this.logoUploadInProgress = false;
+    if (this.pendingBrandLogo) {
+      FileValidators.revokePreviewUrl(this.pendingBrandLogo.previewUrl);
+      this.pendingBrandLogo = null;
+    }
   }
 
   private clearActionParam(): void {

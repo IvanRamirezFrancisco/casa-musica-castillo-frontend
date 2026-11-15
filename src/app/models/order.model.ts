@@ -29,6 +29,20 @@ export enum ShippingStatus {
   RETURNED = 'RETURNED'
 }
 
+export enum PaymentProofStatus {
+  PENDING_REVIEW = 'PENDING_REVIEW',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}
+
+export type PickupStatus =
+  | 'NOT_APPLICABLE'
+  | 'WAITING_PAYMENT'
+  | 'PAID_WAITING_PREPARATION'
+  | 'READY_FOR_PICKUP'
+  | 'PICKED_UP'
+  | 'CANCELLED';
+
 // ==================== INTERFACES ====================
 
 export interface OrderItem {
@@ -77,7 +91,6 @@ export interface Order {
   shippingAddress?: string;
   billingAddress?: string;
   trackingNumber?: string;
-
   // Items
   items: OrderItem[];
   totalItems: number;
@@ -86,6 +99,8 @@ export interface Order {
   notes?: string;
   customerNotes?: string;
   cancellationReason?: string;
+  cancelledBy?: number;
+  cancelSource?: string;
 
   // Timestamps
   createdAt: string;
@@ -98,6 +113,23 @@ export interface Order {
   canBeCancelled?: boolean;
   canBeRefunded?: boolean;
   canUpdateShipping?: boolean;
+
+  // Payment Proof Fields
+  hasPaymentProof?: boolean;
+  paymentProofStatus?: PaymentProofStatus;
+  paymentProofUploadedAt?: string;
+  paymentProofRejectionReason?: string;
+  
+  // Delivery/Shipping Additions
+  deliveryType?: 'PICKUP_STORE' | 'LOCAL_DELIVERY' | 'EXTERNAL_SHIPPING_QUOTE';
+  pickupCodeLast4?: string;
+  pickupCodeAvailable?: boolean;
+  pickupReadyAt?: string;
+  pickedUpAt?: string;
+  pickedUpByName?: string;
+  pickedUpByAuthorizationId?: number;
+  pickupStatus?: PickupStatus;
+  authorizedPersons?: AuthorizedPersonDTO[];
 }
 
 export interface OrderStats {
@@ -126,4 +158,154 @@ export interface PageResponse<T> {
   number: number;
   first: boolean;
   last: boolean;
+}
+
+// ==================== CHECKOUT ====================
+
+export type PaymentMethodType = 'CASH_ON_DELIVERY' | 'BANK_TRANSFER' | 'MERCADO_PAGO';
+
+export interface AuthorizedPersonDTO {
+  id?: number;
+  fullName: string;
+  isPrimary?: boolean;
+}
+
+export interface CheckoutRequest {
+  deliveryOption: 'PICKUP_STORE' | 'LOCAL_DELIVERY' | 'EXTERNAL_SHIPPING_QUOTE';
+  state?: string;
+  city?: string;
+  postalCode?: string;
+  shippingAddress: string;
+  billingAddress: string;
+  paymentMethod: PaymentMethodType;
+  notes?: string;
+  authorizedPersons?: AuthorizedPersonDTO[];
+}
+
+export interface CancelOrderRequest {
+  reason?: string;
+}
+
+// ==================== COMPROBANTES DE PAGO ====================
+
+export interface PaymentProofResponse {
+  id: number;
+  orderId: number;
+  orderNumber: string;
+  originalFilename: string;
+  contentType: string;
+  fileSizeBytes: number;
+  status: PaymentProofStatus;
+  referenceNumber?: string;
+  bankName?: string;
+  amountDeclared?: number;
+  transferDate?: string;
+  notes?: string;
+  uploadedAt: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+}
+
+export interface RejectPaymentProofRequest {
+  reason: string;
+}
+
+// ==================== CONFIGURACIÓN DE TRANSFERENCIA BANCARIA ====================
+
+export interface PaymentInstructionsResponse {
+  configured: boolean;
+  bankName?: string;
+  accountHolder?: string;
+  clabe?: string;
+  accountNumber?: string;
+  concept?: string;
+  amount?: number;
+  orderNumber?: string;
+  referenceInstructions?: string;
+  additionalInstructions?: string;
+  paymentDeadline?: string;
+  isPaymentDeadlineExpired?: boolean;
+}
+
+export interface OrderTransitionsDTO {
+  currentOrderStatus: OrderStatus;
+  currentPaymentStatus: PaymentStatus;
+  currentShippingStatus: ShippingStatus;
+  allowedOrderStatuses: OrderStatus[];
+  allowedShippingStatuses: ShippingStatus[];
+  canUpdateOrderStatus: boolean;
+  canUpdateShippingStatus: boolean;
+  canUpdateTrackingNumber: boolean;
+  canCancelOrder: boolean;
+  requiresCancelReason: boolean;
+  orderStatusHelpMessage: string;
+  shippingStatusHelpMessage: string;
+  cancelOrderHelpMessage: string;
+}
+
+export interface OrderTimelineEvent {
+  id: number;
+  eventType: string;
+  title: string;
+  description: string;
+  orderStatusBefore?: string;
+  orderStatusAfter?: string;
+  paymentStatusBefore?: string;
+  paymentStatusAfter?: string;
+  shippingStatusBefore?: string;
+  shippingStatusAfter?: string;
+  actorLabel?: string;
+  source?: string;
+  visibility?: string;
+  createdAt: string;
+}
+
+export interface PricePreviewRequest {
+  deliveryOption: string;
+  state?: string;
+  city?: string;
+  postalCode?: string;
+}
+
+export interface PricePreviewResponse {
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
+  deliveryMethod?: string;
+  deliveryLabel?: string;
+  requiresAddress?: boolean;
+  requiresQuote?: boolean;
+  canProceedToPayment?: boolean;
+  message?: string;
+  contactWhatsapp?: string;
+  contactPhone?: string;
+  quoteMessage?: string;
+  businessHours?: string;
+}
+
+export interface ShippingSettings {
+  id?: number;
+  pickupEnabled: boolean;
+  pickupLabel?: string;
+  pickupAddress?: string;
+  pickupInstructions?: string;
+  pickupHours?: string;
+  localDeliveryEnabled: boolean;
+  localDeliveryCost?: number;
+  localDeliveryState?: string;
+  localDeliveryCity?: string;
+  localDeliveryPostalCodes?: string;
+  externalShippingEnabled: boolean;
+  externalShippingMode: string; // 'FIXED_COST' | 'QUOTE_REQUIRED'
+  externalShippingFixedCost?: number;
+  contactWhatsapp?: string;
+  contactPhone?: string;
+  quoteMessage?: string;
+  businessHours?: string;
+}
+
+export interface AuthorizedPersonDTO {
+  fullName: string;
+  ineHash?: string;
 }

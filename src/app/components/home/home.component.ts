@@ -1,13 +1,14 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { skip, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { PublicApiService } from '../../services/public-api.service';
 import { User } from '../../models/user.model';
 import { PublicProduct, PublicCategory } from '../../models/product.model';
+import { ConnectivityService } from '../../services/connectivity.service';
 
 @Component({
   selector: 'app-home',
@@ -15,6 +16,7 @@ import { PublicProduct, PublicCategory } from '../../models/product.model';
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '(document:click)': 'onDocumentClick($event)'
   }
@@ -22,7 +24,6 @@ import { PublicProduct, PublicCategory } from '../../models/product.model';
 export class HomeComponent implements OnInit, OnDestroy {
   searchQuery = '';
   cartItemCount = 3;
-  wishlistCount = 5;
   emailSubscription = '';
 
   // Usuario logueado
@@ -36,14 +37,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   categories: PublicCategory[] = [];
   loadingFeatured = true;
   loadingCategories = true;
+  categoriesError = false;
+  categoriesEmpty = false;
 
   // ── Hero Slider ────────────────────────────────────────────────────────────
   currentSlide = 0;
+  hasInteractedOrAutoplayed = false;
   private sliderInterval?: ReturnType<typeof setInterval>;
+  private initialTimeout?: ReturnType<typeof setTimeout>;
 
   heroSlides = [
     {
-      imageUrl: 'assets/negocio1.png',
+      imageUrl: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1600/v1790057931/negocio1_dfuoko.png',
+      srcset: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_640/v1790057931/negocio1_dfuoko.png 640w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_768/v1790057931/negocio1_dfuoko.png 768w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1200/v1790057931/negocio1_dfuoko.png 1200w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1600/v1790057931/negocio1_dfuoko.png 1600w',
       tag: 'Casa de Música Castillo',
       title: 'Tu Pasión,\nNuestros Instrumentos',
       subtitle: 'Descubre la colección más completa de instrumentos musicales. Calidad profesional para cada nivel.',
@@ -53,7 +59,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       align: 'left',
     },
     {
-      imageUrl: 'assets/negocio.png',
+      imageUrl: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1600/v1790057930/negocio_dkwtdw.png',
+      srcset: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_640/v1790057930/negocio_dkwtdw.png 640w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_768/v1790057930/negocio_dkwtdw.png 768w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1200/v1790057930/negocio_dkwtdw.png 1200w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1600/v1790057930/negocio_dkwtdw.png 1600w',
       tag: 'Guitarras Premium',
       title: 'Guitarras Para\nCada Músico',
       subtitle: 'Desde el primer acorde hasta el escenario profesional. Modelos acústicos, eléctricos y clásicos.',
@@ -63,7 +70,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       align: 'left',
     },
     {
-      imageUrl: 'assets/negocio1.png',
+      imageUrl: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1600/v1790057931/negocio1_dfuoko.png',
+      srcset: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_640/v1790057931/negocio1_dfuoko.png 640w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_768/v1790057931/negocio1_dfuoko.png 768w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1200/v1790057931/negocio1_dfuoko.png 1200w, https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_1600/v1790057931/negocio1_dfuoko.png 1600w',
       tag: 'Envío a todo México',
       title: 'Sonido que\nInspira',
       subtitle: 'Pianos, teclados, baterías y mucho más. Encuentra el instrumento que lleva tu música al siguiente nivel.',
@@ -75,15 +83,37 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   goToSlide(index: number): void {
+    this.hasInteractedOrAutoplayed = true;
     this.currentSlide = index;
+    if (this.initialTimeout) clearTimeout(this.initialTimeout);
     this.resetSliderTimer();
   }
 
+  private startAutoplayWithDelay(): void {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    this.ngZone.runOutsideAngular(() => {
+      this.initialTimeout = setTimeout(() => {
+        this.resetSliderTimer();
+      }, 20000);
+    });
+  }
+
   private resetSliderTimer(): void {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
     if (this.sliderInterval) clearInterval(this.sliderInterval);
-    this.sliderInterval = setInterval(() => {
-      this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
-    }, 6000);
+    this.ngZone.runOutsideAngular(() => {
+      this.sliderInterval = setInterval(() => {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        this.ngZone.run(() => {
+          this.hasInteractedOrAutoplayed = true;
+          this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
+        });
+      }, 6000);
+    });
   }
 
   private destroy$ = new Subject<void>();
@@ -91,12 +121,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     public router: Router,
     private authService: AuthService,
-    private publicApiService: PublicApiService
+    private publicApiService: PublicApiService,
+    public connectivityService: ConnectivityService,
+    private ngZone: NgZone
   ) {}
 
+  get isOnline(): boolean {
+    return this.connectivityService.isOnline;
+  }
+
   ngOnInit(): void {
-    // Iniciar hero slider
-    this.resetSliderTimer();
+    // Iniciar hero slider fuera de NgZone para no bloquear ApplicationRef.isStable ni el Service Worker
+    this.startAutoplayWithDelay();
 
     // Verificar si el usuario está logueado
     this.authService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe((user: User | null) => {
@@ -104,7 +140,28 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.isLoggedIn = !!user;
     });
 
-    // Cargar productos destacados reales
+    this.loadHomeData();
+
+    // Al recuperar conexión, recargar automáticamente secciones que hayan quedado sin caché
+    this.connectivityService.isOnline$.pipe(skip(1), takeUntil(this.destroy$)).subscribe(online => {
+      if (online) {
+        if (this.categoriesError || this.categories.length === 0) {
+          this.loadCategories();
+        }
+        if (this.featuredProducts.length === 0 || this.latestProducts.length === 0) {
+          this.loadFeaturedAndLatest();
+        }
+      }
+    });
+  }
+
+  loadHomeData(): void {
+    this.loadFeaturedAndLatest();
+    this.loadCategories();
+  }
+
+  loadFeaturedAndLatest(): void {
+    this.loadingFeatured = true;
     this.publicApiService.getFeaturedProducts(0, 4).pipe(takeUntil(this.destroy$)).subscribe({
       next: (page) => {
         this.featuredProducts = page.content;
@@ -113,24 +170,31 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: () => { this.loadingFeatured = false; }
     });
 
-    // Cargar últimos productos
     this.publicApiService.getLatestProducts().pipe(takeUntil(this.destroy$)).subscribe({
       next: (products) => { this.latestProducts = products; },
       error: () => {}
     });
+  }
 
-    // Cargar categorías con productos activos
+  loadCategories(): void {
+    this.loadingCategories = true;
+    this.categoriesError = false;
     this.publicApiService.getActiveCategories(true).pipe(takeUntil(this.destroy$)).subscribe({
       next: (cats) => {
         this.categories = cats;
         this.loadingCategories = false;
+        this.categoriesEmpty = cats.length === 0;
       },
-      error: () => { this.loadingCategories = false; }
+      error: () => {
+        this.loadingCategories = false;
+        this.categoriesError = true;
+      }
     });
   }
 
   ngOnDestroy(): void {
     if (this.sliderInterval) clearInterval(this.sliderInterval);
+    if (this.initialTimeout) clearTimeout(this.initialTimeout);
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -176,18 +240,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/home']);
   }
 
-  allCategories = [
-    { id: 'guitarras', name: 'Guitarras', description: 'Acústicas, eléctricas y clásicas', icon: 'music_note', productCount: 0 },
-    { id: 'pianos', name: 'Pianos y Teclados', description: 'Pianos acústicos y digitales', icon: 'piano', productCount: 0 },
-    { id: 'baterias', name: 'Baterías', description: 'Acústicas y electrónicas', icon: 'music_note', productCount: 0 },
-    { id: 'vientos', name: 'Vientos', description: 'Saxofones, trompetas, flautas', icon: 'music_note', productCount: 0 },
-    { id: 'cuerdas', name: 'Cuerdas', description: 'Violines, violas, cellos', icon: 'music_note', productCount: 0 },
-    { id: 'percusion', name: 'Percusión', description: 'Tambores, maracas, cajones', icon: 'music_note', productCount: 0 },
-    { id: 'amplificadores', name: 'Amplificadores', description: 'Para guitarra y bajo', icon: 'speaker', productCount: 0 },
-    { id: 'accesorios', name: 'Accesorios', description: 'Cables, púas, fundas', icon: 'settings', productCount: 0 },
-    { id: 'audio', name: 'Audio Pro', description: 'Micrófonos y equipos', icon: 'mic', productCount: 0 },
-    { id: 'vintage', name: 'Vintage', description: 'Instrumentos de colección', icon: 'star', productCount: 0 }
-  ];
+  getCategoryIcon(name: string): string {
+    if (!name) return 'category';
+    const lower = name.toLowerCase();
+    if (lower.includes('guitar')) return 'music_note';
+    if (lower.includes('piano') || lower.includes('teclad')) return 'piano';
+    if (lower.includes('bateria') || lower.includes('percusion')) return 'music_note'; // Material doesn't have a drum icon by default, music_note is generic
+    if (lower.includes('viento') || lower.includes('saxo') || lower.includes('trompet')) return 'music_note';
+    if (lower.includes('cuerda') || lower.includes('violin') || lower.includes('violon')) return 'music_note';
+    if (lower.includes('amp')) return 'speaker';
+    if (lower.includes('audio') || lower.includes('micro') || lower.includes('dj')) return 'mic';
+    if (lower.includes('accesorio') || lower.includes('cable')) return 'settings';
+    return 'category';
+  }
 
   specialProduct = {
     name: 'Guitarra Premium Edición Limitada',
@@ -204,12 +269,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     ]
   };
 
-  services = [
-    { id: 'reparacion', name: 'Reparación de Instrumentos', description: 'Servicio técnico especializado con garantía', icon: 'build' },
-    { id: 'clases', name: 'Clases de Música', description: 'Aprende con maestros profesionales', icon: 'school' },
-    { id: 'alquiler', name: 'Alquiler de Equipos', description: 'Renta instrumentos para eventos', icon: 'event' },
-    { id: 'afinacion', name: 'Afinación de Pianos', description: 'Servicio a domicilio disponible', icon: 'tune' }
+  soundDemos = [
+    { id: 'demo1', title: 'Jarana Huasteca Premium', instrument: 'Jaranas', videoId: 'demo1', thumbnail: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_600/v1790057930/negocio_dkwtdw.png' },
+    { id: 'demo2', title: 'Guitarra Acústica Artesanal', instrument: 'Guitarras', videoId: 'demo2', thumbnail: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_600/v1790057931/negocio1_dfuoko.png' },
+    { id: 'demo3', title: 'Micrófono Condensador Estudio', instrument: 'Audio Pro', videoId: 'demo3', thumbnail: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_600/v1790057930/negocio_dkwtdw.png' },
+    { id: 'demo4', title: 'Batería Acústica 5 Piezas', instrument: 'Baterías', videoId: 'demo4', thumbnail: 'https://res.cloudinary.com/dy3ibnjl7/image/upload/f_auto,q_auto,w_600/v1790057931/negocio1_dfuoko.png' }
   ];
+
+  playDemo(demo: any) {
+    // Placeholder para la integración real de video / reproductor de audio
+    alert('Próximamente: Demostración de ' + demo.title);
+  }
 
   performSearch() {
     if (this.searchQuery.trim()) {
@@ -221,21 +291,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/catalogo'], { queryParams: { categoryId } });
   }
 
-  navigateToOffers() {
-    this.router.navigate(['/ofertas']);
-  }
-
   navigateToCart() {
     this.router.navigate(['/cart']);
   }
 
-  navigateToService(serviceId: string) {
-    this.router.navigate(['/servicios'], { queryParams: { servicio: serviceId } });
-  }
 
-  toggleWishlist() {}
-
-  toggleFavorite(productId: number) {}
 
   addToCart(product: any) {
     this.cartItemCount++;
@@ -259,4 +319,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   navigateToRegister() { this.router.navigate(['/register']); }
   navigateToCatalog() { this.router.navigate(['/catalogo']); }
   navigateToHelp() { this.router.navigate(['/ayuda']); }
+
+  onImageError(event: any): void {
+    if (event?.target && event.target.src !== window.location.origin + '/assets/icons/icon-192x192.png') {
+      event.target.src = '/assets/icons/icon-192x192.png';
+    }
+  }
 }

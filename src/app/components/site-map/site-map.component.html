@@ -21,26 +21,29 @@
 
   <!-- Sitemap Grid -->
   <div class="sitemap-grid">
-    <div class="sitemap-section" *ngFor="let section of siteMapSections; let i = index" [style.animation-delay.ms]="i * 100">
-      <div class="section-header">
-        <div class="section-icon-wrapper">
-          <span class="material-icons">{{ section.icon }}</span>
+    @for (section of siteMapSections; track section; let i = $index) {
+      <div class="sitemap-section" [style.animation-delay.ms]="i * 100">
+        <div class="section-header">
+          <div class="section-icon-wrapper">
+            <span class="material-icons">{{ section.icon }}</span>
+          </div>
+          <h2 class="section-title">{{ section.title }}</h2>
         </div>
-        <h2 class="section-title">{{ section.title }}</h2>
+        <ul class="section-links">
+          @for (link of section.links; track link) {
+            <li class="link-item">
+              <a [routerLink]="link.path" (click)="navigateToLink(link.path, $event)" class="link-content">
+                <div class="link-header">
+                  <span class="material-icons link-icon">arrow_forward</span>
+                  <span class="link-name">{{ link.name }}</span>
+                </div>
+                <p class="link-description">{{ link.description }}</p>
+              </a>
+            </li>
+          }
+        </ul>
       </div>
-      
-      <ul class="section-links">
-        <li *ngFor="let link of section.links" class="link-item">
-          <a [routerLink]="link.path" (click)="navigateToLink(link.path, $event)" class="link-content">
-            <div class="link-header">
-              <span class="material-icons link-icon">arrow_forward</span>
-              <span class="link-name">{{ link.name }}</span>
-            </div>
-            <p class="link-description">{{ link.description }}</p>
-          </a>
-        </li>
-      </ul>
-    </div>
+    }
   </div>
 
   <!-- Quick Stats -->
