@@ -158,7 +158,7 @@ export class DatabaseBackupService {
    */
   getDatabaseTables(): Observable<{ name: string; rowEstimate: number }[]> {
     return this.http.get<{ name: string; rowEstimate: number }[]>(
-      `${environment.apiUrl}/admin/automations/tables`
+      `${this.API}/tables`
     );
   }
 }

@@ -70,7 +70,6 @@ function isPublicStorefrontGet(req: { method: string; url: string; headers: { ha
  */
 function isNonCriticalSecondaryRequest(url: string): boolean {
   return (
-    url.includes('/trend-status') ||
     url.includes('/recommendations') ||
     url.includes('/api/reviews/product/')
   );

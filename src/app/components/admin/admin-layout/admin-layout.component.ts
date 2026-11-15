@@ -138,12 +138,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       actionRequiresSuperAdmin: true
     },
     {
-      route: '/admin/gestion-db',
-      title: 'Gestión de Base de Datos',
-      subtitle: 'Respaldos · Monitoreo · Mantenimiento · Consultas lentas',
-      icon: 'dns'
-    },
-    {
       route: '/admin/payment-settings',
       title: 'Configuración de Pagos',
       subtitle: 'Administra los datos bancarios y métodos de pago',
@@ -154,18 +148,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       title: 'Centro de Seguridad y Respaldos',
       subtitle: 'Exportación y gestión de la base de datos · Solo Super Admin',
       icon: 'backup'
-    },
-    {
-      route: '/admin/analitica/patrones-compra',
-      title: 'Analítica de patrones de compra',
-      subtitle: 'Identificación de tipos de compra mediante clustering K-Means.',
-      icon: 'hub'
-    },
-    {
-      route: '/admin/analitica/pronostico-demanda',
-      title: 'Pronóstico de Demanda',
-      subtitle: 'Pronóstico de demanda mediante SMA.',
-      icon: 'trending_up'
     },
     {
       route: '/admin/help-center',
@@ -185,16 +167,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     { title: 'Empleados', icon: 'admin_panel_settings', route: '/admin/staff',     badge: null, requiredPermission: 'USER_READ'       },
     { title: 'Roles',        icon: 'security',             route: '/admin/roles',           badge: null, requiredPermission: 'ROLE_READ'       },
     { title: 'Pagos',        icon: 'payments',             route: '/admin/payment-settings',badge: null, requiredAnyPermission: ['SYSTEM_SETTINGS', 'BANK_TRANSFER_SETTINGS_READ', 'BANK_TRANSFER_SETTINGS_UPDATE', 'PAYMENT_SETTINGS_READ', 'PAYMENT_SETTINGS_UPDATE'] },
-    { title: 'Patrones de compra', icon: 'hub',                  route: '/admin/analitica/patrones-compra', badge: null, requiredPermission: 'REPORT_VIEW' },
-    { title: 'Pronóstico de demanda', icon: 'trending_up',       route: '/admin/analitica/pronostico-demanda', badge: null, requiredPermission: 'REPORT_VIEW' },
-    {
-      title: 'Gestión DB',
-      icon: 'dns',
-      route: '/admin/gestion-db',
-      badge: null,
-      // Visible si tiene CUALQUIERA de los permisos de BD
-      requiredAnyPermission: ['DATABASE_VIEW', 'DATABASE_BACKUP', 'DATABASE_MAINTAIN', 'DATABASE_AUTOMATE'],
-    },
+    { title: 'Respaldos', icon: 'backup', route: '/admin/backups', badge: null, requiredPermission: 'DATABASE_BACKUP' },
     { title: 'Centro de Ayuda', icon: 'help_center', route: '/admin/help-center', badge: null, requiredPermission: 'HELP_MANAGE' }
   ];
 

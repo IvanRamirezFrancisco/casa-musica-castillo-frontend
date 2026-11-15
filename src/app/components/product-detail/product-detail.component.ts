@@ -8,7 +8,7 @@ import { distinctUntilChanged, skip, takeUntil } from 'rxjs/operators';
 import { PublicApiService } from '../../services/public-api.service';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
-import { PublicProduct, PublicProductAttribute, ProductRecommendation, ProductTrendStatus } from '../../models/product.model';
+import { PublicProduct, PublicProductAttribute, ProductRecommendation } from '../../models/product.model';
 import { ProductRecommendationCardComponent } from './product-recommendation-card/product-recommendation-card.component';
 import { ProductReviewsComponent } from '../product-reviews/product-reviews.component';
 import { A11yModule } from '@angular/cdk/a11y';
@@ -78,8 +78,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   // Recomendaciones y Tendencia (Prioridad 2 - Carga Secundaria No Bloqueante)
   recommendations: ProductRecommendation[] = [];
   loadingRecommendations = false;
-  trendStatus: ProductTrendStatus | null = null;
-  loadingTrend = false;
   addingToCartMap: { [key: number]: boolean } = {};
 
   // Scroll Lock Backup
@@ -90,7 +88,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private productSub?: Subscription;
   private recommendationsSub?: Subscription;
-  private trendSub?: Subscription;
   private wakingTimer: ReturnType<typeof setTimeout> | null = null;
   private secondaryTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -162,7 +159,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.clearTimers();
     this.productSub?.unsubscribe();
     this.recommendationsSub?.unsubscribe();
-    this.trendSub?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -171,16 +167,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     // Cancelar peticiones anteriores si el usuario cambió de producto rápidamente
     this.productSub?.unsubscribe();
     this.recommendationsSub?.unsubscribe();
-    this.trendSub?.unsubscribe();
     this.clearTimers();
 
     this.error = null;
     this.selectedImageIndex = 0;
     this.quantity = 1;
-    this.trendStatus = null;
     this.recommendations = [];
     this.loadingRecommendations = false;
-    this.loadingTrend = false;
 
     // 1. Hidratación instantánea si el producto ya fue cargado en /catalogo o /home
     const cachedSnapshot = this.publicApiService.getCachedProductSnapshot(id);
@@ -246,7 +239,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.secondaryTimer = setTimeout(() => {
       if (this.currentProductId === productId && this.product) {
         this.loadRecommendations(productId);
-        this.loadTrendStatus(productId);
       }
     }, 60);
   }
@@ -693,20 +685,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     if (!this.product?.discountPrice || !this.product?.price) return 0;
     if (this.product.discountPrice >= this.product.price) return 0;
     return this.product.price - this.product.discountPrice;
-  }
-
-  private loadTrendStatus(productId: number): void {
-    this.trendSub?.unsubscribe();
-    this.loadingTrend = true;
-    this.trendSub = this.publicApiService.getProductTrendStatus(productId).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (status) => {
-        this.trendStatus = status;
-        this.loadingTrend = false;
-      },
-      error: () => {
-        this.loadingTrend = false;
-      }
-    });
   }
 
   private loadRecommendations(id: number): void {

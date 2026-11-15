@@ -477,11 +477,6 @@
   width: 100%;
 }
 
-/* Módulos que gestionan su propio padding interno (ej. tabs con sticky bar) */
-.admin-content--flush {
-  padding: 0;
-}
-
 /* ===================================
    ANIMATIONS
    =================================== */

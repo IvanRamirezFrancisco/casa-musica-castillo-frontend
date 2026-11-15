@@ -264,9 +264,9 @@ export class NotificationCenterService {
       level: 'success',
       category: 'database',
       title: 'Respaldo completado',
-      message: `${fileName} disponible para descarga por 1 hora.`,
+      message: `${fileName} disponible. El enlace se genera al descargar.`,
       persistent: false,
-      actionRoute: '/admin/gestion-db',
+      actionRoute: '/admin/backups',
       actionLabel: 'Ver respaldos',
       requiredRole: 'SUPER_ADMIN',
       metadata: { fileName, triggeredBy }
@@ -280,62 +280,8 @@ export class NotificationCenterService {
       title: 'Error al generar respaldo',
       message: error,
       persistent: true,
-      actionRoute: '/admin/gestion-db',
+      actionRoute: '/admin/backups',
       actionLabel: 'Ver bitácora',
-      requiredRole: 'SUPER_ADMIN',
-    });
-  }
-
-  backupExpiringSoon(fileName: string): void {
-    this.push({
-      level: 'warning',
-      category: 'database',
-      title: 'Respaldo por expirar',
-      message: `El enlace de ${fileName} expira en 15 minutos.`,
-      persistent: false,
-      actionRoute: '/admin/gestion-db',
-      actionLabel: 'Descargar ahora',
-      requiredRole: 'SUPER_ADMIN',
-    });
-  }
-
-  // ── GESTIÓN DB — Monitoreo (solo SUPER_ADMIN) ────────────────────────────
-
-  healthScoreDrop(current: number, previous: number): void {
-    this.push({
-      level: current < 50 ? 'error' : 'warning',
-      category: 'database',
-      title: `Health Score: ${current} pts`,
-      message: `Cayó ${previous - current} puntos desde la última lectura.`,
-      persistent: false,
-      actionRoute: '/admin/gestion-db',
-      actionLabel: 'Ver Monitoreo',
-      requiredRole: 'SUPER_ADMIN',
-    });
-  }
-
-  criticalDbAlert(title: string, hint: string): void {
-    this.push({
-      level: 'error',
-      category: 'database',
-      title,
-      message: hint,
-      persistent: true,
-      actionRoute: '/admin/gestion-db',
-      actionLabel: 'Inspeccionar',
-      requiredRole: 'SUPER_ADMIN',
-    });
-  }
-
-  autoMaintenanceExecuted(tablesCount: number): void {
-    this.push({
-      level: 'info',
-      category: 'database',
-      title: 'Mantenimiento automático ejecutado',
-      message: `VACUUM ANALYZE aplicado a ${tablesCount} tabla(s).`,
-      persistent: false,
-      actionRoute: '/admin/gestion-db',
-      actionLabel: 'Ver historial',
       requiredRole: 'SUPER_ADMIN',
     });
   }

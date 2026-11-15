@@ -632,13 +632,6 @@
       <!-- FOOTER -->
       <div class="flex justify-between px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex-shrink-0">
         <div class="flex items-center gap-3">
-          @if (hasReportViewPermission) {
-            <button (click)="onAnalyzePattern()"
-              class="flex items-center gap-2 px-5 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-semibold rounded-lg transition-colors border border-purple-200">
-              <i class="fa-solid fa-chart-pie text-xs"></i>
-              Analizar patrón de compra
-            </button>
-          }
           @if (allowedTransitions?.canCancelOrder) {
             <button (click)="cancelOrder()"
               class="flex items-center gap-2 px-5 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold rounded-lg transition-colors border border-red-200">

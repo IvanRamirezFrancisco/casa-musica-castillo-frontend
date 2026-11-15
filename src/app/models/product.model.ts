@@ -409,26 +409,3 @@ export interface ProductRecommendation {
   hasDiscount: boolean;
   recommendationReason: string;
 }
-
-export interface PublicTrendingProduct {
-  productId: number;
-  sku: string;
-  name: string;
-  description: string | null;
-  imageUrl: string | null;
-  categoryId: number | null;
-  categoryName: string | null;
-  regularPrice: number;
-  effectivePrice: number;
-  discountPrice: number | null;
-  hasDiscount: boolean;
-  trendLabel: string;
-  trendReason: string;
-}
-
-export interface ProductTrendStatus {
-  productId: number;
-  trending: boolean;
-  label: string | null;
-  reason: string | null;
-}

@@ -662,7 +662,6 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
       { permission: 'BRAND_MANAGE',      route: '/admin/brands'     },
       { permission: 'CATEGORY_MANAGE',   route: '/admin/categories' },
       { permission: 'DATABASE_BACKUP',   route: '/admin/backups'    },
-      { permission: 'DATABASE_VIEW',     route: '/admin/gestion-db' },
     ];
 
     for (const entry of cascade) {
